@@ -1,10 +1,6 @@
 package Net::Server::IMAP::Command::Lsub;
 
-use base qw/Net::Server::IMAP::Command/;
+use base qw/Net::Server::IMAP::Command::List/;
 
-sub run {
-    my $self = shift;
-    $self->ok_completed;
-}
 
 1;

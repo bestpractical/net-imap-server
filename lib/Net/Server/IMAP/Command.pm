@@ -43,6 +43,30 @@ sub ok_command {
     $self->out("\n");
 }
 
+sub no_command {
+    my $self = shift;
+    my $message = shift;
+    my %extra_responses = (@_);
+    for (keys %extra_responses) {
+        $self->untagged_response("NO [".uc($_) ."] ".$extra_responses{$_});
+    }
+    $self->log("NO Request: $message");
+    $self->out($self->command_id. " "."NO ". $message);
+    $self->out("\n");
+}
+
+sub no_failed {
+    my $self = shift;
+    my %extra_responses = (@_);
+    $self->no_command(uc($self->command). " FAILED", %extra_responses); 
+
+}
+
+sub no_unimplemented {
+    my $self = shift;
+    $self->no_failed(alert => $self->options ." unimplemented. sorry. We'd love patches!");
+}
+
 sub ok_completed {
     my $self = shift;
     my %extra_responses = (@_);

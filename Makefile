@@ -19,7 +19,6 @@
 #     PL_FILES => {  }
 #     PREREQ_PM => { Test::More=>q[0] }
 #     VERSION => q[0.001]
-#     dist => { PREOP=>q[$(PERL) -I. -MModule::Install::Admin -e "dist_preop(q($(DISTVNAME)))"] }
 
 # --- MakeMaker post_initialize section:
 
@@ -268,7 +267,7 @@ ZIPFLAGS = -r
 COMPRESS = gzip --best
 SUFFIX = .gz
 SHAR = shar
-PREOP = $(PERL) -I. -MModule::Install::Admin -e "dist_preop(q($(DISTVNAME)))"
+PREOP = $(NOECHO) $(NOOP)
 POSTOP = $(NOECHO) $(NOOP)
 TO_UNIX = $(NOECHO) $(NOOP)
 CI = ci -u
@@ -746,21 +745,3 @@ pm_to_blib: $(TO_INST_PM)
 
 # End.
 # Postamble by Module::Install 0.61
-# --- Module::Install::Admin::Makefile section:
-
-realclean purge ::
-	$(RM_F) $(DISTVNAME).tar$(SUFFIX)
-	$(RM_RF) inc MANIFEST.bak _build
-	$(PERL) -I. -MModule::Install::Admin -e "remove_meta()"
-
-reset :: purge
-
-upload :: test dist
-	cpan-upload -verbose $(DISTVNAME).tar$(SUFFIX)
-
-grok ::
-	perldoc Module::Install
-
-distsign ::
-	cpansign -s
-

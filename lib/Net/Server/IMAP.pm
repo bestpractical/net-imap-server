@@ -6,6 +6,7 @@ use warnings;
 use strict;
 use UNIVERSAL::require;
 use base 'Class::Data::Inheritable';
+use Module::Refresh; # for development
 use Carp;
            use IO::Select;
            use IO::Socket;
@@ -70,6 +71,7 @@ sub handle_command {
     my $handle = shift;
     my $line = shift;
     return unless($line);
+    Module::Refresh->refresh;
     my ($id, $cmd,$options) = $self->parse_command($line);
         my $cmd_class = "Net::Server::IMAP::Command::$cmd";
     $cmd_class->require() || warn $@;
@@ -84,16 +86,12 @@ sub handle_command {
 sub parse_command {
     my $self = shift;
     my $line = shift;
-    use Data::Dumper;
-    chomp($line);
-    warn Dumper $line;
-    if ($line =~ /^([\w\d]+)\s+(\w+)\s+(.*?)$/)  {
+    $line =~ s/[\r\n]//g; #hack
+    if ($line =~ /^([\w\d]+)\s+(\w+)\s*(.*)/)  {
         my $id = $1;
         my $cmd = $2;
         my $args = $3 ||'';
         $cmd = ucfirst(lc($cmd));
-        chomp($args);
-        warn "id is {$id}\ncmd is {$cmd}\nargs is {$args}\n\n";
         return ($id,$cmd,$args);
     }
     warn "Couldn't parse command $line";
