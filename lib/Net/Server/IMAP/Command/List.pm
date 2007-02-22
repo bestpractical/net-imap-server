@@ -1,31 +1,49 @@
 package Net::Server::IMAP::Command::List;
 
+use warnings;
+use strict;
+
 use base qw/Net::Server::IMAP::Command/;
 
 sub run {
     my $self = shift;
-    my $options = $self->options;
 
-    my @atoms;
-    while ($options and $options =~ /^(".*?"|.*?)(?:\s(.*)|$)/) {
-        push @atoms, $1;
-        $options = $2;
-    }
-    
-    use YAML; warn YAML::Dump(\@atoms);
-   
-    # In the special case of a query for the delimiter, give them our delimiter
-    if ($self->options eq '"" ""') {
-        $self->tagged_response(q{(\Noselect) "/" ""});
+    return $self->bad_command("Log in first") if $self->connection->is_unauth;
+
+    my @args = $self->parsed_options;
+
+    return $self->bad_command("Wrong arugments") unless @args == 2;
+
+    my ( $root, $search ) = @args;
+
+   # In the special case of a query for the delimiter, give them our delimiter
+    if ( $search eq "" ) {
+        $self->tagged_response( q{(\Noselect) "}
+                . $self->connection->model->seperator
+                . q{" ""} );
     } else {
-        print STDERR "\n\nOptions are {".$self->options."}";
-        $self->tagged_response(q{() "/" INBOX});
-        $self->tagged_response(q{() "/" foo});
-        $self->tagged_response(q{() "/" foo/bar});
-        $self->tagged_response(q{() "/" foo/baz});
+        my $sep = $self->connection->model->seperator;
+        $search =~ s/\*/.*/g;
+        $search =~ s/%/[^$sep]/g;
+        my $regex = qr{^\Q$root\E$search$};
+        $self->traverse( $self->connection->model->root, $regex );
     }
 
     $self->ok_completed;
+}
+
+sub traverse {
+    my $self  = shift;
+    my $node  = shift;
+    my $regex = shift;
+
+    my $str = $node->children ? q{(\HasChildren)} : q{()};
+    $str .= q{ "/" };
+    $str .= q{"} . $node->full_path . q{"};
+    $self->tagged_response($str) if $node->full_path =~ $regex;
+    if ( $node->children ) {
+        $self->traverse( $_, $regex ) for @{ $node->children };
+    }
 }
 
 1;

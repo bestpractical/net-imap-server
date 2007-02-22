@@ -1,17 +1,46 @@
 package Net::Server::IMAP::Command::Select;
+
+use warnings;
+use strict;
+
 use base qw/Net::Server::IMAP::Command/;
 
 sub run {
     my $self = shift;
-    $self->untagged_response('1 EXISTS');
-    $self->untagged_response('1 RECENT');
-               $self->untagged_response('OK [UNSEEN 12] Message 12 is first unseen');
-               $self->untagged_response('OK [UIDVALIDITY 3857529045] UIDs valid');
-               $self->untagged_response('OK [UIDNEXT 4392] Predicted next UID');
-               $self->untagged_response('FLAGS (\Answered \Flagged \Deleted \Seen \Draft)');
-               $self->untagged_response('OK [PERMANENTFLAGS (\Deleted \Seen \*)] Limited');
-    $self->ok_completed("READ-ONLY");
-    
+
+    return $self->bad_command("Log in first") if $self->connection->is_unauth;
+
+    my $mailbox = $self->connection->model->lookup( $self->parsed_options );
+    return $self->no_command("Mailbox does not exist") unless $mailbox;
+
+    $mailbox->force_read_only(1) if $self->command eq "Examine";
+    $self->connection->selected($mailbox);
+
+    $self->untagged_response(
+        'FLAGS (' . join( ' ', $mailbox->flags ) . ')' );
+    $self->untagged_response( $mailbox->exists . ' EXISTS' );
+    $self->untagged_response( $mailbox->recent . ' RECENT' );
+
+    my $unseen = $mailbox->unseen;
+    $self->untagged_response("OK [UNSEEN $unseen]") if defined $unseen;
+
+    my $uidvalidity = $mailbox->uidvalidity;
+    $self->untagged_response("OK [UIDVALIDITY $uidvalidity]")
+        if defined $uidvalidity;
+
+    my $uidnext = $mailbox->uidnext;
+    $self->untagged_response("OK [UIDNEXT $uidnext]") if defined $uidnext;
+
+    my $permanentflags = $mailbox->permanentflags;
+    $self->untagged_response( "OK [PERMANENTFLAGS ("
+            . join( ' ', $mailbox->permanentflags )
+            . ')]' );
+
+    if ( $mailbox->read_only ) {
+        $self->ok_command("[READ-ONLY] Completed");
+    } else {
+        $self->ok_command("[READ-WRITE] Completed");
+    }
 }
 
 1;

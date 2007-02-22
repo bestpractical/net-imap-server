@@ -1,4 +1,4 @@
-package Net::Server::IMAP::Command::Fetch;
+package Net::Server::IMAP::Command::Store;
 use base qw/Net::Server::IMAP::Command/;
 
 sub run {
@@ -9,13 +9,17 @@ sub run {
         unless $self->connection->is_selected;
 
     my $options = $self->options;
-    my ( $messages, $spec ) = split( ' ', $options, 2 );
-
+    my ( $messages, $what, $flags ) = split( /\s+/, $options, 3 );
+    $flags =~ s/^\(//;
+    $flags =~ s/\)$//;
+    my @flags = split ' ', $flags;
     my @messages = $self->connection->selected->get_messages($messages);
-    for (@messages) {
-        $self->untagged_response( $_->sequence
+    for my $m (@messages) {
+        $m->store( $what => @flags );
+        $self->untagged_response( $m->sequence
                 . " FETCH "
-                . $self->data_out( [ $_->fetch($spec) ] ) );
+                . $self->data_out( [ $m->fetch("FLAGS") ] ) )
+            unless $what =~ /\.SILENT$/i;
     }
 
     $self->ok_completed();

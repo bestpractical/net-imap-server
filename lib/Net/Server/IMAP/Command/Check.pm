@@ -1,4 +1,4 @@
-package Net::Server::IMAP::Command::Noop;
+package Net::Server::IMAP::Command::Check;
 
 use warnings;
 use strict;

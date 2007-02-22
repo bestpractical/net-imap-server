@@ -1,105 +1,91 @@
 package Net::Server::IMAP;
 
-our $VERSION = '0.001';
-
 use warnings;
 use strict;
+
+use base 'Class::Accessor';
+
 use UNIVERSAL::require;
-use base 'Class::Data::Inheritable';
-use Module::Refresh; # for development
+use Module::Refresh;    # for development
 use Carp;
-           use IO::Select;
-           use IO::Socket;
+use IO::Select;
+use IO::Socket;
+use IO::Socket::SSL;
 
-use Net::Server::IMAP::Command;
+use Net::Server::IMAP::Mailbox;
+use Net::Server::IMAP::Connection;
 
-__PACKAGE__->mk_classdata('socket');
+our $VERSION = '0.001';
 
-           my $item = Net::Server::IMAP->new;
-           $item->run();
-
-# Module implementation here
+__PACKAGE__->mk_accessors(
+    qw/socket select connections port auth_class model_class/);
 
 sub new {
-        my $class = shift;
-        my $self = {};
-        bless $self, $class;
-        return $self;
- 
+    my $class = shift;
+    return $class->SUPER::new(
+        {   port        => 8080,
+            auth_class  => "Net::Server::IMAP::DefaultAuth",
+            model_class => "Net::Server::IMAP::DefaultModel",
+            @_,
+            connections => {},
+        }
+    );
 }
 
 sub run {
     my $self = shift;
-    my $lsn; my $port = 8080;
-    while (!$lsn) {
-        $lsn = new IO::Socket::INET( Listen => 1, LocalPort => ++$port );
-        __PACKAGE__->socket($lsn);
-        if ($@) { warn "$port failed: $@";}
-        else { warn "Listening on $port" }
-    }
-    my $sel = new IO::Select($lsn);
-    while ($sel){
-    while ( my @ready = $sel->can_read ) {
-        foreach my $fh (@ready) {
-            if ( $fh == $lsn ) {
 
-                # Create a new socket
-                my $new = $lsn->accept;
-                $sel->add($new);
-                $new->print('* OK IMAP4rev1 Server'."\n");
-            }
-            else {
+    my $lsn = IO::Socket::INET->new(
+        Listen    => 1,
+        LocalPort => $self->port,
+        ReuseAddr => 1
+    );
+    if   ($@) { die "Listen on port " . $self->port . " failed: $@"; }
+    else      { warn "Listening on " . $self->port }
+    $self->socket($lsn);
+    $self->select( IO::Select->new($lsn) );
+    while ( $self->select ) {
+        while ( my @ready = $self->select->can_read ) {
+            Module::Refresh->refresh;
+            foreach my $fh (@ready) {
+                if ( $fh == $lsn ) {
 
-                # Process socket
-                my $content = $fh->getline();
-                if ($content) {
-                print STDERR "C: $content";
-                $self->handle_command($fh => $content);
+                    # Create a new socket
+                    my $new = $fh->accept;
+                    $self->accept_connection($new);
+                } else {
+
+                    # Process socket
+                    $self->connections->{ $fh->fileno }->handle_command;
                 }
             }
         }
     }
-    }
 }
 
 DESTROY {
-    __PACKAGE__->socket()->DESTROY
+    my $self = shift;
+    $_->close for grep { defined $_ } values %{ $self->connections };
+    $self->socket->close if $self->socket;
 }
 
-sub handle_command {
-    my $self = shift;
+sub accept_connection {
+    my $self   = shift;
     my $handle = shift;
-    my $line = shift;
-    return unless($line);
-    Module::Refresh->refresh;
-    my ($id, $cmd,$options) = $self->parse_command($line);
-        my $cmd_class = "Net::Server::IMAP::Command::$cmd";
-    $cmd_class->require() || warn $@;
-    unless ( $cmd_class->can('run')) {
-        $cmd_class = "Net::Server::IMAP::Command";
-    }
-        my $handler = $cmd_class->new( {io_handle => $handle, options => $options, command_id => $id, command=> $cmd});
-
-    $handler->run();
+    $self->select->add($handle);
+    my $conn = Net::Server::IMAP::Connection->new(
+        io_handle => $handle,
+        server    => $self
+    );
+    $self->connections->{ $handle->fileno } = $conn;
+    return $conn;
 }
 
-sub parse_command {
-    my $self = shift;
-    my $line = shift;
-    $line =~ s/[\r\n]//g; #hack
-    if ($line =~ /^([\w\d]+)\s+(\w+)\s*(.*)/)  {
-        my $id = $1;
-        my $cmd = $2;
-        my $args = $3 ||'';
-        $cmd = ucfirst(lc($cmd));
-        return ($id,$cmd,$args);
-    }
-    warn "Couldn't parse command $line";
-    return undef;
+sub capability {
+    return "IMAP4rev1 STARTTLS AUTH=PLAIN";
 }
 
-
-1; # Magic true value required at end of module
+1;    # Magic true value required at end of module
 __END__
 
 =head1 NAME
@@ -115,8 +101,8 @@ Net::Server::IMAP - [One line description of module's purpose here]
     Brief code example(s) here showing commonest usage(s).
     This section will be as far as many users bother reading
     so make it as educational and exeplary as possible.
-  
-  
+
+
 =head1 DESCRIPTION
 
 =for author to fill in:
@@ -164,7 +150,7 @@ Net::Server::IMAP - [One line description of module's purpose here]
     files, and the meaning of any environment variables or properties
     that can be set. These descriptions must also include details of any
     configuration language used.
-  
+
 Net::Server::IMAP requires no configuration files or environment variables.
 
 

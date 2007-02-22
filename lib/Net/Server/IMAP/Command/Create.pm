@@ -2,14 +2,18 @@ package Net::Server::IMAP::Command::Create;
 use base qw/Net::Server::IMAP::Command/;
 
 sub run {
-  my $self = shift;
-  my $boxname = shift; 
-  if ($boxname =~ /^INBOX$/) {
-    $self->no_failed("You can't create the INBOX");
-  }
+    my $self = shift;
 
-  $self->ok_completed("CREATE Completed");
+    return $self->no_command("Permission denied");
 
+    my ($name) = $self->parsed_options;
+    my $mailbox = $self->connection->model->lookup($name);
+    return $self->no_command("Mailbox already exists") if $mailbox;
+
+    my $root = $self->connection->model->root;
+    $self->connection->model->add_child( $root, name => $name );
+
+    $self->ok_completed();
 }
 
 1;
