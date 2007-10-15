@@ -5,14 +5,26 @@ use strict;
 
 use base qw/Net::Server::IMAP::Command/;
 
-sub run {
+sub validate {
     my $self = shift;
 
     return $self->bad_command("Log in first") if $self->connection->is_unauth;
 
-    my $mailbox = $self->connection->model->lookup( $self->parsed_options );
+    my @options = $self->parsed_options;
+    return $self->bad_command("Not enough options") if @options < 1;
+    return $self->bad_command("Too many options") if @options > 1;
+
+    my $mailbox = $self->connection->model->lookup( @options );
     return $self->no_command("Mailbox does not exist") unless $mailbox;
 
+    return 1;
+}
+
+
+sub run {
+    my $self = shift;
+
+    my $mailbox = $self->connection->model->lookup( $self->parsed_options );
     $mailbox->force_read_only(1) if $self->command eq "Examine";
     $self->connection->selected($mailbox);
 

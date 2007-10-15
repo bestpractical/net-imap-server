@@ -41,7 +41,7 @@ sub run {
         ReuseAddr => 1
     );
     if   ($@) { die "Listen on port " . $self->port . " failed: $@"; }
-    else      { warn "Listening on " . $self->port }
+    else      { warn "Listening on " . $self->port . "\n" }
     $self->socket($lsn);
     $self->select( IO::Select->new($lsn) );
     while ( $self->select ) {

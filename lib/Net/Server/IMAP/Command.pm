@@ -5,7 +5,19 @@ use strict;
 
 use base 'Class::Accessor';
 use Regexp::Common qw/delimited/;
-__PACKAGE__->mk_accessors(qw(server connection command_id options command));
+__PACKAGE__->mk_accessors(qw(server connection command_id options_str command _parsed_options _literals));
+
+sub new {
+    my $class = shift;
+    my $self = $class->SUPER::new(@_);
+    $self->_parsed_options([]);
+    $self->_literals([]);
+    return $self;
+}
+
+sub validate {
+    return 1;
+}
 
 sub run {
     my $self = shift;
@@ -13,12 +25,63 @@ sub run {
     $self->bad_command( "command '" . $self->command . "' not recognized" );
 }
 
+sub has_literal {
+    my $self = shift;
+    unless ($self->options_str =~ /\{(\d+)\}$/) {
+        $self->parse_options;
+        return;
+    }
+
+    my $options = $self->options_str;
+    my $next = $#{$self->_literals} + 1;
+    $options =~ s/\{(\d+)\}$/{{$next}}/;
+    my $length = $1;
+    $self->options_str($options);
+
+    # Pending
+    $self->connection->pending(sub {
+        my $content = shift;
+        {
+            use bytes;
+            $self->_literals->[$next] = substr($content, 0, $length, "");
+        }
+        $self->connection->pending(undef);
+        $self->options_str($self->options_str . $content);
+        return if $self->has_literal;
+        $self->run if $self->validate;
+    });
+    $self->out( "+ Continue\r\n" );
+    return 1;
+}
+
+sub parse_options {
+    my $self = shift;
+    my $str = shift;
+
+    return $self->_parsed_options if not defined $str and not defined $self->options_str;
+
+    my @parsed;
+    for my $term (grep {/\S/} split /($RE{delimited}{-delim=>'"'}|$RE{balanced}{-parens=>'()'}|\S+)/, $str || $self->options_str) {
+        if ($term =~ /^$RE{delimited}{-delim=>'"'}{-keep}$/) {
+            push @parsed, $3;
+        } elsif ($term =~ /^$RE{balanced}{-parens=>'()'}$/) {
+            $term =~ s/^\((.*)\)$/$1/;
+            push @parsed, [$self->parse_options($term)];
+        } elsif ($term =~ /^\{\{(\d+)\}\}$/) {
+            push @parsed, $self->_literals->[$1];
+        } else {
+            push @parsed, $term;
+        }
+    }
+    return @parsed if defined $str;
+
+    $self->options_str(undef);
+    $self->_parsed_options([@{$self->_parsed_options}, @parsed]);
+}
+
 sub parsed_options {
     my $self = shift;
-
-    return
-        map { s/^"(.*)"$/$1/; $_ }
-        grep {/\S/} split /($RE{delimited}{-delim=>'"'}|\S+)/, $self->options;
+    return @{$self->_parsed_options(@_)};
 }
 
 sub data_out {
@@ -31,7 +94,7 @@ sub data_out {
     } elsif ( not ref $data ) {
         if ( not defined $data ) {
             return "NIL";
-        } elsif ( $data =~ /["\r\n]/ ) {
+        } elsif ( $data =~ /[{"\r\n%*\\\[]/ ) {
             return "{" . ( length($data) ) . "}\r\n$data";
         } elsif ( $data =~ /^\d+$/ ) {
             return $data;
@@ -68,6 +131,7 @@ sub ok_command {
     }
     $self->log("OK Request: $message");
     $self->out( $self->command_id . " " . "OK " . $message . "\r\n" );
+    return 1;
 }
 
 sub no_command {
@@ -80,6 +144,7 @@ sub no_command {
     }
     $self->log("NO Request: $message");
     $self->out( $self->command_id . " " . "NO " . $message . "\r\n" );
+    return 0;
 }
 
 sub no_failed {
@@ -90,8 +155,7 @@ sub no_failed {
 
 sub no_unimplemented {
     my $self = shift;
-    $self->no_failed( alert => $self->options
-            . " unimplemented. sorry. We'd love patches!" );
+    $self->no_failed( alert => "Feature unimplemented. sorry. We'd love patches!" );
 }
 
 sub ok_completed {
@@ -106,6 +170,7 @@ sub bad_command {
     my $reason = shift;
     $self->log("BAD Request: $reason");
     $self->out( $self->command_id . " " . "BAD " . $reason . "\r\n" );
+    return 0;
 }
 
 sub log {

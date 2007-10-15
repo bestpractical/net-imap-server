@@ -5,20 +5,31 @@ use strict;
 
 use base qw/Net::Server::IMAP::Command/;
 
-sub run {
+sub validate {
     my $self = shift;
 
     return $self->bad_command("Log in first") if $self->connection->is_unauth;
 
-    return $self->bad_command("Bad arguments to STATUS")
-        unless $self->options =~ /(\w+)\s+\((.*?)\)/;
-    my ( $name, @options ) = ( $1, split ' ', $2 );
+    my @options = $self->parsed_options;
+    return $self->bad_command("Not enough options") if @options == 0;
+    return $self->bad_command("Too many options") if @options > 2;
+
+    my ( $name, $flags ) = @options;
+    return $self->bad_command("Wrong second option") unless ref $flags;
 
     my $mailbox = $self->server->mailbox( $self->connection, $name );
     return $self->no_command("Mailbox does not exist") unless $mailbox;
 
+    return 1;
+}
+
+sub run {
+    my $self = shift;
+
+    my $mailbox = $self->server->mailbox( $self->connection, $name );
+
     my %items;
-    $items{ uc $_ } = undef for @options;
+    $items{ uc $_ } = undef for @{$flags};
 
     for my $i ( keys %items ) {
         if ( $i eq "MESSAGES" ) {

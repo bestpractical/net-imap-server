@@ -5,12 +5,21 @@ use strict;
 
 use base qw/Net::Server::IMAP::Command/;
 
-sub run {
+sub validate {
     my $self = shift;
 
     return $self->bad_command("Log in first") if $self->connection->is_unauth;
     return $self->bad_command("Select a mailbox first")
         unless $self->connection->is_selected;
+
+    my @options = $self->parsed_options;
+    return $self->bad_command("Too many options") if @options;
+
+    return 1;
+}
+
+sub run {
+    my $self = shift;
 
     $self->connection->selected(undef);
 

@@ -25,11 +25,6 @@ sub handle_command {
     my $self    = shift;
     my $content = $self->io_handle->getline();
 
-    if ( $self->pending ) {
-        $self->pending->continue($content);
-        return;
-    }
-
     unless ( defined $content ) {
         $self->log("Connection closed by remote host");
         $self->close;
@@ -37,6 +32,11 @@ sub handle_command {
     }
 
     $self->log("C: $content");
+
+    if ( $self->pending ) {
+        $self->pending->($content);
+        return;
+    }
 
     my ( $id, $cmd, $options ) = $self->parse_command($content);
     return unless defined $id;
@@ -47,15 +47,16 @@ sub handle_command {
         $cmd_class = "Net::Server::IMAP::Command";
     }
     my $handler = $cmd_class->new(
-        {   server     => $self->server,
-            connection => $self,
-            options    => $options,
-            command_id => $id,
-            command    => $cmd
+        {   server      => $self->server,
+            connection  => $self,
+            options_str => $options,
+            command_id  => $id,
+            command     => $cmd
         }
     );
+    return if $handler->has_literal;
 
-    $handler->run();
+    $handler->run() if $handler->validate;
 }
 
 sub close {

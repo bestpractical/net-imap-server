@@ -59,23 +59,19 @@ sub fetch {
     my $self = shift;
     my $spec = shift;
 
-    $spec = "(FLAGS INTERNALDATE RFC822.SIZE ENVELOPE)" if $spec eq "ALL";
-    $spec = "(FLAGS INTERNALDATE RFC822.SIZE)"          if $spec eq "FAST";
-    $spec = "(FLAGS INTERNALDATE RFC822.SIZE ENVELOPE BODY)"
-        if $spec eq "FULL";
+    $spec = [qw/FLAGS INTERNALDATE RFC822.SIZE ENVELOPE/] if uc $spec eq "ALL";
+    $spec = [qw/FLAGS INTERNALDATE RFC822.SIZE/]          if uc $spec eq "FAST";
+    $spec = [qw/FLAGS INTERNALDATE RFC822.SIZE ENVELOPE BODY/]
+        if uc $spec eq "FULL";
 
-    # This is more lenient than the spec says
-    $spec =~ s/^\(//;
-    $spec =~ s/\)$//;
-    my @parts = grep {/\S/}
-        split /([\w\.]+(?:$RE{balanced}{-parens=>'[]()'})?|\s+)/, $spec;
+    my @parts = ref $spec ? @{$spec} : $spec;
 
     # Look if this will change the \Seen flag
     if ( grep { $_ =~ /^BODY\[/i } @parts and not $self->has_flag('\Seen') ) {
 
         # If so, update, and possibly also inform the user.
         $self->set_flag('\Seen');
-        push @parts, "FLAGS" if not grep { $_ eq "FLAGS" } @parts;
+        push @parts, "FLAGS" if not grep { uc $_ eq "FLAGS" } @parts;
     }
 
     my @out;

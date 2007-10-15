@@ -1,15 +1,25 @@
 package Net::Server::IMAP::Command::Uid;
 use base qw/Net::Server::IMAP::Command/;
 
-sub run {
+sub validate {
     my $self = shift;
 
     return $self->bad_command("Select a mailbox first")
         unless $self->connection->is_selected;
 
-    if ( $self->options =~ /^(copy|fetch|store|search)\s+(.*?)$/i ) {
-        my $subcommand = lc $1;
-        $self->$subcommand($2);
+    my @options = $self->parsed_options;
+    return $self->bad_command("Not enough options") if @options < 1;
+
+    return 1;
+}
+
+sub run {
+    my $self = shift;
+
+    my ($subcommand, @rest) = $self->parsed_options;
+    $subcommand = lc $subcommand;
+    if ($subcommand =~ /^(copy|fetch|store|search)$/i ) {
+        $self->$subcommand(@rest);
     } else {
         $self->log(
             $self->options . " wasn't understood by the 'UID' command" );
@@ -39,10 +49,10 @@ sub get_uids {
 
 sub fetch {
     my $self = shift;
-    my $args = shift;
 
-    my ( $messages, $spec ) = split( /\s+/, $args, 2 );
-    $spec =~ s/^(\()?/$1UID / unless $spec =~ /\bUID\b/;
+    my ( $messages, $spec ) = @_;
+    $spec = [$spec] unless ref $spec;
+    push @{$spec}, "UID" unless grep {uc $_ eq "UID"} @{$spec};
     my @messages = $self->get_uids($messages);
     for my $m (@messages) {
         $self->untagged_response( $m->sequence
@@ -55,18 +65,15 @@ sub fetch {
 
 sub store {
     my $self = shift;
-    my $args = shift;
 
-    my ( $messages, $what, $flags ) = split( /\s+/, $args, 3 );
-    $flags =~ s/^\(//;
-    $flags =~ s/\)$//;
-    my @flags = split ' ', $flags;
+    my ( $messages, $what, @flags ) = @_;
+    @flags = map {ref $_ ? @{$_} : $_} @flags;
     my @messages = $self->get_uids($messages);
     for my $m (@messages) {
         $m->store( $what => @flags );
         $self->untagged_response( $m->sequence
                 . " FETCH "
-                . $self->data_out( [ $m->fetch("UID FLAGS") ] ) )
+                . $self->data_out( [ $m->fetch([qw/UID FLAGS/]) ] ) )
             unless $what =~ /\.SILENT$/i;
     }
 
