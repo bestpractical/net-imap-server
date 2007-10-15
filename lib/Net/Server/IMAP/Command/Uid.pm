@@ -66,6 +66,8 @@ sub fetch {
 sub store {
     my $self = shift;
 
+    return $self->bad_command("Mailbox is read-only") if $self->connection->selected->read_only;
+
     my ( $messages, $what, @flags ) = @_;
     @flags = map {ref $_ ? @{$_} : $_} @flags;
     my @messages = $self->get_uids($messages);
