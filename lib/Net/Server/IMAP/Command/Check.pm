@@ -15,6 +15,8 @@ sub validate {
 }
 
 sub run {
+    my $self = shift;
+
     $self->ok_completed();
 }
 
