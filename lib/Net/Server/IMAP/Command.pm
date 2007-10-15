@@ -61,7 +61,7 @@ sub parse_options {
     return $self->_parsed_options if not defined $str and not defined $self->options_str;
 
     my @parsed;
-    for my $term (grep {/\S/} split /($RE{delimited}{-delim=>'"'}|$RE{balanced}{-parens=>'()'}|\S+)/, $str || $self->options_str) {
+    for my $term (grep {/\S/} split /($RE{delimited}{-delim=>'"'}|$RE{balanced}{-parens=>'()'}|\S+$RE{balanced}{-parens=>'()[]<>'}|\S+)/, $str || $self->options_str) {
         if ($term =~ /^$RE{delimited}{-delim=>'"'}{-keep}$/) {
             push @parsed, $3;
         } elsif ($term =~ /^$RE{balanced}{-parens=>'()'}$/) {
@@ -91,6 +91,16 @@ sub data_out {
         return "(" . join( " ", map { $self->data_out($_) } @{$data} ) . ")";
     } elsif ( ref $data eq "SCALAR" ) {
         return $$data;
+    } elsif ( ref $data eq "HASH") {
+        if ($data->{type} eq "string") {
+            if ( $data =~ /[{"\r\n%*\\\[]/ ) {
+                return "{" . ( length($data->{value}) ) . "}\r\n$data";
+            } else {
+                return '"' . $data->{value} .'"';
+            }
+        } elsif ($data->{type} eq "literal") {
+            return "{" . ( length($data->{value}) ) . "}\r\n$data";
+        }
     } elsif ( not ref $data ) {
         if ( not defined $data ) {
             return "NIL";

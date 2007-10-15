@@ -103,6 +103,7 @@ sub fetch {
             push @out, [ map { \$_ } $self->flags ];
         } elsif ( uc $part eq "RFC822.SIZE" ) {
             my $result = $self->mime_select( [], undef, undef );
+            use bytes;
             push @out, length $result;
         } elsif ( uc $part eq "BODY" ) {
             push @out, $self->mime_bodystructure( $self->mime, 0 );
@@ -135,7 +136,7 @@ sub mime_select {
             for my $h ( @{$extras} ) {
                 $header->header_set( $case{$h} || $h => $mime->header($h) );
             }
-            $result = $header->as_string . "\n";
+            $result = $header->as_string ? $header->as_string . "\n" : "";
         } elsif ( uc $_ eq "TEXT" ) {
             $result = $mime->body;
         } elsif ( $_ =~ /^\d+$/i ) {
@@ -183,7 +184,7 @@ sub mime_bodystructure {
         } @parts;
 
         return [
-            \$parts,
+            $parts ? \$parts : undef,
             $data->{composite},
             (   $long
                 ? ( (   %{ $data->{attributes} }
@@ -220,7 +221,7 @@ sub mime_bodystructure {
             scalar $mime->header("Content-ID"),
             scalar $mime->header("Content-Description"),
             ( scalar $mime->header("Content-Transfer-Encoding") or "7BIT" ),
-            length $body,
+            do {use bytes; length $body},
             (   defined $lines
                 ? ( $lines, )
                 : ()
@@ -248,7 +249,11 @@ sub address_envelope {
     my $mime   = $self->mime;
 
     return undef unless $mime->header($header);
-    return [ map { [ $_->name, undef, $_->user, $_->host ] }
+    return [ map { [ {type => "string", value => $_->name},
+                     undef,
+                     {type => "string", value => $_->user},
+                     {type => "string", value => $_->host}
+                   ] }
             Email::Address->parse( $mime->header($header) ) ];
 }
 

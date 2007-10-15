@@ -29,31 +29,13 @@ sub run {
 
 }
 
-sub get_uids {
-    my $self = shift;
-    my $str  = shift;
-
-    my @ids;
-    for ( split ',', $str ) {
-        if (/^(\d+):(\d+)$/) {
-            push @ids, $1 .. $2;
-        } elsif (/^(\d+):\*$/) {
-            push @ids, $1 .. $self->connection->selected->uidnext;
-        } elsif (/^(\d+)$/) {
-            push @ids, $1;
-        }
-    }
-    return
-        grep {defined} map { $self->connection->selected->uids->{$_} } @ids;
-}
-
 sub fetch {
     my $self = shift;
 
     my ( $messages, $spec ) = @_;
     $spec = [$spec] unless ref $spec;
     push @{$spec}, "UID" unless grep {uc $_ eq "UID"} @{$spec};
-    my @messages = $self->get_uids($messages);
+    my @messages = $self->connection->selected->get_uids($messages);
     for my $m (@messages) {
         $self->untagged_response( $m->sequence
                 . " FETCH "
@@ -70,7 +52,7 @@ sub store {
 
     my ( $messages, $what, @flags ) = @_;
     @flags = map {ref $_ ? @{$_} : $_} @flags;
-    my @messages = $self->get_uids($messages);
+    my @messages = $self->connection->selected->get_uids($messages);
     for my $m (@messages) {
         $m->store( $what => @flags );
         $self->untagged_response( $m->sequence

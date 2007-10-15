@@ -64,6 +64,24 @@ sub get_messages {
     return grep {defined} map { $self->messages->[ $_ - 1 ] } @ids;
 }
 
+sub get_uids {
+    my $self = shift;
+    my $str  = shift;
+
+    my @ids;
+    for ( split ',', $str ) {
+        if (/^(\d+):(\d+)$/) {
+            push @ids, $1 .. $2;
+        } elsif (/^(\d+):\*$/) {
+            push @ids, $1 .. $self->uidnext;
+        } elsif (/^(\d+)$/) {
+            push @ids, $1;
+        }
+    }
+    return
+        grep {defined} map { $self->uids->{$_} } @ids;
+}
+
 sub add_child {
     my $self = shift;
     my $node = ( ref $self )
@@ -133,6 +151,7 @@ sub expunge {
     for my $m (@messages) {
         if ( $m->has_flag('\Deleted') ) {
             push @ids, $m->sequence - $offset;
+            delete $self->uids->{$m->uid};
             $offset++;
             $m->expunge;
         } elsif ($offset) {
