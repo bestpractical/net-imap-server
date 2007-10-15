@@ -3,7 +3,6 @@ package Net::Server::IMAP::Mailbox;
 use warnings;
 use strict;
 
-use Email::IMAPFolder;
 use Net::Server::IMAP::Message;
 use base 'Class::Accessor';
 
@@ -141,6 +140,17 @@ sub expunge {
         }
     }
     return @ids;
+}
+
+package Email::IMAPFolder;
+use base 'Email::Folder';
+use YAML;
+
+sub bless_message {
+    my $self = shift;
+    my $message = shift || "";
+
+    return Net::Server::IMAP::Message->new($message);
 }
 
 1;
