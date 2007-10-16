@@ -15,7 +15,7 @@ sub validate {
     return $self->bad_command("Not enough options") if @options < 1;
     return $self->bad_command("Too many options") if @options > 1;
 
-    my $name = shift @options;
+    my($name) = @options;
     my $mailbox = $self->connection->model->lookup($name);
     return $self->no_command("Mailbox already exists") if $mailbox;
 
@@ -24,6 +24,8 @@ sub validate {
 
 sub run {
     my $self = shift;
+
+    my($name) = @options;
 
     my $root = $self->connection->model->root;
     $self->connection->model->add_child( $root, name => $name );
