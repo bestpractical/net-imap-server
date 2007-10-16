@@ -31,7 +31,6 @@ sub set_flag {
     my $flag = shift;
     my $old  = exists $self->_flags->{$flag};
     $self->_flags->{$flag} = 1;
-    warn "Set flag $flag" unless $old;
     return not $old;
 }
 
@@ -40,7 +39,6 @@ sub clear_flag {
     my $flag = shift;
     my $old  = exists $self->_flags->{$flag};
     delete $self->_flags->{$flag};
-    warn "Cleared flag $flag" if $old;
     return $old;
 }
 
@@ -209,8 +207,6 @@ sub mime_bodystructure {
         if ( lc $data->{discrete} eq "text" ) {
             $lines++ while $body =~ /\n/g;
         }
-        use YAML;
-        warn YAML::Dump( $mime->header_obj );
         return [
             $data->{discrete},
             $data->{composite},
