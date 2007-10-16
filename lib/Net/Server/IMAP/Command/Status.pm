@@ -11,13 +11,13 @@ sub validate {
     return $self->bad_command("Log in first") if $self->connection->is_unauth;
 
     my @options = $self->parsed_options;
-    return $self->bad_command("Not enough options") if @options == 0;
+    return $self->bad_command("Not enough options") if @options < 2;
     return $self->bad_command("Too many options") if @options > 2;
 
     my ( $name, $flags ) = @options;
     return $self->bad_command("Wrong second option") unless ref $flags;
 
-    my $mailbox = $self->server->mailbox( $self->connection, $name );
+    my $mailbox = $self->connection->model->lookup( $name );
     return $self->no_command("Mailbox does not exist") unless $mailbox;
 
     return 1;
@@ -26,7 +26,7 @@ sub validate {
 sub run {
     my $self = shift;
 
-    my $mailbox = $self->server->mailbox( $self->connection, $name );
+    my $mailbox = $self->connection->model->lookup( $self->connection, $name );
 
     my %items;
     $items{ uc $_ } = undef for @{$flags};
