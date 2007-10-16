@@ -101,6 +101,11 @@ sub is_selected {
     return defined $self->selected;
 }
 
+sub is_encrypted {
+    my $self = shift;
+    return $self->io_handle->isa("IO::Socket::SSL");
+}
+
 sub auth {
     my $self = shift;
     if (@_) {

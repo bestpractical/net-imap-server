@@ -18,12 +18,13 @@ use Net::Server::IMAP::Connection;
 our $VERSION = '0.001';
 
 __PACKAGE__->mk_accessors(
-    qw/socket select connections port auth_class model_class/);
+    qw/socket ssl_socket select connections port auth_class model_class ssl_port/);
 
 sub new {
     my $class = shift;
     return $class->SUPER::new(
         {   port        => 8080,
+            ssl_port    => 0,
             auth_class  => "Net::Server::IMAP::DefaultAuth",
             model_class => "Net::Server::IMAP::DefaultModel",
             @_,
@@ -44,11 +45,25 @@ sub run {
     else      { warn "Listening on " . $self->port . "\n" }
     $self->socket($lsn);
     $self->select( IO::Select->new($lsn) );
+
+    my $ssl;
+    if ($self->ssl_port) {
+        $ssl = IO::Socket::SSL->new(
+            Listen    => 1,
+            LocalPort => $self->ssl_port,
+            ReuseAddr => 1
+        );
+        if   ($@) { die "SSL Listen on port " . $self->ssl_port . " failed: $@"; }
+        else      { warn "SSL Listening on " . $self->ssl_port . "\n" }
+        $self->ssl_socket($ssl);
+        $self->select->add($ssl);
+    }
+
     while ( $self->select ) {
         while ( my @ready = $self->select->can_read ) {
             Module::Refresh->refresh;
             foreach my $fh (@ready) {
-                if ( $fh == $lsn ) {
+                if ( $fh == $lsn or (defined $ssl and $fh == $ssl)) {
 
                     # Create a new socket
                     my $new = $fh->accept;
