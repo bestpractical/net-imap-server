@@ -139,7 +139,6 @@ sub ok_command {
         $self->untagged_response(
             "OK [" . uc($_) . "] " . $extra_responses{$_} );
     }
-    $self->log("OK Request: $message");
     $self->out( $self->command_id . " " . "OK " . $message . "\r\n" );
     return 1;
 }
@@ -152,7 +151,6 @@ sub no_command {
         $self->untagged_response(
             "NO [" . uc($_) . "] " . $extra_responses{$_} );
     }
-    $self->log("NO Request: $message");
     $self->out( $self->command_id . " " . "NO " . $message . "\r\n" );
     return 0;
 }
@@ -178,7 +176,6 @@ sub ok_completed {
 sub bad_command {
     my $self   = shift;
     my $reason = shift;
-    $self->log("BAD Request: $reason");
     $self->out( $self->command_id . " " . "BAD " . $reason . "\r\n" );
     return 0;
 }
