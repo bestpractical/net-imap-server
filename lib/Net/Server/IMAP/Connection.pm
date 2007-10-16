@@ -127,8 +127,14 @@ sub log {
 sub out {
     my $self = shift;
     my $msg  = shift;
-    $self->io_handle->print($msg);
-    $self->log("S: $msg");
+
+    if ($self->io_handle) {
+        $self->io_handle->print($msg);
+        $self->log("S: $msg");
+    } else {
+        warn "Connection closed unexpectedly\n";
+    }
+
 }
 
 1;
