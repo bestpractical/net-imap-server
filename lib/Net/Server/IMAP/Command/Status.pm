@@ -26,6 +26,7 @@ sub validate {
 sub run {
     my $self = shift;
 
+    my ( $name, $flags ) = @options;
     my $mailbox = $self->connection->model->lookup( $self->connection, $name );
 
     my %items;
