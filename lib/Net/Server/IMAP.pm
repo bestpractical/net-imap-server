@@ -66,8 +66,11 @@ sub run {
                 if ( $fh == $lsn or (defined $ssl and $fh == $ssl)) {
 
                     # Create a new socket
-                    my $new = $fh->accept;
-                    $self->accept_connection($new);
+                    if (my $new = $fh->accept) {
+                        $self->accept_connection($new);
+                    } else {
+                        warn "Accept failed? $@\n";
+                    }
                 } else {
 
                     # Process socket
