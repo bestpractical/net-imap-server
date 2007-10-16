@@ -161,6 +161,9 @@ sub expunge {
     return @ids;
 }
 
+sub poll {
+}
+
 package Email::IMAPFolder;
 use base 'Email::Folder';
 use YAML;
