@@ -104,7 +104,6 @@ sub is_selected {
 sub auth {
     my $self = shift;
     if (@_) {
-        warn "@{[caller]}\n";
         $self->{auth} = shift;
         $self->server->model_class->require || warn $@;
         $self->model(
