@@ -37,7 +37,7 @@ sub fetch {
     push @{$spec}, "UID" unless grep {uc $_ eq "UID"} @{$spec};
     my @messages = $self->connection->selected->get_uids($messages);
     for my $m (@messages) {
-        $self->untagged_response( $m->sequence
+        $self->untagged_response( $self->connection->sequence($m)
                 . " FETCH "
                 . $self->data_out( [ $m->fetch($spec) ] ) );
     }
@@ -53,13 +53,13 @@ sub store {
     my ( $messages, $what, @flags ) = @_;
     @flags = map {ref $_ ? @{$_} : $_} @flags;
     my @messages = $self->connection->selected->get_uids($messages);
+    $self->connection->ignore_flags(1) if $what =~ /\.SILENT$/i;
     for my $m (@messages) {
         $m->store( $what => @flags );
-        $self->untagged_response( $m->sequence
-                . " FETCH "
-                . $self->data_out( [ $m->fetch([qw/UID FLAGS/]) ] ) )
-            unless $what =~ /\.SILENT$/i;
+        $self->connection->untagged_fetch->{$self->connection->sequence($m)}{UID}++
+          unless $what =~ /\.SILENT$/i;
     }
+    $self->connection->ignore_flags(0) if $what =~ /\.SILENT$/i;
 
     $self->ok_completed;
 }

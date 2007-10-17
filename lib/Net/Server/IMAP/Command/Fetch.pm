@@ -23,14 +23,20 @@ sub run {
     my $self = shift;
 
     my ( $messages, $spec ) = $self->parsed_options;
-    my @messages = $self->connection->selected->get_messages($messages);
-    for (@messages) {
-        $self->untagged_response( $_->sequence
+    my @messages = $self->connection->get_messages($messages);
+    for my $m (@messages) {
+        $self->untagged_response( $self->connection->sequence($m)
                 . " FETCH "
-                . $self->data_out( [ $_->fetch($spec) ] ) );
+                . $self->data_out( [ $m->fetch($spec) ] ) );
     }
 
     $self->ok_completed();
+}
+
+sub send_untagged {
+    my $self = shift;
+
+    $self->SUPER::send_untagged( expunged => 0 );
 }
 
 1;

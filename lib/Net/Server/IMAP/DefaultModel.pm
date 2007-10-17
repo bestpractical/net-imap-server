@@ -30,15 +30,11 @@ sub init {
     return $self;
 }
 
-sub seperator {
-    return "/";
-}
-
 sub lookup {
     my $self  = shift;
     my $name  = shift;
     $name = "INBOX" if uc $name eq "INBOX";
-    my @parts = split $self->seperator, $name;
+    my @parts = split $self->root->seperator, $name;
     return undef unless @parts and shift @parts eq $self->root->name;
     my $part = $self->root;
     while (@parts) {

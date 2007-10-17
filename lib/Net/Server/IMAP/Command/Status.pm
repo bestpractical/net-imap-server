@@ -28,6 +28,7 @@ sub run {
 
     my ( $name, $flags ) = @options;
     my $mailbox = $self->connection->model->lookup( $self->connection, $name );
+    $mailbox->poll;
 
     my %items;
     $items{ uc $_ } = undef for @{$flags};

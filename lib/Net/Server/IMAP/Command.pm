@@ -5,7 +5,7 @@ use strict;
 
 use base 'Class::Accessor';
 use Regexp::Common qw/delimited/;
-__PACKAGE__->mk_accessors(qw(server connection command_id options_str command _parsed_options _literals));
+__PACKAGE__->mk_accessors(qw(server connection command_id options_str command _parsed_options _literals _pending_literal));
 
 sub new {
     my $class = shift;
@@ -35,20 +35,23 @@ sub has_literal {
     my $options = $self->options_str;
     my $next = $#{$self->_literals} + 1;
     $options =~ s/\{(\d+)\}$/{{$next}}/;
-    my $length = $1;
+    $self->_pending_literal($1);
     $self->options_str($options);
 
     # Pending
     $self->connection->pending(sub {
+        use bytes;
         my $content = shift;
-        {
-            use bytes;
-            $self->_literals->[$next] = substr($content, 0, $length, "");
+        if (length $content < $self->_pending_literal) {
+            $self->_literals->[$next] .= $content;
+            $self->_pending_literal( $self->_pending_literal - length $content);
+        } else {
+            $self->_literals->[$next] = substr($content, 0, $self->_pending_literal, "");
+            $self->connection->pending(undef);
+            $self->options_str($self->options_str . $content);
+            return if $self->has_literal;
+            $self->run if $self->validate;
         }
-        $self->connection->pending(undef);
-        $self->options_str($self->options_str . $content);
-        return if $self->has_literal;
-        $self->run if $self->validate;
     });
     $self->out( "+ Continue\r\n" );
     return 1;
@@ -117,10 +120,7 @@ sub data_out {
 
 sub untagged_response {
     my $self = shift;
-    while ( my $message = shift ) {
-        next unless $message;
-        $self->out( "* " . $message . "\r\n" );
-    }
+    $self->connection->untagged_response(@_);
 }
 
 sub tagged_response {
@@ -131,6 +131,12 @@ sub tagged_response {
     }
 }
 
+sub send_untagged {
+    my $self = shift;
+
+    $self->connection->send_untagged( @_ );
+}
+
 sub ok_command {
     my $self            = shift;
     my $message         = shift;
@@ -139,6 +145,7 @@ sub ok_command {
         $self->untagged_response(
             "OK [" . uc($_) . "] " . $extra_responses{$_} );
     }
+    $self->send_untagged;
     $self->out( $self->command_id . " " . "OK " . $message . "\r\n" );
     return 1;
 }
@@ -151,6 +158,7 @@ sub no_command {
         $self->untagged_response(
             "NO [" . uc($_) . "] " . $extra_responses{$_} );
     }
+    $self->send_untagged;
     $self->out( $self->command_id . " " . "NO " . $message . "\r\n" );
     return 0;
 }
@@ -176,6 +184,7 @@ sub ok_completed {
 sub bad_command {
     my $self   = shift;
     my $reason = shift;
+    $self->send_untagged;
     $self->out( $self->command_id . " " . "BAD " . $reason . "\r\n" );
     return 0;
 }

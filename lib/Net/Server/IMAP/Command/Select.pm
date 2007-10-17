@@ -26,6 +26,7 @@ sub run {
 
     my $mailbox = $self->connection->model->lookup( $self->parsed_options );
     $mailbox->force_read_only(1) if $self->command eq "Examine";
+    $mailbox->poll;
     $self->connection->selected($mailbox);
 
     $self->untagged_response(

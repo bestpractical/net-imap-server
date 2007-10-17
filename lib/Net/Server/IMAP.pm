@@ -72,6 +72,8 @@ sub run {
                 } else {
 
                     # Process socket
+                    local $Net::Server::IMAP::Server = $self;
+                    local $self->{connection} = $self->connections->{ $fh->fileno };
                     $self->connections->{ $fh->fileno }->handle_command;
                 }
             }
@@ -85,13 +87,28 @@ DESTROY {
     $self->socket->close if $self->socket;
 }
 
+sub connection {
+    my $self = shift;
+    return $self->{connection};
+}
+
+sub concurrent_connections {
+    my $class = shift;
+    my $self = ref $class ? $class : $Net::Server::IMAP::Server;
+    my $selected = shift || $self->connection->selected;
+
+    return () unless $selected;
+    return grep {$_->is_auth and $_->is_selected
+                 and $_->selected eq $selected} values %{$self->connections};
+}
+
 sub accept_connection {
     my $self   = shift;
     my $handle = shift;
     $self->select->add($handle);
     my $conn = Net::Server::IMAP::Connection->new(
         io_handle => $handle,
-        server    => $self
+        server    => $self,
     );
     $self->connections->{ $handle->fileno } = $conn;
     return $conn;

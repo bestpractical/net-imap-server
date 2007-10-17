@@ -23,8 +23,7 @@ sub validate {
 sub run {
     my $self = shift;
 
-    my @ids = $self->connection->selected->expunge;
-    $self->untagged_response( map {"$_ EXPUNGE"} @ids );
+    $self->connection->selected->expunge;
 
     $self->ok_completed();
 }

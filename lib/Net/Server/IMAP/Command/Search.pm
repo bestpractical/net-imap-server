@@ -21,7 +21,7 @@ sub run {
     my $filter = $self->filter($self->parsed_options);
     return unless $filter;
 
-    my @results = map {$_->sequence} grep {$filter->($_)} @{$self->connection->selected->messages};
+    my @results = map {$self->connection->sequence($_)} grep {$filter->($_)} $self->connection->get_messages('1:*');
     $self->untagged_response("SEARCH @results");
     $self->ok_completed;
 }
@@ -133,7 +133,7 @@ sub filter {
             push @{$filters}, sub {not $_[0]->has_flag('\Seen')};
         } elsif ($token =~ /^\d+(:\d+|:\*)?(,\d+(:\d+|:\*))*$/) {
             my %uids;
-            $uids{$_->uid}++ for $self->connection->selected->get_messages($token);
+            $uids{$_->uid}++ for $self->connection->get_messages($token);
             push @{$filters}, sub {$uids{$_[0]->uid}};
         } elsif (ref $token) {
             unshift @stack, [AND => -1 => $filters, \@tokens];
@@ -160,6 +160,12 @@ sub filter {
     return $self->bad_command("Unclosed NOT/OR") if @stack;
     
     return shift @{$filters};
+}
+
+sub send_untagged {
+    my $self = shift;
+
+    $self->SUPER::send_untagged( expunged => 0 );
 }
 
 1;

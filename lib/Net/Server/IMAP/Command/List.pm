@@ -25,10 +25,10 @@ sub run {
     # In the special case of a query for the delimiter, give them our delimiter
     if ( $search eq "" ) {
         $self->tagged_response( q{(\Noselect) "}
-                . $self->connection->model->seperator
+                . $self->connection->model->root->seperator
                 . q{" ""} );
     } else {
-        my $sep = $self->connection->model->seperator;
+        my $sep = $self->connection->model->root->seperator;
         $search = quotemeta($search);
         $search =~ s/\\\*/.*/g;
         $search =~ s/\\%/[^$sep]/g;

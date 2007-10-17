@@ -17,8 +17,6 @@ sub validate {
 sub run {
     my $self = shift;
 
-    $self->connection->selected->poll if $self->connection->is_auth and $self->connection->is_selected;
-
     $self->ok_completed();
 }
 

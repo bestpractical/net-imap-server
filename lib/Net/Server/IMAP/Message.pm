@@ -12,7 +12,7 @@ use DateTime;
 
 use base 'Class::Accessor';
 
-__PACKAGE__->mk_accessors(qw(sequence uid _flags mime internaldate));
+__PACKAGE__->mk_accessors(qw(sequence mailbox uid _flags mime internaldate));
 
 sub new {
     my $class = shift;
@@ -31,6 +31,13 @@ sub set_flag {
     my $flag = shift;
     my $old  = exists $self->_flags->{$flag};
     $self->_flags->{$flag} = 1;
+
+    unless ($old or @_) {
+        for my $c (Net::Server::IMAP->concurrent_connections($self->mailbox)) {
+            $c->untagged_fetch->{$c->sequence($self)}{FLAGS}++ unless $c->ignore_flags;
+        }
+    }
+    
     return not $old;
 }
 
@@ -39,6 +46,13 @@ sub clear_flag {
     my $flag = shift;
     my $old  = exists $self->_flags->{$flag};
     delete $self->_flags->{$flag};
+
+    if ($old or @_) {
+        for my $c (Net::Server::IMAP->concurrent_connections($self->mailbox)) {
+            $c->untagged_fetch->{$c->sequence($self)}{FLAGS}++ unless $c->ignore_flags;
+        }
+    }
+
     return $old;
 }
 
@@ -74,7 +88,7 @@ sub fetch {
 
     my @out;
     for my $part (@parts) {
-        push @out, \$part;
+        push @out, \(uc $part);
 
         # Now that we've split out the right tag, do some aliasing
         if ( uc $part eq "RFC822" ) {
@@ -174,11 +188,10 @@ sub mime_bodystructure {
         # hate thee.  Make the mime structures, hack them into the
         # IMAP format, concat them, and insert their reference so they
         # get spat out as-is.
-        my $fake_command = Net::Server::IMAP::Command->new;
         my @parts        = $mime->parts;
         @parts = () if @parts == 1 and $parts[0] == $mime;
         my $parts = join '', map {
-            $fake_command->data_out( $self->mime_bodystructure( $_, $long ) )
+            Net::Server::IMAP::Command->data_out( $self->mime_bodystructure( $_, $long ) )
         } @parts;
 
         return [

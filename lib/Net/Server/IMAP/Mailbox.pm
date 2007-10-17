@@ -7,7 +7,7 @@ use Net::Server::IMAP::Message;
 use base 'Class::Accessor';
 
 __PACKAGE__->mk_accessors(
-    qw(name model force_read_only parent children _path uidnext uids messages)
+    qw(name force_read_only parent children _path uidnext uids messages)
 );
 
 sub new {
@@ -37,6 +37,16 @@ sub init {
     }
 }
 
+sub seperator {
+    return "/";
+}
+
+sub selected {
+    my $self = shift;
+    return $Net::Server::IMAP::Server->connection->selected
+      and $Net::Server::IMAP::Server->connection->selected eq $self;
+}
+
 sub add_message {
     my $self    = shift;
     my $message = shift;
@@ -44,24 +54,17 @@ sub add_message {
     $self->uidnext( $self->uidnext + 1 );
     $message->sequence( @{ $self->messages } + 1 );
     push @{ $self->messages }, $message;
+    $message->mailbox($self);
     $self->uids->{ $message->uid } = $message;
-}
 
-sub get_messages {
-    my $self = shift;
-    my $str  = shift;
+    # Also need to add it to anyone that has this folder as a
+    # temporary message store
+    for my $c (Net::Server::IMAP->concurrent_connections($self)) {
+        next unless $c->temporary_messages;
 
-    my @ids;
-    for ( split ',', $str ) {
-        if (/^(\d+):(\d+)$/) {
-            push @ids, $1 .. $2;
-        } elsif (/^(\d+):\*$/) {
-            push @ids, $1 .. @{ $self->messages } + 0;
-        } elsif (/^(\d+)$/) {
-            push @ids, $1;
-        }
+        push @{$c->temporary_messages}, $message;
+        $c->temporary_sequence_map->{$message} = scalar @{$c->temporary_messages};
     }
-    return grep {defined} map { $self->messages->[ $_ - 1 ] } @ids;
 }
 
 sub get_uids {
@@ -85,7 +88,7 @@ sub get_uids {
 sub add_child {
     my $self = shift;
     my $node = ( ref $self )
-        ->new( { @_, parent => $self, model => $self->model } );
+        ->new( { @_, parent => $self } );
     $self->children( [] ) unless $self->children;
     push @{ $self->children }, $node;
     return $node;
@@ -97,7 +100,7 @@ sub full_path {
 
     return $self->name unless $self->parent;
     $self->_path(
-        $self->parent->full_path . $self->model->seperator . $self->name );
+        $self->parent->full_path . $self->seperator . $self->name );
     return $self->_path;
 }
 
@@ -108,6 +111,8 @@ sub flags {
 
 sub exists {
     my $self = shift;
+    $Net::Server::IMAP::Server->connection->previous_exists( scalar @{ $self->messages } )
+      if $self->selected;
     return scalar @{ $self->messages };
 }
 
@@ -148,6 +153,17 @@ sub expunge {
     my $offset   = 0;
     my @messages = @{ $self->messages };
     $self->messages( [ grep { not $_->has_flag('\Deleted') } @messages ] );
+    for my $c (Net::Server::IMAP->concurrent_connections($self)) {
+        # Ensure that all other connections with this selected get a
+        # temporary message list, if they don't already have one
+        unless (($Net::Server::IMAP::Server->connection and $c eq $Net::Server::IMAP::Server->connection)
+             or $c->temporary_messages) {
+            $c->temporary_messages([@messages]);
+            $c->temporary_sequence_map({});
+            $c->temporary_sequence_map->{$_} = $_->sequence for @messages;
+        }
+    }
+
     for my $m (@messages) {
         if ( $m->has_flag('\Deleted') ) {
             push @ids, $m->sequence - $offset;
@@ -158,11 +174,22 @@ sub expunge {
             $m->sequence( $m->sequence - $offset );
         }
     }
-    return @ids;
+
+    for my $c (Net::Server::IMAP->concurrent_connections($self)) {
+        # Also, each connection gets these added to their expunge list
+        push @{$c->untagged_expunge}, @ids;
+    }
 }
 
-sub poll {
+sub append {
+    my $self = shift;
+    my $m = Net::Server::IMAP::Message->new(@_);
+    $m->set_flag('\Recent', 1);
+    $self->add_message($m);
+    return 1;
 }
+
+sub poll {}
 
 package Email::IMAPFolder;
 use base 'Email::Folder';
