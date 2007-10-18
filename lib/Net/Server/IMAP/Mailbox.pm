@@ -71,18 +71,18 @@ sub get_uids {
     my $self = shift;
     my $str  = shift;
 
-    my @ids;
+    my %ids;
     for ( split ',', $str ) {
         if (/^(\d+):(\d+)$/) {
-            push @ids, $1 .. $2;
-        } elsif (/^(\d+):\*$/) {
-            push @ids, $1 .. $self->uidnext;
+            $ids{$_}++ for $2 > $1 ? $1 .. $2 : $2 .. $1;
+        } elsif (/^(\d+):\*$/ or /^\*:(\d+)$/) {
+            $ids{$_}++ for $self->uidnext - 1, $1 .. $self->uidnext - 1;
         } elsif (/^(\d+)$/) {
-            push @ids, $1;
+            $ids{$1}++;
         }
     }
     return
-        grep {defined} map { $self->uids->{$_} } @ids;
+        grep {defined} map { $self->uids->{$_} } sort {$a <=> $b} keys %ids;
 }
 
 sub add_child {
@@ -118,7 +118,7 @@ sub exists {
 
 sub recent {
     my $self = shift;
-    return 0;
+    return scalar grep {$_->has_flag('\Recent')} @{$self->messages};
 }
 
 sub unseen {

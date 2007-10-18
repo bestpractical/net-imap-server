@@ -15,7 +15,8 @@ sub validate {
     return $self->bad_command("Too many options") if @options > 4;
 
     my $mailbox = $self->connection->model->lookup( $options[0] );
-    return $self->no_command("Mailbox does not exist") unless $mailbox;
+    return $self->no_command("[TRYCREATE] Mailbox does not exist") unless $mailbox;
+    return $self->bad_command("Mailbox is read-only") if $mailbox->read_only;
 
     return 1;
 }

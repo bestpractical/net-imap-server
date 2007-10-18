@@ -26,6 +26,27 @@ sub new {
 sub expunge {
 }
 
+sub copy_allowed {
+    return 1;
+}
+
+sub copy {
+    my $self = shift;
+    my $mailbox = shift;
+
+    my $clone = bless {}, ref $self;
+    $clone->mime( $self->mime ); # This leads to sharing the same MIME
+                                 # object, but since they're
+                                 # immutable, I don't think we care
+    $clone->internaldate( $self->internaldate );  # Ditto for the date
+    $clone->_flags( {} );
+    $clone->set_flag( $_, 1 ) for ('\Recent', $self->flags);
+
+    $mailbox->add_message($clone);
+
+    return $clone;
+}
+
 sub set_flag {
     my $self = shift;
     my $flag = shift;
@@ -292,7 +313,8 @@ sub mime_envelope {
 
 sub store {
     my $self = shift;
-    my ( $what, @flags ) = @_;
+    my ( $what, $flags ) = @_;
+    my @flags = @{$flags};
     if ( $what =~ /^-/ ) {
         $self->clear_flag($_) for grep { $self->has_flag($_) } @flags;
     } elsif ( $what =~ /^\+/ ) {

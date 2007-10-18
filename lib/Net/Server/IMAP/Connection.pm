@@ -7,7 +7,7 @@ use base 'Class::Accessor';
 
 use Net::Server::IMAP::Command;
 
-__PACKAGE__->mk_accessors(qw(server io_handle selected model pending temporary_messages temporary_sequence_map previous_exists untagged_expunge untagged_fetch ignore_flags));
+__PACKAGE__->mk_accessors(qw(server io_handle _selected model pending temporary_messages temporary_sequence_map previous_exists untagged_expunge untagged_fetch ignore_flags));
 
 sub new {
     my $class = shift;
@@ -31,7 +31,7 @@ sub handle_command {
         return;
     }
 
-    $self->log("C: $content");
+    $self->log("C(@{[$self->io_handle->peerport]}): $content");
 
     if ( $self->pending ) {
         $self->pending->($content);
@@ -61,7 +61,7 @@ sub handle_command {
 
 sub close {
     my $self = shift;
-    $self->server->connections->{ $self->io_handle } = undef;
+    delete $self->server->connections->{ $self->io_handle->fileno };
     $self->server->select->remove( $self->io_handle );
     $self->io_handle->close;
 }
@@ -117,6 +117,12 @@ sub auth {
     return $self->{auth};
 }
 
+sub selected {
+    my $self = shift;
+    $self->send_untagged if @_ and $self->selected;
+    return $self->_selected(@_);
+}
+
 sub untagged_response {
     my $self = shift;
     while ( my $message = shift ) {
@@ -157,7 +163,6 @@ sub send_untagged {
     my $now = @{$self->temporary_messages || $self->selected->messages};
     $self->untagged_response( $now . ' EXISTS' ) if $expected != $now;
     $self->previous_exists($now);
-
 }
 
 sub get_messages {
@@ -166,17 +171,18 @@ sub get_messages {
 
     my $messages = $self->temporary_messages || $self->selected->messages;
 
-    my @ids;
+    my %ids;
     for ( split ',', $str ) {
         if (/^(\d+):(\d+)$/) {
-            push @ids, $1 .. $2;
-        } elsif (/^(\d+):\*$/) {
-            push @ids, $1 .. @{ $messages } + 0;
+            $ids{$_}++ for $2 > $1 ? $1 .. $2 : $2 .. $1;
+        } elsif (/^(\d+):\*$/ or /^\*:(\d+)$/) {
+            $ids{$_}++ for @{ $messages } + 0, $1 .. @{ $messages } + 0;
         } elsif (/^(\d+)$/) {
-            push @ids, $1;
+            $ids{$1}++;
         }
     }
-    return grep {defined} map { $messages->[ $_ - 1 ] } @ids;
+    return
+        grep {defined} map { $messages->[ $_ - 1 ] } sort {$a <=> $b} keys %ids;
 }
 
 sub sequence {
@@ -201,9 +207,10 @@ sub out {
 
     if ($self->io_handle) {
         $self->io_handle->print($msg);
-        $self->log("S: $msg");
+        $self->log("S(@{[$self->io_handle->peerport]}): $msg");
     } else {
         warn "Connection closed unexpectedly\n";
+        $self->close;
     }
 
 }

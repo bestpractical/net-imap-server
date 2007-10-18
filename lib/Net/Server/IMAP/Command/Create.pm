@@ -25,7 +25,7 @@ sub validate {
 sub run {
     my $self = shift;
 
-    my($name) = @options;
+    my($name) = $self->parsed_options;
 
     my $root = $self->connection->model->root;
     $self->connection->model->add_child( $root, name => $name );

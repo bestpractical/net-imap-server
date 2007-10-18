@@ -1,9 +1,14 @@
 package Net::Server::IMAP::Command::Uid;
+
+use warnings;
+use strict;
+
 use base qw/Net::Server::IMAP::Command/;
 
 sub validate {
     my $self = shift;
 
+    return $self->bad_command("Login first") if $self->connection->is_unauth;
     return $self->bad_command("Select a mailbox first")
         unless $self->connection->is_selected;
 
@@ -22,7 +27,7 @@ sub run {
         $self->$subcommand(@rest);
     } else {
         $self->log(
-            $self->options . " wasn't understood by the 'UID' command" );
+            $subcommand . " wasn't understood by the 'UID' command" );
         $self->no_failed(
             alert => q{Your client sent a UID command we didn't understand} );
     }
@@ -31,6 +36,9 @@ sub run {
 
 sub fetch {
     my $self = shift;
+
+    return $self->bad_command("Not enough options") if @_ < 2;
+    return $self->bad_command("Too many options") if @_ > 2;
 
     my ( $messages, $spec ) = @_;
     $spec = [$spec] unless ref $spec;
@@ -50,12 +58,15 @@ sub store {
 
     return $self->bad_command("Mailbox is read-only") if $self->connection->selected->read_only;
 
-    my ( $messages, $what, @flags ) = @_;
-    @flags = map {ref $_ ? @{$_} : $_} @flags;
+    return $self->bad_command("Not enough options") if @_ < 3;
+    return $self->bad_command("Too many options") if @_ > 3;
+
+    my ( $messages, $what, $flags ) = @_;
+    $flags = ref $flags ? $flags : [$flags];
     my @messages = $self->connection->selected->get_uids($messages);
     $self->connection->ignore_flags(1) if $what =~ /\.SILENT$/i;
     for my $m (@messages) {
-        $m->store( $what => @flags );
+        $m->store( $what => $flags );
         $self->connection->untagged_fetch->{$self->connection->sequence($m)}{UID}++
           unless $what =~ /\.SILENT$/i;
     }
@@ -66,16 +77,32 @@ sub store {
 
 sub copy {
     my $self = shift;
-    my $args = shift;
-    $self->no_unimplemented();
-    $self->ok_completed;
+    
+    return $self->bad_command("Not enough options") if @_ < 2;
+    return $self->bad_command("Too many options") if @_ > 2;
 
+    my ( $messages, $name ) = @_;
+    my $mailbox = $self->connection->model->lookup( $name );
+    return $self->no_command("[TRYCREATE] Mailbox does not exist") unless $mailbox;
+    return $self->bad_command("Mailbox is read-only") if $mailbox->read_only;
+
+    my @messages = $self->connection->selected->get_uids($messages);
+    return $self->no_command("Permission denied") if grep {not $_->copy_allowed($mailbox)} @messages;
+
+    $_->copy($mailbox) for @messages;
+
+    $self->ok_completed;
 }
 
 sub search {
     my $self = shift;
-    my $args = shift;
-    $self->no_unimplemented();
+
+    my $filter = Net::Server::IMAP::Command::Search::filter($self, @_);
+    return unless $filter;
+
+    my @results = map {$_->uid} grep {$filter->($_)} $self->connection->get_messages('1:*');
+    $self->untagged_response("SEARCH @results");
+
     $self->ok_completed;
 }
 

@@ -24,13 +24,11 @@ sub validate {
 sub run {
     my $self = shift;
 
-    my ( $messages, $what, @flags ) = $self->parsed_options;
-    @flags = map {ref $_ ? @{$_} : $_} @flags;
+    my ( $messages, $what, $flags ) = $self->parsed_options;
+    $flags = ref $flags ? $flags : [$flags];
     my @messages = $self->connection->get_messages($messages);
     $self->connection->ignore_flags(1) if $what =~ /\.SILENT$/i;
-    for my $m (@messages) {
-        $m->store( $what => @flags );
-    }
+    $_->store( $what => $flags ) for @messages;
     $self->connection->ignore_flags(0) if $what =~ /\.SILENT$/i;
 
     $self->ok_completed();
