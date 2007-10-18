@@ -7,7 +7,7 @@ use Net::Server::IMAP::Message;
 use base 'Class::Accessor';
 
 __PACKAGE__->mk_accessors(
-    qw(name force_read_only parent children _path uidnext uids messages)
+    qw(name is_inbox force_read_only parent children _path uidnext uids messages)
 );
 
 sub new {
@@ -23,8 +23,10 @@ sub init {
     $self->uidnext(1000);
     $self->messages( [] );
     $self->uids( {} );
+    $self->children( [] );
 
     my $name = $self->full_path;
+    return unless $name;
     $name =~ s/\W+/_/g;
     $name .= ".mailbox";
     if ( -e $name ) {
@@ -89,17 +91,44 @@ sub add_child {
     my $self = shift;
     my $node = ( ref $self )
         ->new( { @_, parent => $self } );
-    $self->children( [] ) unless $self->children;
     push @{ $self->children }, $node;
     return $node;
 }
 
+sub create {
+    my $self = shift;
+    return $self->add_child(@_);
+}
+
+sub reparent {
+    my $self = shift;
+    my $parent = shift;
+
+    $self->parent->children([grep {$_ ne $self} @{$self->parent->children}]);
+    push @{$parent->children}, $self;
+    $self->parent($parent);
+    my @uncache = ($self);
+    while (@uncache) {
+        my $o = shift @uncache;
+        $o->_path(undef);
+        push @uncache, @{$o->children};
+    }
+    return 1;
+}
+
+sub delete {
+    my $self = shift;
+    $self->parent->children([grep {$_ ne $self} @{$self->parent->children}]);
+
+    return 1;
+}
+
 sub full_path {
     my $self = shift;
-    return $self->_path if $self->_path;
-
-    return $self->name unless $self->parent;
+    return $self->_path if defined $self->_path;
     $self->_path(
+                 !$self->parent ? "" :
+                 !$self->parent->parent ? $self->name :
         $self->parent->full_path . $self->seperator . $self->name );
     return $self->_path;
 }

@@ -22,25 +22,30 @@ sub init {
     if ( $roots{$user} ) {
         $self->root( $roots{$user} );
     } else {
-        $self->root( $self->mailbox( name => "INBOX" ) );
-        $self->root->add_child( name => $user );
+        $self->root( $self->mailbox() )
+             ->add_child( name => "INBOX", is_inbox => 1 )
+             ->add_child( name => $user );
         $roots{$user} = $self->root;
     }
 
     return $self;
 }
 
+sub split {
+    my $self = shift;
+    return grep {length} split quotemeta $self->root->seperator, shift;
+}
+
 sub lookup {
     my $self  = shift;
     my $name  = shift;
-    $name = "INBOX" if uc $name eq "INBOX";
-    my @parts = split $self->root->seperator, $name;
-    return undef unless @parts and shift @parts eq $self->root->name;
+    my @parts = $self->split($name);
     my $part = $self->root;
+    return undef unless @parts;
     while (@parts) {
-        return undef unless $part->children;
+        return undef unless @{ $part->children };
         my $find = shift @parts;
-        my @match = grep { $_->name eq $find } @{ $part->children };
+        my @match = grep { $_->is_inbox ? uc $find eq "INBOX" : $_->name eq $find } @{ $part->children };
         return undef unless @match;
         $part = $match[0];
     }

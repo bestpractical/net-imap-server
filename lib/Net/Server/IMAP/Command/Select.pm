@@ -20,7 +20,6 @@ sub validate {
     return 1;
 }
 
-
 sub run {
     my $self = shift;
 

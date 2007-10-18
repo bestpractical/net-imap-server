@@ -118,7 +118,7 @@ sub capability {
     my $self = shift;
     my ($connection) = @_;
 
-    return "IMAP4rev1 STARTTLS AUTH=PLAIN";
+    return "IMAP4rev1 STARTTLS AUTH=PLAIN CHILDREN";
 }
 
 1;    # Magic true value required at end of module

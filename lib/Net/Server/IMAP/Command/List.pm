@@ -31,7 +31,7 @@ sub run {
         my $sep = $self->connection->model->root->seperator;
         $search = quotemeta($search);
         $search =~ s/\\\*/.*/g;
-        $search =~ s/\\%/[^$sep]/g;
+        $search =~ s/\\%/[^$sep]+/g;
         my $regex = qr{^\Q$root\E$search$};
         $self->traverse( $self->connection->model->root, $regex );
     }
@@ -44,13 +44,14 @@ sub traverse {
     my $node  = shift;
     my $regex = shift;
 
-    my $str = $node->children ? q{(\HasChildren)} : q{()};
-    $str .= q{ "/" };
+    my @props;
+    push @props, @{$node->children} ? \'\HasChildren' : \'\HasNoChildren';
+
+    my $str = $self->data_out(\@props);
+    $str .= q{ "} . $self->connection->model->root->seperator . q{" };
     $str .= q{"} . $node->full_path . q{"};
-    $self->tagged_response($str) if $node->full_path =~ $regex;
-    if ( $node->children ) {
-        $self->traverse( $_, $regex ) for @{ $node->children };
-    }
+    $self->tagged_response($str) if $node->parent and $node->full_path =~ $regex;
+    $self->traverse( $_, $regex ) for @{ $node->children };
 }
 
 1;
