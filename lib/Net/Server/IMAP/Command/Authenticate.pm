@@ -18,6 +18,9 @@ sub validate {
     return $self->bad_command("Not enough options") if @options < 1;
     return $self->bad_command("Too many options") if @options > 1;
 
+    return $self->no_command("Login is disabled")
+      unless $self->connection->capability =~ /\bAUTH=@options\b/i;
+
     return 1;
 }
 

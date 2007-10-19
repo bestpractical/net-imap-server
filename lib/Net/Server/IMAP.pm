@@ -116,8 +116,6 @@ sub accept_connection {
 
 sub capability {
     my $self = shift;
-    my ($connection) = @_;
-
     return "IMAP4rev1 STARTTLS AUTH=PLAIN CHILDREN";
 }
 

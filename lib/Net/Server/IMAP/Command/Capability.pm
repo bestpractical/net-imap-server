@@ -16,7 +16,7 @@ sub validate {
 
 sub run {
     my $self = shift;
-    $self->tagged_response( $self->server->capability($self->connection) );
+    $self->tagged_response( $self->connection->capability );
     $self->ok_completed;
 }
 

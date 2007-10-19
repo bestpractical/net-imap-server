@@ -70,8 +70,8 @@ sub parse_command {
     my $self = shift;
     my $line = shift;
     $line =~ s/[\r\n]+$//;
-    unless ( $line =~ /^([\w\d]+)\s+(\w+)(?:\s+(.+?))?$/ ) {
-        if ( $line !~ /^([\w\d]+)\s+/ ) {
+    unless ( $line =~ /^([^\(\)\{ \*\%"\\\+}]+)\s+(\w+)(?:\s+(.+?))?$/ ) {
+        if ( $line !~ /^([^\(\)\{ \*\%"\\\+]+)\s+/ ) {
             $self->out("* BAD Invalid tag\r\n");
         } else {
             $self->out("* BAD Null command ('$line')\r\n");
@@ -193,6 +193,18 @@ sub sequence {
     return $self->temporary_sequence_map->{$message};
 }
 
+sub capability {
+    my $self = shift;
+
+    my $base = $self->server->capability;
+    if ( $self->is_encrypted ) {
+        $base = join(" ", grep {$_ ne "STARTTLS"} split(' ', $base));
+    } else {
+        $base = join(" ", grep {not /^AUTH=\S+$/} split(' ', $base), "LOGINDISABLED");
+    }
+
+    return $base;
+}
 
 sub log {
     my $self = shift;

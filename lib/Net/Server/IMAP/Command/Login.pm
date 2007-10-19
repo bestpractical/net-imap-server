@@ -15,6 +15,9 @@ sub validate {
     return $self->bad_command("Not enough options") if @options < 2;
     return $self->bad_command("Too many options") if @options > 2;
 
+    return $self->no_command("Login is disabled")
+      if $self->connection->capability =~ /\bLOGINDISABLED\b/;
+
     return 1;
 }
 
