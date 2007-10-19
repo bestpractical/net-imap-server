@@ -5,6 +5,8 @@ use strict;
 
 use base qw/Net::Server::IMAP::Command/;
 
+use DateTime::Format::Strptime;
+
 sub validate {
     my $self = shift;
 
@@ -27,10 +29,21 @@ sub run {
     my @options = $self->parsed_options;
 
     my $mailbox = $self->connection->model->lookup( shift @options );
-    # XXX TODO: Deal with flags, internaldate
-    if ($mailbox->append(pop @options)) {
-        $self->connection->previous_exists( $self->connection->previous_exists + 1 )
-          if $mailbox eq $self->connection->selected;
+    if (my $msg = $mailbox->append(pop @options)) {
+        if (@options and grep {ref $_} @options) {
+            my ($flags) = grep {ref $_} @options;
+            $msg->set_flag($_, 1) for @{$flags};
+        }
+        if (@options and grep {not ref $_} @options) {
+            my ($time) = grep {not ref $_} @options;
+            my $parser = DateTime::Format::Strptime->new(pattern => "%e-%b-%Y %T %z");
+            my $dt = $parser->parse_datetime($time);
+            return $self->bad_command("Invalid date") unless $dt;
+            $msg->internaldate( $parser->format_datetime($dt) );
+        }
+
+        $self->connection->previous_exists( ($self->connection->previous_exists + 1 )
+          if $self->connection->is_selected and $mailbox eq $self->connection->selected;
         $self->ok_completed();
     } else {
         $self->no_command("Permission denied");

@@ -27,14 +27,14 @@ sub run {
 
 sub has_literal {
     my $self = shift;
-    unless ($self->options_str =~ /\{(\d+)\}$/) {
+    unless ($self->options_str =~ /\{(\d+)\}[\r\n]*$/) {
         $self->parse_options;
         return;
     }
 
     my $options = $self->options_str;
     my $next = $#{$self->_literals} + 1;
-    $options =~ s/\{(\d+)\}$/{{$next}}/;
+    $options =~ s/\{(\d+)\}[\r\n]*$/{{$next}}/;
     $self->_pending_literal($1);
     $self->options_str($options);
 

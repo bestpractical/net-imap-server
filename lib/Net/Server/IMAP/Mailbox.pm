@@ -7,7 +7,7 @@ use Net::Server::IMAP::Message;
 use base 'Class::Accessor';
 
 __PACKAGE__->mk_accessors(
-    qw(name is_inbox force_read_only parent children _path uidnext uids messages)
+    qw(name is_inbox force_read_only parent children _path uidnext uids uidvalidity messages subscribed)
 );
 
 sub new {
@@ -24,6 +24,8 @@ sub init {
     $self->messages( [] );
     $self->uids( {} );
     $self->children( [] );
+    $self->uidvalidity( scalar time );
+    $self->subscribed( 1 );
 
     my $name = $self->full_path;
     return unless $name;
@@ -41,6 +43,10 @@ sub init {
 
 sub seperator {
     return "/";
+}
+
+sub selectable {
+    return 1;
 }
 
 sub selected {
@@ -160,19 +166,9 @@ sub permanentflags {
     return $self->flags;
 }
 
-sub uidvalidity {
-    my $self = shift;
-    return $^T;
-}
-
 sub read_only {
     my $self = shift;
-    return $self->force_read_only or 0;
-}
-
-sub subscribed {
-    my $self = shift;
-    return 1;
+    return $self->force_read_only;
 }
 
 sub expunge {
@@ -215,7 +211,7 @@ sub append {
     my $m = Net::Server::IMAP::Message->new(@_);
     $m->set_flag('\Recent', 1);
     $self->add_message($m);
-    return 1;
+    return $m;
 }
 
 sub poll {}

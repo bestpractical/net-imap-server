@@ -46,6 +46,7 @@ sub traverse {
 
     my @props;
     push @props, @{$node->children} ? \'\HasChildren' : \'\HasNoChildren';
+    push @props, '\Noselect' unless $node->selectable;
 
     my $str = $self->data_out(\@props);
     $str .= q{ "} . $self->connection->model->root->seperator . q{" };

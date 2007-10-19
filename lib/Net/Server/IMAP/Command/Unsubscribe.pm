@@ -1,4 +1,4 @@
-package Net::Server::IMAP::Command::Subscribe;
+package Net::Server::IMAP::Command::Unsubscribe;
 
 use warnings;
 use strict;
@@ -24,7 +24,7 @@ sub run {
     my $self = shift;
 
     my $mailbox = $self->connection->model->lookup( @options );
-    $mailbox->subscribe(1);
+    $mailbox->subscribe(0);
 
     $self->ok_completed();
 }
