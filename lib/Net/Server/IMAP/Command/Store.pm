@@ -26,6 +26,9 @@ sub run {
 
     my ( $messages, $what, $flags ) = $self->parsed_options;
     $flags = ref $flags ? $flags : [$flags];
+
+    return $self->bad_command("Invalid flag $_") for grep {not $self->connection->selected->can_set_flag($_)} @{$flags};
+
     my @messages = $self->connection->get_messages($messages);
     $self->connection->ignore_flags(1) if $what =~ /\.SILENT$/i;
     $_->store( $what => $flags ) for @messages;

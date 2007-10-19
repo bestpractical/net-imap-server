@@ -144,6 +144,14 @@ sub flags {
     return qw(\Answered \Flagged \Deleted \Seen \Draft);
 }
 
+sub can_set_flag {
+    my $self = shift;
+    my $flag = shift;
+
+    return 1 if grep {$_ eq $flag} $self->flags;
+    return;
+}
+
 sub exists {
     my $self = shift;
     $Net::Server::IMAP::Server->connection->previous_exists( scalar @{ $self->messages } )
