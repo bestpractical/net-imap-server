@@ -39,19 +39,27 @@ sub run {
     $self->ok_completed;
 }
 
+sub list_out {
+    my $self = shift;
+    my $node = shift;
+    my @props = @_;
+
+    my $str = $self->data_out([map {\$_} @props]);
+    $str .= q{ "} . $self->connection->model->root->seperator . q{" };
+    $str .= q{"} . $node->full_path . q{"};
+    $self->tagged_response($str);
+}
+
 sub traverse {
     my $self  = shift;
     my $node  = shift;
     my $regex = shift;
 
     my @props;
-    push @props, @{$node->children} ? \'\HasChildren' : \'\HasNoChildren';
+    push @props, @{$node->children} ? '\HasChildren' : '\HasNoChildren';
     push @props, '\Noselect' unless $node->selectable;
 
-    my $str = $self->data_out(\@props);
-    $str .= q{ "} . $self->connection->model->root->seperator . q{" };
-    $str .= q{"} . $node->full_path . q{"};
-    $self->tagged_response($str) if $node->parent and $node->full_path =~ $regex;
+    $self->list_out($node, @props) if $node->parent and $node->full_path =~ $regex;
     $self->traverse( $_, $regex ) for @{ $node->children };
 }
 

@@ -23,8 +23,8 @@ sub validate {
 sub run {
     my $self = shift;
 
-    my $mailbox = $self->connection->model->lookup( @options );
-    $mailbox->subscribe(1);
+    my $mailbox = $self->connection->model->lookup( $self->parsed_options );
+    $mailbox->subscribed(1);
 
     $self->ok_completed();
 }
