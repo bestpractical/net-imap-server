@@ -74,6 +74,7 @@ sub run {
                     # Process socket
                     local $Net::Server::IMAP::Server = $self;
                     local $self->{connection} = $self->connections->{ $fh->fileno };
+                    local $self->{auth}       = $self->connections->{ $fh->fileno }->auth;
                     $self->connections->{ $fh->fileno }->handle_command;
                 }
             }
@@ -90,6 +91,11 @@ DESTROY {
 sub connection {
     my $self = shift;
     return $self->{connection};
+}
+
+sub auth {
+    my $self = shift;
+    return $self->{auth};
 }
 
 sub concurrent_connections {

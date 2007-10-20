@@ -14,6 +14,7 @@ sub new {
     my $class = shift;
     my $self  = $class->SUPER::new(@_);
     $self->init;
+    $self->load_data;
     return $self;
 }
 
@@ -26,7 +27,10 @@ sub init {
     $self->children( [] );
     $self->uidvalidity( scalar time );
     $self->subscribed( 1 );
+}
 
+sub load_data {
+    my $self = shift;
     my $name = $self->full_path;
     return unless $name;
     $name =~ s/\W+/_/g;
@@ -181,11 +185,14 @@ sub read_only {
 
 sub expunge {
     my $self = shift;
+    my $only = shift;
+    return if $only and not @{$only};
+    my %only; $only{$_}++ for @{$only || []};
 
     my @ids;
     my $offset   = 0;
     my @messages = @{ $self->messages };
-    $self->messages( [ grep { not $_->has_flag('\Deleted') } @messages ] );
+    $self->messages( [ grep { not ( $_->has_flag('\Deleted') and (not $only or $only{$_->sequence}))} @messages ] );
     for my $c (Net::Server::IMAP->concurrent_connections($self)) {
         # Ensure that all other connections with this selected get a
         # temporary message list, if they don't already have one
@@ -198,7 +205,7 @@ sub expunge {
     }
 
     for my $m (@messages) {
-        if ( $m->has_flag('\Deleted') ) {
+        if ( $m->has_flag('\Deleted') and (not $only or $only{$m->sequence})) {
             push @ids, $m->sequence - $offset;
             delete $self->uids->{$m->uid};
             $offset++;
