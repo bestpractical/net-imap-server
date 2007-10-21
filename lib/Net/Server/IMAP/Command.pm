@@ -64,7 +64,7 @@ sub parse_options {
     return $self->_parsed_options if not defined $str and not defined $self->options_str;
 
     my @parsed;
-    for my $term (grep {/\S/} split /($RE{delimited}{-delim=>'"'}|$RE{balanced}{-parens=>'()'}|\S+$RE{balanced}{-parens=>'()[]<>'}|\S+)/, $str || $self->options_str) {
+    for my $term (grep {/\S/} split /($RE{delimited}{-delim=>'"'}|$RE{balanced}{-parens=>'()'}|\S+$RE{balanced}{-parens=>'()[]<>'}|\S+)/, defined $str ? $str : $self->options_str) {
         if ($term =~ /^$RE{delimited}{-delim=>'"'}{-keep}$/) {
             push @parsed, $3;
         } elsif ($term =~ /^$RE{balanced}{-parens=>'()'}$/) {

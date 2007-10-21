@@ -56,7 +56,13 @@ sub handle_command {
     );
     return if $handler->has_literal;
 
-    $handler->run() if $handler->validate;
+    eval {
+        $handler->run() if $handler->validate;
+    };
+    if ($@) {
+        $handler->no_command("Server error");
+        $self->log($@);
+    }
 }
 
 sub close {
