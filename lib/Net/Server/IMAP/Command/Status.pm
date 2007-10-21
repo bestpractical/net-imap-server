@@ -27,7 +27,7 @@ sub validate {
 sub run {
     my $self = shift;
 
-    my ( $name, $flags ) = @options;
+    my ( $name, $flags ) = $self->parsed_options;
     my $mailbox = $self->connection->model->lookup( $self->connection, $name );
     $mailbox->poll;
 
