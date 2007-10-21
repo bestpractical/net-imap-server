@@ -59,9 +59,9 @@ sub handle_command {
     eval {
         $handler->run() if $handler->validate;
     };
-    if ($@) {
+    if (my $error = $@) {
         $handler->no_command("Server error");
-        $self->log($@);
+        $self->log($error);
     }
 }
 
