@@ -239,6 +239,7 @@ sub mime_bodystructure {
         my $lines;
         my $body = $mime->body_raw;
         if ( lc $data->{discrete} eq "text" ) {
+            $lines = 0;
             $lines++ while $body =~ /\n/g;
         }
         return [
