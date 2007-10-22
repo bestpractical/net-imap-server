@@ -170,7 +170,7 @@ sub recent {
 
 sub unseen {
     my $self = shift;
-    return undef;
+    return scalar grep {not $_->has_flag('\Seen')} @{$self->messages};
 }
 
 sub permanentflags {
