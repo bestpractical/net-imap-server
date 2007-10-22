@@ -64,7 +64,8 @@ sub run {
             delete $items{$i};
         }
     }
-    $self->untagged_response( "STATUS $name (" . join( ' ', %items ) . ")" );
+    $self->untagged_response( "STATUS ".$self->data_out({type=>"string", value => $name}) . " "
+                              . $self->data_out([map {(\$_, $items{$_})}keys %items]) );
     $self->ok_completed;
 }
 
