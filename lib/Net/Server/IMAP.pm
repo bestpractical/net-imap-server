@@ -76,7 +76,7 @@ sub run {
                     local $self->{connection} = $self->connections->{ $fh->fileno };
                     local $self->{auth}       = $self->connections->{ $fh->fileno }->auth;
                     local $SIG{PIPE} = sub { warn "Broken pipe\n"; $self->connections->{ $fh->fileno}->close };
-                    $self->connections->{ $fh->fileno }->handle_command;
+                    $self->connections->{ $fh->fileno }->handle_lines;
                 }
             }
         }
@@ -112,6 +112,7 @@ sub concurrent_connections {
 sub accept_connection {
     my $self   = shift;
     my $handle = shift;
+    $handle->blocking(0);
     $self->select->add($handle);
     my $conn = Net::Server::IMAP::Connection->new(
         io_handle => $handle,

@@ -21,9 +21,14 @@ sub greeting {
     $self->out( '* OK IMAP4rev1 Server' . "\r\n" );
 }
 
-sub handle_command {
+sub handle_lines {
     my $self    = shift;
-    my $content = $self->io_handle->getline();
+    $self->handle_command($_) while $_ = $self->io_handle->getline();
+}
+
+sub handle_command {
+    my $self = shift;
+    my $content = shift;
 
     unless ( defined $content ) {
         $self->log("Connection closed by remote host");
