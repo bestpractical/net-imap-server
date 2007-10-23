@@ -7,7 +7,7 @@ use Net::Server::IMAP::Message;
 use base 'Class::Accessor';
 
 __PACKAGE__->mk_accessors(
-    qw(name is_inbox force_read_only parent children _path uidnext uids uidvalidity messages subscribed)
+    qw(name is_inbox force_read_only parent children _path uidnext uids uidvalidity messages subscribed is_selectable)
 );
 
 sub new {
@@ -27,6 +27,7 @@ sub init {
     $self->children( [] );
     $self->uidvalidity( scalar time );
     $self->subscribed( 1 );
+    $self->is_selectable( 1 );
 }
 
 sub load_data {
@@ -47,10 +48,6 @@ sub load_data {
 
 sub seperator {
     return "/";
-}
-
-sub selectable {
-    return 1;
 }
 
 sub selected {
@@ -152,7 +149,7 @@ sub can_set_flag {
     my $self = shift;
     my $flag = shift;
 
-    return 1 if grep {$_ eq $flag} $self->flags;
+    return 1 if grep {lc $_ eq lc $flag} $self->flags;
     return;
 }
 

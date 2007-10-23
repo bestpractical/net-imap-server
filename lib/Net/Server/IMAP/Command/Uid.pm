@@ -23,7 +23,7 @@ sub run {
 
     my ($subcommand, @rest) = $self->parsed_options;
     $subcommand = lc $subcommand;
-    if ($subcommand =~ /^(copy|fetch|store|search)$/i ) {
+    if ($subcommand =~ /^(copy|fetch|store|search|expunge)$/i ) {
         $self->$subcommand(@rest);
     } else {
         $self->log(
@@ -63,6 +63,9 @@ sub store {
 
     my ( $messages, $what, $flags ) = @_;
     $flags = ref $flags ? $flags : [$flags];
+
+    return $self->bad_command("Invalid flag $_") for grep {not $self->connection->selected->can_set_flag($_)} @{$flags};
+
     my @messages = $self->connection->selected->get_uids($messages);
     $self->connection->ignore_flags(1) if $what =~ /\.SILENT$/i;
     for my $m (@messages) {
@@ -90,6 +93,21 @@ sub copy {
     return $self->no_command("Permission denied") if grep {not $_->copy_allowed($mailbox)} @messages;
 
     $_->copy($mailbox) for @messages;
+
+    $self->ok_completed;
+}
+
+sub expunge {
+    my $self = shift;
+
+    return $self->bad_command("Not enough options") if @_ < 1;
+    return $self->bad_command("Too many options") if @_ > 2;
+
+    return $self->bad_command("Mailbox is read-only") if $self->connection->selected->read_only;
+
+    my ( $messages ) = @_;
+    my @messages = $self->connection->selected->get_uids($messages);
+    $self->connection->selected->expunge([map {$_->sequence} @messages]);
 
     $self->ok_completed;
 }

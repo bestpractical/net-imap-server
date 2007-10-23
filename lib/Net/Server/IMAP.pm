@@ -75,6 +75,7 @@ sub run {
                     local $Net::Server::IMAP::Server = $self;
                     local $self->{connection} = $self->connections->{ $fh->fileno };
                     local $self->{auth}       = $self->connections->{ $fh->fileno }->auth;
+                    local $SIG{PIPE} = sub { warn "Broken pipe\n"; $self->connections->{ $fh->fileno}->close };
                     $self->connections->{ $fh->fileno }->handle_command;
                 }
             }
@@ -122,7 +123,7 @@ sub accept_connection {
 
 sub capability {
     my $self = shift;
-    return "IMAP4rev1 STARTTLS AUTH=PLAIN CHILDREN";
+    return "IMAP4rev1 STARTTLS AUTH=PLAIN CHILDREN LITERAL+ UIDPLUS";
 }
 
 1;    # Magic true value required at end of module

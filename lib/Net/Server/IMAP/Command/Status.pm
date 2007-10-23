@@ -19,7 +19,7 @@ sub validate {
 
     my $mailbox = $self->connection->model->lookup( $name );
     return $self->no_command("Mailbox does not exist") unless $mailbox;
-    return $self->no_command("Mailbox is not selectable") unless $mailbox->selectable;
+    return $self->no_command("Mailbox is not selectable") unless $mailbox->is_selectable;
 
     return 1;
 }

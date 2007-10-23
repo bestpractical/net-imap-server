@@ -42,9 +42,9 @@ sub run {
             $msg->internaldate( $parser->format_datetime($dt) );
         }
 
-        $self->connection->previous_exists( ($self->connection->previous_exists + 1 )
+        $self->connection->previous_exists( $self->connection->previous_exists + 1 )
           if $self->connection->is_selected and $mailbox eq $self->connection->selected;
-        $self->ok_completed();
+        $self->ok_command("[APPENDUID @{[$mailbox->uidvalidity]} @{[$msg->uid]}] APPEND COMPLETED");
     } else {
         $self->no_command("Permission denied");
     }

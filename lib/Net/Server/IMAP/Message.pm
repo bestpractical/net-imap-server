@@ -10,6 +10,10 @@ use Email::MIME::ContentType;
 use Regexp::Common qw/balanced/;
 use DateTime;
 
+# Canonical capitalization
+my %FLAGS;
+$FLAGS{lc $_} = $_ for qw(\Answered \Flagged \Deleted \Seen \Draft);
+
 use base 'Class::Accessor';
 
 __PACKAGE__->mk_accessors(qw(sequence mailbox uid _flags mime internaldate));
@@ -50,6 +54,7 @@ sub copy {
 sub set_flag {
     my $self = shift;
     my $flag = shift;
+    $flag = $FLAGS{lc $flag} || $flag;
     my $old  = exists $self->_flags->{$flag};
     $self->_flags->{$flag} = 1;
 
@@ -65,6 +70,7 @@ sub set_flag {
 sub clear_flag {
     my $self = shift;
     my $flag = shift;
+    $flag = $FLAGS{lc $flag} || $flag;
     my $old  = exists $self->_flags->{$flag};
     delete $self->_flags->{$flag};
 
@@ -80,6 +86,7 @@ sub clear_flag {
 sub has_flag {
     my $self = shift;
     my $flag = shift;
+    $flag = $FLAGS{lc $flag} || $flag;
     return exists $self->_flags->{$flag};
 }
 
@@ -324,7 +331,7 @@ sub store {
         $self->set_flag($_) for grep { not $self->has_flag($_) } @flags;
         $self->clear_flag($_) for grep {
             $a = $_;
-            not grep { $a eq $_ } @flags
+            not grep { lc $a eq lc $_ } @flags
         } $self->flags;
     }
 }

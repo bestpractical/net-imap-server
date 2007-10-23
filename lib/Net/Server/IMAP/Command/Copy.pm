@@ -1,4 +1,4 @@
-package Net::Server::IMAP::Command::Close;
+package Net::Server::IMAP::Command::Copy;
 
 use warnings;
 use strict;
@@ -33,9 +33,11 @@ sub run {
 
     return $self->no_command("Permission denied") if grep {not $_->copy_allowed($mailbox)} @messages;
 
-    $_->copy($mailbox) for @messages;
+    my @new = map {$_->copy($mailbox)} @messages;
 
-    $self->ok_completed();
+    my $sequence = join(",",map {$_->uid} @messages);
+    my $uids     = join(",",map {$_->uid} @new);
+    $self->ok_command("[COPYUID @{[$mailbox->uidvalidity]} $sequence $uids] OK COMPLETED");
 }
 
 1;

@@ -27,14 +27,14 @@ sub run {
 
 sub has_literal {
     my $self = shift;
-    unless ($self->options_str =~ /\{(\d+)\}[\r\n]*$/) {
+    unless ($self->options_str =~ /\{(\d+)(\+)?\}[\r\n]*$/) {
         $self->parse_options;
         return;
     }
 
     my $options = $self->options_str;
     my $next = $#{$self->_literals} + 1;
-    $options =~ s/\{(\d+)\}[\r\n]*$/{{$next}}/;
+    $options =~ s/\{(\d+)(\+)?\}[\r\n]*$/{{$next}}/;
     $self->_pending_literal($1);
     $self->options_str($options);
 
@@ -53,7 +53,7 @@ sub has_literal {
             $self->run if $self->validate;
         }
     });
-    $self->out( "+ Continue\r\n" );
+    $self->out( "+ Continue\r\n" ) unless $2;
     return 1;
 }
 

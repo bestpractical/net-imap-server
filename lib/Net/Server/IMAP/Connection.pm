@@ -31,7 +31,7 @@ sub handle_command {
         return;
     }
 
-    $self->log("C(@{[$self->io_handle->peerport]}): $content");
+    $self->log("C(@{[$self->io_handle->peerport]},@{[$self->auth ? $self->auth->user : '???']},@{[$self->is_selected ? $self->selected->full_path : 'unselected']}): $content");
 
     if ( $self->pending ) {
         $self->pending->($content);
@@ -225,7 +225,7 @@ sub out {
 
     if ($self->io_handle) {
         $self->io_handle->print($msg);
-        $self->log("S(@{[$self->io_handle->peerport]}): $msg");
+        $self->log("S(@{[$self->io_handle->peerport]},@{[$self->auth ? $self->auth->user : '???']},@{[$self->is_selected ? $self->selected->full_path : 'unselected']}): $msg");
     } else {
         warn "Connection closed unexpectedly\n";
         $self->close;
