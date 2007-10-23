@@ -34,10 +34,9 @@ sub run {
     return $self->no_command("Permission denied") if grep {not $_->copy_allowed($mailbox)} @messages;
 
     my @new = map {$_->copy($mailbox)} @messages;
-
     my $sequence = join(",",map {$_->uid} @messages);
     my $uids     = join(",",map {$_->uid} @new);
-    $self->ok_command("[COPYUID @{[$mailbox->uidvalidity]} $sequence $uids] OK COMPLETED");
+    $self->ok_command("[COPYUID @{[$mailbox->uidvalidity]} $sequence $uids] COPY COMPLETED");
 }
 
 1;
