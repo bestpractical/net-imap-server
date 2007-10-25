@@ -231,7 +231,10 @@ sub out {
     my $msg  = shift;
 
     if ($self->io_handle) {
+        $self->io_handle->blocking(1);
         $self->io_handle->print($msg);
+        $self->io_handle->blocking(0);
+
         $self->log("S(@{[$self->io_handle->peerport]},@{[$self->auth ? $self->auth->user : '???']},@{[$self->is_selected ? $self->selected->full_path : 'unselected']}): $msg");
     } else {
         warn "Connection closed unexpectedly\n";
