@@ -23,18 +23,20 @@ sub greeting {
 
 sub handle_lines {
     my $self    = shift;
-    $self->handle_command($_) while $_ = $self->io_handle->getline();
+    my $i = 0;
+    ++$i and $self->handle_command($_) while $_ = $self->io_handle->getline();
+
+    if ( not $i ) {
+        $self->log("Connection closed by remote host");
+        $self->close;
+        return;
+    }
+
 }
 
 sub handle_command {
     my $self = shift;
     my $content = shift;
-
-    unless ( defined $content ) {
-        $self->log("Connection closed by remote host");
-        $self->close;
-        return;
-    }
 
     $self->log("C(@{[$self->io_handle->peerport]},@{[$self->auth ? $self->auth->user : '???']},@{[$self->is_selected ? $self->selected->full_path : 'unselected']}): $content");
 
