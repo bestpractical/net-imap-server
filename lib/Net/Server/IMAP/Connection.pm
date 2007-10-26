@@ -38,6 +38,9 @@ sub handle_command {
     my $self = shift;
     my $content = shift;
 
+    local $self->server->{connection} = $self;
+    local $self->server->{auth} = $self->auth;
+
     $self->log("C(@{[$self->io_handle->peerport]},@{[$self->auth ? $self->auth->user : '???']},@{[$self->is_selected ? $self->selected->full_path : 'unselected']}): $content");
 
     if ( $self->pending ) {
@@ -232,7 +235,7 @@ sub out {
 
     if ($self->io_handle) {
         $self->io_handle->blocking(1);
-        $self->io_handle->print($msg);
+        $self->io_handle->print($msg) or warn "********************** $!\n";
         $self->io_handle->blocking(0);
 
         $self->log("S(@{[$self->io_handle->peerport]},@{[$self->auth ? $self->auth->user : '???']},@{[$self->is_selected ? $self->selected->full_path : 'unselected']}): $msg");

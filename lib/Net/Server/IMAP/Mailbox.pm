@@ -74,6 +74,7 @@ sub add_message {
         push @{$c->temporary_messages}, $message;
         $c->temporary_sequence_map->{$message} = scalar @{$c->temporary_messages};
     }
+    return $message;
 }
 
 sub get_uids {
