@@ -143,7 +143,6 @@ sub fetch {
             push @out, [ map { \$_ } $self->flags ];
         } elsif ( uc $part eq "RFC822.SIZE" ) {
             my $result = $self->mime_select( [], undef, undef );
-            use bytes;
             push @out, length $result;
         } elsif ( uc $part eq "BODY" ) {
             push @out, $self->mime_bodystructure( $self->mime, 0 );
@@ -168,7 +167,7 @@ sub mime_select {
     my $result   = $self->mime->as_string;
     for (@sections) {
         if ( uc $_ eq "HEADER" or uc $_ eq "MIME" ) {
-            $result = $mime->header_obj->as_string . "\n";
+            $result = $mime->header_obj->as_string . "\r\n";
         } elsif ( uc $_ eq "FIELDS" ) {
             my %case;
             $case{ uc $_ } = $_ for $mime->header_names;
@@ -176,7 +175,7 @@ sub mime_select {
             for my $h ( @{$extras} ) {
                 $header->header_set( $case{$h} || $h => $mime->header($h) );
             }
-            $result = $header->as_string ? $header->as_string . "\n" : "";
+            $result = $header->as_string ? $header->as_string . "\r\n" : "";
         } elsif ( uc $_ eq "TEXT" ) {
             $result = $mime->body;
         } elsif ( $_ =~ /^\d+$/i ) {
@@ -259,7 +258,7 @@ sub mime_bodystructure {
             scalar $mime->header("Content-ID"),
             scalar $mime->header("Content-Description"),
             ( scalar $mime->header("Content-Transfer-Encoding") or "7BIT" ),
-            do {use bytes; length $body},
+            length $body,
             (   defined $lines
                 ? ( $lines, )
                 : ()

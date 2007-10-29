@@ -7,7 +7,7 @@ use base 'Class::Accessor';
 
 use Net::Server::IMAP::Command;
 
-__PACKAGE__->mk_accessors(qw(server io_handle _selected model pending temporary_messages temporary_sequence_map previous_exists untagged_expunge untagged_fetch ignore_flags));
+__PACKAGE__->mk_accessors(qw(server io_handle _selected selected_read_only model pending temporary_messages temporary_sequence_map previous_exists untagged_expunge untagged_fetch ignore_flags));
 
 sub new {
     my $class = shift;
@@ -136,6 +136,7 @@ sub auth {
 sub selected {
     my $self = shift;
     $self->send_untagged if @_ and $self->selected;
+    $self->selected_read_only(0) if @_ and $self->selected;
     return $self->_selected(@_);
 }
 

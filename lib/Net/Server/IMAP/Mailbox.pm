@@ -7,7 +7,7 @@ use Net::Server::IMAP::Message;
 use base 'Class::Accessor';
 
 __PACKAGE__->mk_accessors(
-    qw(name is_inbox force_read_only parent children _path uidnext uids uidvalidity messages subscribed is_selectable)
+    qw(name is_inbox parent children _path uidnext uids uidvalidity messages subscribed is_selectable)
 );
 
 sub new {
@@ -178,7 +178,7 @@ sub permanentflags {
 
 sub read_only {
     my $self = shift;
-    return $self->force_read_only;
+    return 0;
 }
 
 sub expunge {

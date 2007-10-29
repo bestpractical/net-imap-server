@@ -2,6 +2,7 @@ package Net::Server::IMAP::Command;
 
 use warnings;
 use strict;
+use bytes;
 
 use base 'Class::Accessor';
 use Regexp::Common qw/delimited/;
@@ -40,7 +41,6 @@ sub has_literal {
 
     # Pending
     $self->connection->pending(sub {
-        use bytes;
         my $content = shift;
         if (length $content < $self->_pending_literal) {
             $self->_literals->[$next] .= $content;
@@ -158,7 +158,6 @@ sub no_command {
         $self->untagged_response(
             "NO [" . uc($_) . "] " . $extra_responses{$_} );
     }
-    $self->send_untagged;
     $self->out( $self->command_id . " " . "NO " . $message . "\r\n" );
     return 0;
 }

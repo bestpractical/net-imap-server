@@ -2,6 +2,7 @@ package Net::Server::IMAP::Command::Search;
 
 use warnings;
 use strict;
+use bytes;
 
 use base qw/Net::Server::IMAP::Command/;
 
@@ -71,7 +72,7 @@ sub filter {
         } elsif ($token eq "LARGER") {
             return $self->bad_command("Parse error") unless @tokens;
             my $size = shift @tokens;
-            push @{$filters}, sub {use bytes; length $_[0]->mime->as_string > $size};
+            push @{$filters}, sub {length $_[0]->mime->as_string > $size};
         } elsif ($token eq "NEW") {
             push @{$filters}, sub {$_[0]->has_flag('\Recent') and not $_->has_flag('\Seen')};
         } elsif ($token eq "NOT") {
@@ -98,7 +99,7 @@ sub filter {
         } elsif ($token eq "SMALLER") {
             return $self->bad_command("Parse error") unless @tokens;
             my $size = shift @tokens;
-            push @{$filters}, sub {use bytes; length $_[0]->mime->as_string < $size};
+            push @{$filters}, sub {length $_[0]->mime->as_string < $size};
         } elsif ($token eq "SUBJECT") {
             return $self->bad_command("Parse error") unless @tokens;
             my $subj = shift @tokens;
