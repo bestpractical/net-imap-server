@@ -42,11 +42,11 @@ sub has_literal {
     # Pending
     $self->connection->pending(sub {
         my $content = shift;
-        if (length $content < $self->_pending_literal) {
+        if (length $content <= $self->_pending_literal) {
             $self->_literals->[$next] .= $content;
             $self->_pending_literal( $self->_pending_literal - length $content);
         } else {
-            $self->_literals->[$next] = substr($content, 0, $self->_pending_literal, "");
+            $self->_literals->[$next] .= substr($content, 0, $self->_pending_literal, "");
             $self->connection->pending(undef);
             $self->options_str($self->options_str . $content);
             return if $self->has_literal;
