@@ -60,13 +60,14 @@ sub set_flag {
     my $old  = exists $self->_flags->{$flag};
     $self->_flags->{$flag} = 1;
 
-    unless ($old or @_) {
+    my $changed = not $old;
+    if ($changed and not @_) {
         for my $c (Net::Server::IMAP->concurrent_connections($self->mailbox)) {
             $c->untagged_fetch->{$c->sequence($self)}{FLAGS}++ unless $c->ignore_flags;
         }
     }
     
-    return not $old;
+    return $changed;
 }
 
 sub clear_flag {
@@ -76,13 +77,14 @@ sub clear_flag {
     my $old  = exists $self->_flags->{$flag};
     delete $self->_flags->{$flag};
 
-    if ($old or @_) {
+    my $changed = $old;
+    if ($changed and not @_) {
         for my $c (Net::Server::IMAP->concurrent_connections($self->mailbox)) {
             $c->untagged_fetch->{$c->sequence($self)}{FLAGS}++ unless $c->ignore_flags;
         }
     }
 
-    return $old;
+    return $changed;
 }
 
 sub has_flag {
