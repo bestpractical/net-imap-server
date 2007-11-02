@@ -126,6 +126,7 @@ sub auth {
     my $self = shift;
     if (@_) {
         $self->{auth} = shift;
+        $self->server->{auth} = $self->{auth};
         $self->server->model_class->require || warn $@;
         $self->model(
             $self->server->model_class->new( { auth => $self->{auth} } ) );

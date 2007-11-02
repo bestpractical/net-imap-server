@@ -59,11 +59,19 @@ sub selected {
 sub add_message {
     my $self    = shift;
     my $message = shift;
-    $message->uid( $self->uidnext );
-    $self->uidnext( $self->uidnext + 1 );
+
+    # Basic message setup first
+    $message->mailbox($self);
     $message->sequence( @{ $self->messages } + 1 );
     push @{ $self->messages }, $message;
-    $message->mailbox($self);
+
+    # Some messages may supply their own uids
+    if ($message->uid) {
+        $self->uidnext( $message->uid + 1 ) if $message->uid >= $self->uidnext;
+    } else {
+        $message->uid( $self->uidnext );
+        $self->uidnext( $self->uidnext + 1 );
+    }
     $self->uids->{ $message->uid } = $message;
 
     # Also need to add it to anyone that has this folder as a
