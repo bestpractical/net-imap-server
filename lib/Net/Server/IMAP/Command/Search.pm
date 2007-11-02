@@ -41,7 +41,7 @@ sub filter {
         } elsif ($token eq "BCC") {
             return $self->bad_command("Parse error") unless @tokens;
             my $bcc = shift @tokens;
-            push @{$filters}, sub {$_[0]->mime->header("Bcc") =~ /\Q$bcc\E/i};
+            push @{$filters}, sub {$_[0]->mime->header("Bcc")||"" =~ /\Q$bcc\E/i};
         # BEFORE
         } elsif ($token eq "BODY") {
             return $self->bad_command("Parse error") unless @tokens;
@@ -50,7 +50,7 @@ sub filter {
         } elsif ($token eq "CC") {
             return $self->bad_command("Parse error") unless @tokens;
             my $cc = shift @tokens;
-            push @{$filters}, sub {$_[0]->mime->header("Cc") =~ /\Q$cc\E/i};
+            push @{$filters}, sub {$_[0]->mime->header("Cc")||"" =~ /\Q$cc\E/i};
         } elsif ($token eq "DELETED") {
             push @{$filters}, sub {$_[0]->has_flag('\Deleted')};
         } elsif ($token eq "DRAFT") {
@@ -60,11 +60,11 @@ sub filter {
         } elsif ($token eq "FROM") {
             return $self->bad_command("Parse error") unless @tokens;
             my $from = shift @tokens;
-            push @{$filters}, sub {$_[0]->mime->header("From") =~ /\Q$from\E/i};
+            push @{$filters}, sub {$_[0]->mime->header("From")||"" =~ /\Q$from\E/i};
         } elsif ($token eq "HEADER") {
             return $self->bad_command("Parse error") unless @tokens >= 2;
             my ($header, $value) = splice(@tokens, 0, 2);
-            push @{$filters}, sub {$_[0]->mime->header($header) =~ /\Q$value\E/i};
+            push @{$filters}, sub {$_[0]->mime->header($header)||"" =~ /\Q$value\E/i};
         } elsif ($token eq "KEYWORD") {
             return $self->bad_command("Parse error") unless @tokens;
             my $keyword = shift @tokens;
@@ -111,7 +111,7 @@ sub filter {
         } elsif ($token eq "TO") {
             return $self->bad_command("Parse error") unless @tokens;
             my $to = shift @tokens;
-            push @{$filters}, sub {$_[0]->mime->header("To") =~ /\Q$to\E/i};
+            push @{$filters}, sub {$_[0]->mime->header("To")||"" =~ /\Q$to\E/i};
         } elsif ($token eq "UID") {
             return $self->bad_command("Parse error") unless @tokens;
             my $set = shift @tokens;

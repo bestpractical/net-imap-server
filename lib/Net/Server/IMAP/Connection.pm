@@ -39,6 +39,7 @@ sub handle_command {
     my $content = shift;
 
     local $self->server->{connection} = $self;
+    local $self->server->{model} = $self->model;
     local $self->server->{auth} = $self->auth;
 
     $self->log("C(@{[$self->io_handle->peerport]},@{[$self->auth ? $self->auth->user : '???']},@{[$self->is_selected ? $self->selected->full_path : 'unselected']}): $content");

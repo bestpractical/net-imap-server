@@ -16,7 +16,7 @@ $FLAGS{lc $_} = $_ for qw(\Answered \Flagged \Deleted \Seen \Draft);
 
 use base 'Class::Accessor';
 
-__PACKAGE__->mk_accessors(qw(sequence mailbox uid _flags mime internaldate));
+__PACKAGE__->mk_accessors(qw(sequence mailbox uid _flags mime internaldate expunged));
 
 sub new {
     my $class = shift;
@@ -28,6 +28,8 @@ sub new {
 }
 
 sub expunge {
+    my $self = shift;
+    $self->expunged(1);
 }
 
 sub copy_allowed {

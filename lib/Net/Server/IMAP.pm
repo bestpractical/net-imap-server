@@ -97,6 +97,11 @@ sub auth {
     return $self->{auth};
 }
 
+sub model {
+    my $self = shift;
+    return $self->{model};
+}
+
 sub concurrent_connections {
     my $class = shift;
     my $self = ref $class ? $class : $Net::Server::IMAP::Server;
