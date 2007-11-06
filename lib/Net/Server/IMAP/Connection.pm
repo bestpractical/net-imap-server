@@ -172,12 +172,19 @@ sub send_untagged {
     $self->untagged_fetch({});
 
     if ($args{expunged}) {
+        # Make sure that they know of at least the existance of what's being expunged.
+        my $max = 0;
+        $max = $max < $_ ? $_ : $max for @{$self->untagged_expunge};
+        $self->untagged_response( "$max EXISTS" ) if $max > $self->previous_exists;
+
+        # Send the expnges, clear out the temporary message store
         $self->previous_exists( $self->previous_exists - @{$self->untagged_expunge} );
         $self->untagged_response( map {"$_ EXPUNGE"} @{$self->untagged_expunge} );
         $self->untagged_expunge([]);
         $self->temporary_messages(undef);
     }
 
+    # Let them know of more EXISTS
     my $expected = $self->previous_exists;
     my $now = @{$self->temporary_messages || $self->selected->messages};
     $self->untagged_response( $now . ' EXISTS' ) if $expected != $now;
