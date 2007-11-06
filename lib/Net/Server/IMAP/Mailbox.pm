@@ -13,6 +13,7 @@ __PACKAGE__->mk_accessors(
 sub new {
     my $class = shift;
     my $self  = $class->SUPER::new(@_);
+    return if $self->parent and grep {$self->full_path eq $_->full_path} @{$self->parent->children};
     $self->init;
     $self->load_data;
     return $self;
@@ -107,6 +108,7 @@ sub add_child {
     my $self = shift;
     my $node = ( ref $self )
         ->new( { @_, parent => $self } );
+    return unless $node;
     push @{ $self->children }, $node;
     return $node;
 }
