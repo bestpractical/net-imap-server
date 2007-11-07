@@ -56,4 +56,6 @@ sub run {
     }
 }
 
+sub poll_after { 0 }
+
 1;

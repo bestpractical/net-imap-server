@@ -22,4 +22,6 @@ sub run {
     $self->connection->close();
 }
 
+sub poll_after { 0 }
+
 1;

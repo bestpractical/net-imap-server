@@ -134,7 +134,7 @@ sub tagged_response {
 sub send_untagged {
     my $self = shift;
 
-    $self->connection->send_untagged( @_ );
+    $self->connection->send_untagged( @_ ) if $self->poll_after;
 }
 
 sub ok_command {
@@ -197,5 +197,7 @@ sub out {
     my $self = shift;
     $self->connection->out(@_);
 }
+
+sub poll_after { 1 }
 
 1;
