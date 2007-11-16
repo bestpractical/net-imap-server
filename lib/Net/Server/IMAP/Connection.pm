@@ -24,7 +24,7 @@ sub greeting {
 sub handle_lines {
     my $self    = shift;
     my $i = 0;
-    ++$i and $self->handle_command($_) while $_ = $self->io_handle->getline();
+    ++$i and $self->handle_command($_) while $self->io_handle and $_ = $self->io_handle->getline();
 
     if ( not $i ) {
         $self->log("Connection closed by remote host");
@@ -78,9 +78,12 @@ sub handle_command {
 
 sub close {
     my $self = shift;
-    delete $self->server->connections->{ $self->io_handle->fileno };
-    $self->server->select->remove( $self->io_handle );
-    $self->io_handle->close;
+    if ($self->io_handle) {
+        delete $self->server->connections->{ $self->io_handle->fileno };
+        $self->server->select->remove( $self->io_handle );
+        $self->io_handle->close;
+        $self->io_handle(undef);
+    }
     $self->model->close if $self->model;
 }
 
@@ -243,18 +246,18 @@ sub log {
 sub out {
     my $self = shift;
     my $msg  = shift;
-
-    if ($self->io_handle) {
+    if ($self->io_handle and $self->io_handle->peerport) {
         $self->io_handle->blocking(1);
-        $self->io_handle->print($msg) or warn "********************** $!\n";
-        $self->io_handle->blocking(0);
-
-        $self->log("S(@{[$self->io_handle->peerport]},@{[$self->auth ? $self->auth->user : '???']},@{[$self->is_selected ? $self->selected->full_path : 'unselected']}): $msg");
+        if ($self->io_handle->print($msg)) {
+            $self->io_handle->blocking(0);
+            $self->log("S(@{[$self->io_handle->peerport || 'undef']},@{[$self->auth ? $self->auth->user : '???']},@{[$self->is_selected ? $self->selected->full_path : 'unselected']}): $msg");
+        } else {
+            $self->io_handle->close if $self->io_handle;
+            $self->close;
+        }
     } else {
-        warn "Connection closed unexpectedly\n";
         $self->close;
     }
-
 }
 
 1;

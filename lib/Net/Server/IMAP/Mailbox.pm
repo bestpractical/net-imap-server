@@ -242,10 +242,10 @@ sub poll {}
 sub prep_for_destroy {
     my $self = shift;
     my @kids = @{$self->children || []};
-    $self->children(undef);
+    $self->children([]);
     $_->prep_for_destroy for @kids;
-    my @messages = @{$self->messages};
-    $self->messages(undef) if @messages;
+    my @messages = @{$self->messages || []};
+    $self->messages([]);
     $_->prep_for_destroy for @messages;
     $self->parent(undef);
 }
