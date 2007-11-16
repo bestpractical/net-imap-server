@@ -62,7 +62,7 @@ sub set_flag {
 
     my $changed = not $old;
     if ($changed and not @_) {
-        for my $c (Net::Server::IMAP->concurrent_connections($self->mailbox)) {
+        for my $c (Net::Server::IMAP->concurrent_mailbox_connections($self->mailbox)) {
             $c->untagged_fetch->{$c->sequence($self)}{FLAGS}++ unless $c->ignore_flags;
         }
     }
@@ -79,7 +79,7 @@ sub clear_flag {
 
     my $changed = $old;
     if ($changed and not @_) {
-        for my $c (Net::Server::IMAP->concurrent_connections($self->mailbox)) {
+        for my $c (Net::Server::IMAP->concurrent_mailbox_connections($self->mailbox)) {
             $c->untagged_fetch->{$c->sequence($self)}{FLAGS}++ unless $c->ignore_flags;
         }
     }
@@ -337,6 +337,11 @@ sub store {
             not grep { lc $a eq lc $_ } @flags
         } $self->flags;
     }
+}
+
+sub prep_for_destroy {
+    my $self = shift;
+    $self->mailbox(undef);
 }
 
 1;

@@ -31,6 +31,9 @@ sub init {
     return $self;
 }
 
+sub close {
+}
+
 sub split {
     my $self = shift;
     return grep {length} split quotemeta $self->root->seperator, shift;

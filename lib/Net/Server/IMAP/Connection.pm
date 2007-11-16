@@ -81,6 +81,7 @@ sub close {
     delete $self->server->connections->{ $self->io_handle->fileno };
     $self->server->select->remove( $self->io_handle );
     $self->io_handle->close;
+    $self->model->close if $self->model;
 }
 
 sub parse_command {

@@ -59,23 +59,21 @@ sub run {
         $self->select->add($ssl);
     }
 
-    while ( $self->select ) {
-        while ( my @ready = $self->select->can_read ) {
-            Module::Refresh->refresh;
-            foreach my $fh (@ready) {
-                if ( $fh == $lsn or (defined $ssl and $fh == $ssl)) {
+    while ( $self->select and my @ready = $self->select->can_read ) {
+        Module::Refresh->refresh;
+        foreach my $fh (@ready) {
+            if ( $fh == $lsn or (defined $ssl and $fh == $ssl)) {
+                
+                # Create a new socket
+                my $new = $fh->accept;
+                # Accept can fail; if so, ignore the connection
+                $self->accept_connection($new) if $new;
+            } else {
 
-                    # Create a new socket
-                    my $new = $fh->accept;
-                    # Accept can fail; if so, ignore the connection
-                    $self->accept_connection($new) if $new;
-                } else {
-
-                    # Process socket
-                    local $Net::Server::IMAP::Server = $self;
-                    local $SIG{PIPE} = sub { warn "Broken pipe\n"; $self->connections->{ $fh->fileno}->close };
-                    $self->connections->{ $fh->fileno }->handle_lines;
-                }
+                # Process socket
+                local $Net::Server::IMAP::Server = $self;
+                local $SIG{PIPE} = sub { warn "Broken pipe\n"; $self->connections->{ $fh->fileno}->close };
+                $self->connections->{ $fh->fileno }->handle_lines;
             }
         }
     }
@@ -102,7 +100,7 @@ sub model {
     return $self->{model};
 }
 
-sub concurrent_connections {
+sub concurrent_mailbox_connections {
     my $class = shift;
     my $self = ref $class ? $class : $Net::Server::IMAP::Server;
     my $selected = shift || $self->connection->selected;
@@ -110,6 +108,16 @@ sub concurrent_connections {
     return () unless $selected;
     return grep {$_->is_auth and $_->is_selected
                  and $_->selected eq $selected} values %{$self->connections};
+}
+
+sub concurrent_user_connections {
+    my $class = shift;
+    my $self = ref $class ? $class : $Net::Server::IMAP::Server;
+    my $user = shift || $self->connection->auth->user;
+
+    return () unless $self->connection->is_auth;
+    return grep {$_->is_auth
+                 and $_->auth->user eq $user} values %{$self->connections};
 }
 
 sub accept_connection {

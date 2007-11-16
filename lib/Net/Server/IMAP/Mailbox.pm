@@ -77,7 +77,7 @@ sub add_message {
 
     # Also need to add it to anyone that has this folder as a
     # temporary message store
-    for my $c (Net::Server::IMAP->concurrent_connections($self)) {
+    for my $c (Net::Server::IMAP->concurrent_mailbox_connections($self)) {
         next unless $c->temporary_messages;
 
         push @{$c->temporary_messages}, $message;
@@ -201,7 +201,7 @@ sub expunge {
     my $offset   = 0;
     my @messages = @{ $self->messages };
     $self->messages( [ grep { not ( $_->has_flag('\Deleted') and (not $only or $only{$_->sequence}))} @messages ] );
-    for my $c (Net::Server::IMAP->concurrent_connections($self)) {
+    for my $c (Net::Server::IMAP->concurrent_mailbox_connections($self)) {
         # Ensure that all other connections with this selected get a
         # temporary message list, if they don't already have one
         unless (($Net::Server::IMAP::Server->connection and $c eq $Net::Server::IMAP::Server->connection)
@@ -238,6 +238,17 @@ sub append {
 }
 
 sub poll {}
+
+sub prep_for_destroy {
+    my $self = shift;
+    my @kids = @{$self->children || []};
+    $self->children(undef);
+    $_->prep_for_destroy for @kids;
+    my @messages = @{$self->messages};
+    $self->messages(undef) if @messages;
+    $_->prep_for_destroy for @messages;
+    $self->parent(undef);
+}
 
 package Email::IMAPFolder;
 use base 'Email::Folder';
