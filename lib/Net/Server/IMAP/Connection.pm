@@ -243,6 +243,11 @@ sub log {
     warn $msg . "\n";
 }
 
+sub connected {
+    my $self = shift;
+    return $self->io_handle and $self->io_handle->peerport;
+}
+
 sub out {
     my $self = shift;
     my $msg  = shift;

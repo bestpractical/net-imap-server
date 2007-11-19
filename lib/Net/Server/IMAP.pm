@@ -115,7 +115,7 @@ sub concurrent_user_connections {
     my $self = ref $class ? $class : $Net::Server::IMAP::Server;
     my $user = shift || $self->connection->auth->user;
 
-    return () unless $self->connection->is_auth;
+    return () unless $user;
     return grep {$_->is_auth
                  and $_->auth->user eq $user} values %{$self->connections};
 }

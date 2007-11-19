@@ -25,6 +25,7 @@ sub run {
     my ( $messages, $spec ) = $self->parsed_options;
     my @messages = $self->connection->get_messages($messages);
     for my $m (@messages) {
+        return unless $self->connection->connected;
         $self->untagged_response( $self->connection->sequence($m)
                 . " FETCH "
                 . $self->data_out( [ $m->fetch($spec) ] ) );

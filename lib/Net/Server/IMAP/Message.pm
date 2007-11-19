@@ -36,6 +36,11 @@ sub copy_allowed {
     return 1;
 }
 
+sub mime_header {
+    my $self = shift;
+    return $self->mime->header_obj;
+}
+
 sub copy {
     my $self = shift;
     my $mailbox = shift;
@@ -146,8 +151,7 @@ sub fetch {
         } elsif ( uc $part eq "FLAGS" ) {
             push @out, [ map { \$_ } $self->flags ];
         } elsif ( uc $part eq "RFC822.SIZE" ) {
-            my $result = $self->mime_select( [], undef, undef );
-            push @out, length $result;
+            push @out, length $self->mime_select( [], undef, undef );
         } elsif ( uc $part eq "BODY" ) {
             push @out, $self->mime_bodystructure( $self->mime, 0 );
         } elsif ( uc $part eq "BODYSTRUCTURE" ) {
@@ -165,24 +169,28 @@ sub mime_select {
     my $self = shift;
     my ( $sections, $start, $end, $extras ) = @_;
 
-    my $mime = $self->mime;
+    my $mime;
 
     my @sections = @{$sections};
-    my $result   = $self->mime->as_string;
+    my $result;
+    $result = $self->mime->as_string unless @sections;
     for (@sections) {
         if ( uc $_ eq "HEADER" or uc $_ eq "MIME" ) {
-            $result = $mime->header_obj->as_string . "\r\n";
+            $result = ($mime ? $mime->header_obj : $self->mime_header)->as_string . "\r\n";
         } elsif ( uc $_ eq "FIELDS" ) {
             my %case;
-            $case{ uc $_ } = $_ for $mime->header_names;
-            my $header = Email::Simple::Header->new("");
+            my $mime_header = $mime ? $mime->header_obj : $self->mime_header;
+            $case{ uc $_ } = $_ for $mime_header->header_names;
+            my $copy = Email::Simple::Header->new("");
             for my $h ( @{$extras} ) {
-                $header->header_set( $case{$h} || $h => $mime->header($h) );
+                $copy->header_set( $case{$h} || $h => $mime_header->header($h) );
             }
-            $result = $header->as_string ? $header->as_string . "\r\n" : "";
+            $result = $copy->as_string ? $copy->as_string . "\r\n" : "";
         } elsif ( uc $_ eq "TEXT" ) {
+            $mime ||= $self->mime;
             $result = $mime->body;
         } elsif ( $_ =~ /^\d+$/i ) {
+            $mime ||= $self->mime;
             my @parts = $mime->parts;
             $mime   = $parts[ $_ - 1 ];
             $result = $mime->body;
@@ -287,7 +295,7 @@ sub mime_bodystructure {
 sub address_envelope {
     my $self   = shift;
     my $header = shift;
-    my $mime   = $self->mime;
+    my $mime   = $self->mime_header;
 
     return undef unless $mime->header($header);
     return [ map { [ {type => "string", value => $_->name},
@@ -300,7 +308,7 @@ sub address_envelope {
 
 sub mime_envelope {
     my $self = shift;
-    my $mime = $self->mime;
+    my $mime = $self->mime_header;
 
     return [
         scalar $mime->header("Date"),
