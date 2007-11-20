@@ -32,4 +32,6 @@ sub plain {
     };
 }
 
+sub client_id {}
+
 1;

@@ -135,7 +135,14 @@ sub accept_connection {
 
 sub capability {
     my $self = shift;
-    return "IMAP4rev1 STARTTLS AUTH=PLAIN CHILDREN LITERAL+ UIDPLUS";
+    return "IMAP4rev1 STARTTLS AUTH=PLAIN CHILDREN LITERAL+ UIDPLUS ID";
+}
+
+sub id {
+    return (
+            name => "Net-IMAP-Server",
+            version => $Net::IMAP::Server::VERSION,
+           );
 }
 
 1;    # Magic true value required at end of module
