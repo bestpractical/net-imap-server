@@ -1,4 +1,4 @@
-package Net::Server::IMAP::DefaultModel;
+package Net::IMAP::Server::DefaultModel;
 
 use warnings;
 use strict;
@@ -57,7 +57,7 @@ sub lookup {
 
 sub mailbox {
     my $self = shift;
-    return Net::Server::IMAP::Mailbox->new( { model => $self, @_ } );
+    return Net::IMAP::Server::Mailbox->new( { model => $self, @_ } );
 }
 
 1;

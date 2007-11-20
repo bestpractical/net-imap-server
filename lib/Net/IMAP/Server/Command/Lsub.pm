@@ -1,9 +1,9 @@
-package Net::Server::IMAP::Command::Lsub;
+package Net::IMAP::Server::Command::Lsub;
 
 use warnings;
 use strict;
 
-use base qw/Net::Server::IMAP::Command::List/;
+use base qw/Net::IMAP::Server::Command::List/;
 
 sub traverse {
     my $self  = shift;

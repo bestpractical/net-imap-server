@@ -1,4 +1,4 @@
-package Net::Server::IMAP;
+package Net::IMAP::Server;
 
 use warnings;
 use strict;
@@ -12,8 +12,8 @@ use IO::Select;
 use IO::Socket;
 use IO::Socket::SSL;
 
-use Net::Server::IMAP::Mailbox;
-use Net::Server::IMAP::Connection;
+use Net::IMAP::Server::Mailbox;
+use Net::IMAP::Server::Connection;
 
 our $VERSION = '0.001';
 
@@ -25,8 +25,8 @@ sub new {
     return $class->SUPER::new(
         {   port        => 8080,
             ssl_port    => 0,
-            auth_class  => "Net::Server::IMAP::DefaultAuth",
-            model_class => "Net::Server::IMAP::DefaultModel",
+            auth_class  => "Net::IMAP::Server::DefaultAuth",
+            model_class => "Net::IMAP::Server::DefaultModel",
             @_,
             connections => {},
         }
@@ -71,7 +71,7 @@ sub run {
             } else {
 
                 # Process socket
-                local $Net::Server::IMAP::Server = $self;
+                local $Net::IMAP::Server::Server = $self;
                 local $SIG{PIPE} = sub { warn "Broken pipe\n"; $self->connections->{ $fh->fileno}->close };
                 $self->connections->{ $fh->fileno }->handle_lines;
             }
@@ -102,7 +102,7 @@ sub model {
 
 sub concurrent_mailbox_connections {
     my $class = shift;
-    my $self = ref $class ? $class : $Net::Server::IMAP::Server;
+    my $self = ref $class ? $class : $Net::IMAP::Server::Server;
     my $selected = shift || $self->connection->selected;
 
     return () unless $selected;
@@ -112,7 +112,7 @@ sub concurrent_mailbox_connections {
 
 sub concurrent_user_connections {
     my $class = shift;
-    my $self = ref $class ? $class : $Net::Server::IMAP::Server;
+    my $self = ref $class ? $class : $Net::IMAP::Server::Server;
     my $user = shift || $self->connection->auth->user;
 
     return () unless $user;
@@ -125,7 +125,7 @@ sub accept_connection {
     my $handle = shift;
     $handle->blocking(0);
     $self->select->add($handle);
-    my $conn = Net::Server::IMAP::Connection->new(
+    my $conn = Net::IMAP::Server::Connection->new(
         io_handle => $handle,
         server    => $self,
     );
@@ -143,12 +143,12 @@ __END__
 
 =head1 NAME
 
-Net::Server::IMAP - [One line description of module's purpose here]
+Net::IMAP::Server - [One line description of module's purpose here]
 
 
 =head1 SYNOPSIS
 
-    use Net::Server::IMAP;
+    use Net::IMAP::Server;
 
 =for author to fill in:
     Brief code example(s) here showing commonest usage(s).
@@ -204,7 +204,7 @@ Net::Server::IMAP - [One line description of module's purpose here]
     that can be set. These descriptions must also include details of any
     configuration language used.
 
-Net::Server::IMAP requires no configuration files or environment variables.
+Net::IMAP::Server requires no configuration files or environment variables.
 
 
 =head1 DEPENDENCIES
@@ -244,7 +244,7 @@ None reported.
 No bugs have been reported.
 
 Please report any bugs or feature requests to
-C<bug-net-server-imap4@rt.cpan.org>, or through the web interface at
+C<bug-net-imap-server@rt.cpan.org>, or through the web interface at
 L<http://rt.cpan.org>.
 
 

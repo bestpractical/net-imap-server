@@ -1,10 +1,10 @@
-package Net::Server::IMAP::Command::Uid;
+package Net::IMAP::Server::Command::Uid;
 
 use warnings;
 use strict;
 
-use base qw/Net::Server::IMAP::Command/;
-use Net::Server::IMAP::Command::Search;
+use base qw/Net::IMAP::Server::Command/;
+use Net::IMAP::Server::Command::Search;
 
 sub validate {
     my $self = shift;
@@ -120,7 +120,7 @@ sub expunge {
 sub search {
     my $self = shift;
 
-    my $filter = Net::Server::IMAP::Command::Search::filter($self, @_);
+    my $filter = Net::IMAP::Server::Command::Search::filter($self, @_);
     return unless $filter;
 
     my @results = map {$_->uid} grep {$filter->($_)} $self->connection->get_messages('1:*');

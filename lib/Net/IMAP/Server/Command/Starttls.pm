@@ -1,9 +1,9 @@
-package Net::Server::IMAP::Command::Starttls;
+package Net::IMAP::Server::Command::Starttls;
 
 use warnings;
 use strict;
 
-use base qw/Net::Server::IMAP::Command/;
+use base qw/Net::IMAP::Server::Command/;
 
 use IO::Socket::SSL;
 

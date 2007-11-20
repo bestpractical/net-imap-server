@@ -1,9 +1,9 @@
-package Net::Server::IMAP::Command::Capability;
+package Net::IMAP::Server::Command::Capability;
 
 use warnings;
 use strict;
 
-use base qw/Net::Server::IMAP::Command/;
+use base qw/Net::IMAP::Server::Command/;
 
 sub validate {
     my $self = shift;

@@ -1,10 +1,10 @@
-package Net::Server::IMAP::Command::Search;
+package Net::IMAP::Server::Command::Search;
 
 use warnings;
 use strict;
 use bytes;
 
-use base qw/Net::Server::IMAP::Command/;
+use base qw/Net::IMAP::Server::Command/;
 
 sub validate {
     my $self = shift;

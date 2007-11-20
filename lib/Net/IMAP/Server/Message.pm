@@ -1,4 +1,4 @@
-package Net::Server::IMAP::Message;
+package Net::IMAP::Server::Message;
 
 use warnings;
 use strict;
@@ -67,7 +67,7 @@ sub set_flag {
 
     my $changed = not $old;
     if ($changed and not @_) {
-        for my $c (Net::Server::IMAP->concurrent_mailbox_connections($self->mailbox)) {
+        for my $c (Net::IMAP::Server->concurrent_mailbox_connections($self->mailbox)) {
             $c->untagged_fetch->{$c->sequence($self)}{FLAGS}++ unless $c->ignore_flags;
         }
     }
@@ -84,7 +84,7 @@ sub clear_flag {
 
     my $changed = $old;
     if ($changed and not @_) {
-        for my $c (Net::Server::IMAP->concurrent_mailbox_connections($self->mailbox)) {
+        for my $c (Net::IMAP::Server->concurrent_mailbox_connections($self->mailbox)) {
             $c->untagged_fetch->{$c->sequence($self)}{FLAGS}++ unless $c->ignore_flags;
         }
     }
@@ -230,7 +230,7 @@ sub mime_bodystructure {
         my @parts        = $mime->parts;
         @parts = () if @parts == 1 and $parts[0] == $mime;
         my $parts = join '', map {
-            Net::Server::IMAP::Command->data_out( $self->mime_bodystructure( $_, $long ) )
+            Net::IMAP::Server::Command->data_out( $self->mime_bodystructure( $_, $long ) )
         } @parts;
 
         return [

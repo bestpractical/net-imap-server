@@ -1,9 +1,9 @@
 use inc::Module::Install;
 
-name ('Net-Server-IMAP');
+name ('Net-IMAP-Server');
 author ('Jesse Vincent <jesse@bestpractical.com>');
-version_from ('lib/Net/Server/IMAP.pm');
-abstract_from('lib/Net/Server/IMAP.pm');
+version_from ('lib/Net/IMAP/Server.pm');
+abstract_from('lib/Net/IMAP/Server.pm');
 license('perl');
 
 requires('Class::Accessor');

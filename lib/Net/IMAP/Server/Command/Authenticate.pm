@@ -1,10 +1,10 @@
-package Net::Server::IMAP::Command::Authenticate;
+package Net::IMAP::Server::Command::Authenticate;
 
 use warnings;
 use strict;
 
 use MIME::Base64;
-use base qw/Net::Server::IMAP::Command/;
+use base qw/Net::IMAP::Server::Command/;
 
 __PACKAGE__->mk_accessors(qw(sasl pending_auth));
 

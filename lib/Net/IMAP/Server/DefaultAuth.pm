@@ -1,4 +1,4 @@
-package Net::Server::IMAP::DefaultAuth;
+package Net::IMAP::Server::DefaultAuth;
 
 use warnings;
 use strict;

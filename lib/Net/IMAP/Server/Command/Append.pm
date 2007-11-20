@@ -1,9 +1,9 @@
-package Net::Server::IMAP::Command::Append;
+package Net::IMAP::Server::Command::Append;
 
 use warnings;
 use strict;
 
-use base qw/Net::Server::IMAP::Command/;
+use base qw/Net::IMAP::Server::Command/;
 
 use DateTime::Format::Strptime;
 

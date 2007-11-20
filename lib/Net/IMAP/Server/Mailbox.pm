@@ -1,9 +1,9 @@
-package Net::Server::IMAP::Mailbox;
+package Net::IMAP::Server::Mailbox;
 
 use warnings;
 use strict;
 
-use Net::Server::IMAP::Message;
+use Net::IMAP::Server::Message;
 use base 'Class::Accessor';
 
 __PACKAGE__->mk_accessors(
@@ -53,8 +53,8 @@ sub seperator {
 
 sub selected {
     my $self = shift;
-    return $Net::Server::IMAP::Server->connection->selected
-      and $Net::Server::IMAP::Server->connection->selected eq $self;
+    return $Net::IMAP::Server::Server->connection->selected
+      and $Net::IMAP::Server::Server->connection->selected eq $self;
 }
 
 sub add_message {
@@ -77,7 +77,7 @@ sub add_message {
 
     # Also need to add it to anyone that has this folder as a
     # temporary message store
-    for my $c (Net::Server::IMAP->concurrent_mailbox_connections($self)) {
+    for my $c (Net::IMAP::Server->concurrent_mailbox_connections($self)) {
         next unless $c->temporary_messages;
 
         push @{$c->temporary_messages}, $message;
@@ -166,7 +166,7 @@ sub can_set_flag {
 
 sub exists {
     my $self = shift;
-    $Net::Server::IMAP::Server->connection->previous_exists( scalar @{ $self->messages } )
+    $Net::IMAP::Server::Server->connection->previous_exists( scalar @{ $self->messages } )
       if $self->selected;
     return scalar @{ $self->messages };
 }
@@ -201,10 +201,10 @@ sub expunge {
     my $offset   = 0;
     my @messages = @{ $self->messages };
     $self->messages( [ grep { not ( $_->has_flag('\Deleted') and (not $only or $only{$_->sequence}))} @messages ] );
-    for my $c (Net::Server::IMAP->concurrent_mailbox_connections($self)) {
+    for my $c (Net::IMAP::Server->concurrent_mailbox_connections($self)) {
         # Ensure that all other connections with this selected get a
         # temporary message list, if they don't already have one
-        unless (($Net::Server::IMAP::Server->connection and $c eq $Net::Server::IMAP::Server->connection)
+        unless (($Net::IMAP::Server::Server->connection and $c eq $Net::IMAP::Server::Server->connection)
              or $c->temporary_messages) {
             $c->temporary_messages([@messages]);
             $c->temporary_sequence_map({});
@@ -223,7 +223,7 @@ sub expunge {
         }
     }
 
-    for my $c (Net::Server::IMAP->concurrent_mailbox_connections($self)) {
+    for my $c (Net::IMAP::Server->concurrent_mailbox_connections($self)) {
         # Also, each connection gets these added to their expunge list
         push @{$c->untagged_expunge}, @ids;
     }
@@ -231,7 +231,7 @@ sub expunge {
 
 sub append {
     my $self = shift;
-    my $m = Net::Server::IMAP::Message->new(@_);
+    my $m = Net::IMAP::Server::Message->new(@_);
     $m->set_flag('\Recent', 1);
     $self->add_message($m);
     return $m;
@@ -258,7 +258,7 @@ sub bless_message {
     my $self = shift;
     my $message = shift || "";
 
-    return Net::Server::IMAP::Message->new($message);
+    return Net::IMAP::Server::Message->new($message);
 }
 
 1;

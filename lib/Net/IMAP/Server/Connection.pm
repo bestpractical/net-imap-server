@@ -1,11 +1,11 @@
-package Net::Server::IMAP::Connection;
+package Net::IMAP::Server::Connection;
 
 use warnings;
 use strict;
 
 use base 'Class::Accessor';
 
-use Net::Server::IMAP::Command;
+use Net::IMAP::Server::Command;
 
 __PACKAGE__->mk_accessors(qw(server io_handle _selected selected_read_only model pending temporary_messages temporary_sequence_map previous_exists untagged_expunge untagged_fetch ignore_flags));
 
@@ -52,10 +52,10 @@ sub handle_command {
     my ( $id, $cmd, $options ) = $self->parse_command($content);
     return unless defined $id;
 
-    my $cmd_class = "Net::Server::IMAP::Command::$cmd";
+    my $cmd_class = "Net::IMAP::Server::Command::$cmd";
     $cmd_class->require() || warn $@;
     unless ( $cmd_class->can('run') ) {
-        $cmd_class = "Net::Server::IMAP::Command";
+        $cmd_class = "Net::IMAP::Server::Command";
     }
     my $handler = $cmd_class->new(
         {   server      => $self->server,
@@ -163,7 +163,7 @@ sub send_untagged {
     {
         # When we poll, the things that we find should affect this
         # connection as well; hence, the local to be "connection-less"
-        local $Net::Server::IMAP::Server->{connection};
+        local $Net::IMAP::Server::Server->{connection};
         $self->selected->poll;
     }
 
@@ -171,7 +171,7 @@ sub send_untagged {
         my($m) = $self->get_messages($s);
         $self->untagged_response( $s
                 . " FETCH "
-                . Net::Server::IMAP::Command->data_out( [ $m->fetch([keys %{$self->untagged_fetch->{$s}}]) ] ) );
+                . Net::IMAP::Server::Command->data_out( [ $m->fetch([keys %{$self->untagged_fetch->{$s}}]) ] ) );
     }
     $self->untagged_fetch({});
 
