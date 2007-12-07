@@ -25,9 +25,9 @@ sub run {
     my $self = shift;
 
     my $mailbox = $self->connection->model->lookup( $self->parsed_options );
-    $self->connection->selected_read_only(1) if $self->command eq "Examine";
     $mailbox->poll;
     $self->connection->selected($mailbox);
+    $self->connection->selected_read_only(1) if $self->command eq "Examine";
 
     $self->untagged_response(
         'FLAGS (' . join( ' ', $mailbox->flags ) . ')' );

@@ -141,8 +141,11 @@ sub auth {
 
 sub selected {
     my $self = shift;
-    $self->send_untagged if @_ and $self->selected;
-    $self->selected_read_only(0) if @_ and $self->selected;
+    if (@_ and $self->selected) {
+        $self->send_untagged;
+        $self->selected->close;
+        $self->selected_read_only(0);
+    }
     return $self->_selected(@_);
 }
 
@@ -209,6 +212,8 @@ sub get_messages {
             $ids{$_}++ for @{ $messages } + 0, $1 .. @{ $messages } + 0;
         } elsif (/^(\d+)$/) {
             $ids{$1}++;
+        } elsif (/^\*$/) {
+            $ids{@{$messages} + 0}++;
         }
     }
     return

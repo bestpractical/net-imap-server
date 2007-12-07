@@ -95,9 +95,11 @@ sub get_uids {
         if (/^(\d+):(\d+)$/) {
             $ids{$_}++ for $2 > $1 ? $1 .. $2 : $2 .. $1;
         } elsif (/^(\d+):\*$/ or /^\*:(\d+)$/) {
-            $ids{$_}++ for $self->uidnext - 1, $1 .. $self->uidnext - 1;
+            $ids{$_}++ for $self->messages->[-1]->uid, $1 .. $self->messages->[-1]->uid;
         } elsif (/^(\d+)$/) {
             $ids{$1}++;
+        } elsif (/^\*$/) {
+            $ids{ $self->messages->[-1]->uid }++;
         }
     }
     return
@@ -246,9 +248,12 @@ sub prep_for_destroy {
     $_->prep_for_destroy for @kids;
     my @messages = @{$self->messages || []};
     $self->messages([]);
+    $self->uids({});
     $_->prep_for_destroy for @messages;
     $self->parent(undef);
 }
+
+sub close {}
 
 package Email::IMAPFolder;
 use base 'Email::Folder';
