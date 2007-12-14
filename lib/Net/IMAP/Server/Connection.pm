@@ -6,6 +6,7 @@ use strict;
 use base 'Class::Accessor';
 
 use Net::IMAP::Server::Command;
+use Coro;
 
 __PACKAGE__->mk_accessors(qw(server io_handle _selected selected_read_only model pending temporary_messages temporary_sequence_map previous_exists untagged_expunge untagged_fetch ignore_flags));
 
@@ -23,15 +24,13 @@ sub greeting {
 
 sub handle_lines {
     my $self    = shift;
-    my $i = 0;
-    ++$i and $self->handle_command($_) while $self->io_handle and $_ = $self->io_handle->getline();
-
-    if ( not $i ) {
-        $self->log("Connection closed by remote host");
-        $self->close;
-        return;
+    while ($self->io_handle and $_ = $self->io_handle->getline()) {
+        $self->handle_command($_);
+        cede;
     }
 
+    $self->log("Connection closed by remote host");
+    $self->close;
 }
 
 sub handle_command {
@@ -42,7 +41,7 @@ sub handle_command {
     local $self->server->{model} = $self->model;
     local $self->server->{auth} = $self->auth;
 
-    $self->log("C(@{[$self->io_handle->peerport]},@{[$self->auth ? $self->auth->user : '???']},@{[$self->is_selected ? $self->selected->full_path : 'unselected']}): $content");
+    $self->log("C(@{[$self]},@{[$self->auth ? $self->auth->user : '???']},@{[$self->is_selected ? $self->selected->full_path : 'unselected']}): $content");
 
     if ( $self->pending ) {
         $self->pending->($content);
@@ -78,9 +77,9 @@ sub handle_command {
 
 sub close {
     my $self = shift;
+    $self->server->connections([grep {$_ ne $self} @{$self->server->connections}]);
     if ($self->io_handle) {
-        delete $self->server->connections->{ $self->io_handle->fileno };
-        $self->server->select->remove( $self->io_handle );
+        warn "Closing connection $self";
         $self->io_handle->close;
         $self->io_handle(undef);
     }
@@ -124,7 +123,9 @@ sub is_selected {
 
 sub is_encrypted {
     my $self = shift;
-    return $self->io_handle->isa("IO::Socket::SSL");
+    my $handle = $self->io_handle;
+    $handle = tied(${$handle})->[0];
+    return $handle->isa("IO::Socket::SSL");
 }
 
 sub auth {
@@ -257,16 +258,17 @@ sub out {
     my $self = shift;
     my $msg  = shift;
     if ($self->io_handle and $self->io_handle->peerport) {
-        $self->io_handle->blocking(1);
         if ($self->io_handle->print($msg)) {
-            $self->io_handle->blocking(0);
-            $self->log("S(@{[$self->io_handle->peerport || 'undef']},@{[$self->auth ? $self->auth->user : '???']},@{[$self->is_selected ? $self->selected->full_path : 'unselected']}): $msg");
+            $self->log("S(@{[$self]},@{[$self->auth ? $self->auth->user : '???']},@{[$self->is_selected ? $self->selected->full_path : 'unselected']}): $msg");
         } else {
-            $self->io_handle->close if $self->io_handle;
             $self->close;
+            # Bail out; never returns
+            $Coro::current->cancel;
         }
     } else {
         $self->close;
+        # Bail out; never returns
+        $Coro::current->cancel;
     }
 }
 

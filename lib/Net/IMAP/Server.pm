@@ -3,14 +3,12 @@ package Net::IMAP::Server;
 use warnings;
 use strict;
 
-use base 'Class::Accessor';
+use base qw/Net::Server::Coro Class::Accessor/;
 
 use UNIVERSAL::require;
 use Module::Refresh;    # for development
 use Carp;
-use IO::Select;
-use IO::Socket;
-use IO::Socket::SSL;
+use Coro;
 
 use Net::IMAP::Server::Mailbox;
 use Net::IMAP::Server::Connection;
@@ -18,70 +16,48 @@ use Net::IMAP::Server::Connection;
 our $VERSION = '0.001';
 
 __PACKAGE__->mk_accessors(
-    qw/socket ssl_socket select connections port auth_class model_class ssl_port/);
+    qw/connections port ssl_port auth_class model_class/);
 
 sub new {
     my $class = shift;
-    return $class->SUPER::new(
+    return Class::Accessor::new($class,
         {   port        => 8080,
             ssl_port    => 0,
             auth_class  => "Net::IMAP::Server::DefaultAuth",
             model_class => "Net::IMAP::Server::DefaultModel",
             @_,
-            connections => {},
+            connections => [],
         }
     );
 }
 
 sub run {
     my $self = shift;
-
-    my $lsn = IO::Socket::INET->new(
-        Listen    => 1,
-        LocalPort => $self->port,
-        ReuseAddr => 1
-    );
-    if   ($@) { die "Listen on port " . $self->port . " failed: $@"; }
-    else      { warn "Listening on " . $self->port . "\n" }
-    $self->socket($lsn);
-    $self->select( IO::Select->new($lsn) );
-
-    my $ssl;
+    my @proto = qw/TCP/;
+    my @port  = $self->port;
     if ($self->ssl_port) {
-        $ssl = IO::Socket::SSL->new(
-            Listen    => 1,
-            LocalPort => $self->ssl_port,
-            ReuseAddr => 1
-        );
-        if   ($@) { die "SSL Listen on port " . $self->ssl_port . " failed: $@"; }
-        else      { warn "SSL Listening on " . $self->ssl_port . "\n" }
-        $self->ssl_socket($ssl);
-        $self->select->add($ssl);
+        push @proto, "SSL";
+        push @port, $self->ssl_port;
     }
+    local $Net::IMAP::Server::Server = $self;
+    $self->SUPER::run(proto => \@proto, port => \@port);
+}
 
-    while ( $self->select and my @ready = $self->select->can_read ) {
-        Module::Refresh->refresh;
-        foreach my $fh (@ready) {
-            if ( $fh == $lsn or (defined $ssl and $fh == $ssl)) {
-                
-                # Create a new socket
-                my $new = $fh->accept;
-                # Accept can fail; if so, ignore the connection
-                $self->accept_connection($new) if $new;
-            } else {
-
-                # Process socket
-                local $Net::IMAP::Server::Server = $self;
-                local $SIG{PIPE} = sub { warn "Broken pipe\n"; $self->connections->{ $fh->fileno}->close };
-                $self->connections->{ $fh->fileno }->handle_lines;
-            }
-        }
-    }
+sub process_request {
+    my $self = shift;
+    my $handle = $self->{server}{client};
+    my $conn = Net::IMAP::Server::Connection->new(
+        io_handle => $handle,
+        server    => $self,
+    );
+    $Coro::current->prio(-4);
+    push @{$self->connections}, $conn;
+    $conn->handle_lines;
 }
 
 DESTROY {
     my $self = shift;
-    $_->close for grep { defined $_ } values %{ $self->connections };
+    $_->close for grep { defined $_ } @{ $self->connections };
     $self->socket->close if $self->socket;
 }
 
@@ -107,7 +83,7 @@ sub concurrent_mailbox_connections {
 
     return () unless $selected;
     return grep {$_->is_auth and $_->is_selected
-                 and $_->selected eq $selected} values %{$self->connections};
+                 and $_->selected eq $selected} @{$self->connections};
 }
 
 sub concurrent_user_connections {
@@ -117,20 +93,7 @@ sub concurrent_user_connections {
 
     return () unless $user;
     return grep {$_->is_auth
-                 and $_->auth->user eq $user} values %{$self->connections};
-}
-
-sub accept_connection {
-    my $self   = shift;
-    my $handle = shift;
-    $handle->blocking(0);
-    $self->select->add($handle);
-    my $conn = Net::IMAP::Server::Connection->new(
-        io_handle => $handle,
-        server    => $self,
-    );
-    $self->connections->{ $handle->fileno } = $conn;
-    return $conn;
+                 and $_->auth->user eq $user} @{$self->connections};
 }
 
 sub capability {

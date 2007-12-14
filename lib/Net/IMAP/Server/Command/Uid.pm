@@ -6,6 +6,8 @@ use strict;
 use base qw/Net::IMAP::Server::Command/;
 use Net::IMAP::Server::Command::Search;
 
+use Coro;
+
 sub validate {
     my $self = shift;
 
@@ -46,10 +48,10 @@ sub fetch {
     push @{$spec}, "UID" unless grep {uc $_ eq "UID"} @{$spec};
     my @messages = $self->connection->selected->get_uids($messages);
     for my $m (@messages) {
-        return unless $self->connection->connected;
         $self->untagged_response( $self->connection->sequence($m)
                 . " FETCH "
                 . $self->data_out( [ $m->fetch($spec) ] ) );
+        cede;
     }
 
     $self->ok_completed();
