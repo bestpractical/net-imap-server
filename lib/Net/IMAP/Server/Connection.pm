@@ -79,7 +79,7 @@ sub close {
     my $self = shift;
     $self->server->connections([grep {$_ ne $self} @{$self->server->connections}]);
     if ($self->io_handle) {
-        warn "Closing connection $self";
+        $self->log("Closing connection $self");
         $self->io_handle->close;
         $self->io_handle(undef);
     }

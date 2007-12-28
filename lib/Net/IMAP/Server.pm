@@ -16,7 +16,7 @@ use Net::IMAP::Server::Connection;
 our $VERSION = '0.001';
 
 __PACKAGE__->mk_accessors(
-    qw/connections port ssl_port auth_class model_class/);
+    qw/connections port ssl_port auth_class model_class user group/);
 
 sub new {
     my $class = shift;
@@ -40,7 +40,12 @@ sub run {
         push @port, $self->ssl_port;
     }
     local $Net::IMAP::Server::Server = $self;
-    $self->SUPER::run(proto => \@proto, port => \@port);
+    $self->SUPER::run(
+        proto => \@proto,
+        port  => \@port,
+        user  => $self->user,
+        group => $self->group,
+    );
 }
 
 sub process_request {
