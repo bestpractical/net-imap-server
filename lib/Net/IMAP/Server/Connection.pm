@@ -29,7 +29,7 @@ sub handle_lines {
         cede;
     }
 
-    $self->log("Connection closed by remote host");
+    $self->log("-(@{[$self]},@{[$self->auth ? $self->auth->user : '???']},@{[$self->is_selected ? $self->selected->full_path : 'unselected']}): Connection closed by remote host");
     $self->close;
 }
 
@@ -143,8 +143,10 @@ sub auth {
 sub selected {
     my $self = shift;
     if (@_ and $self->selected) {
-        $self->send_untagged;
-        $self->selected->close;
+        unless ($self->selected eq $_[0]) {
+            $self->send_untagged;
+            $self->selected->close;
+        }
         $self->selected_read_only(0);
     }
     return $self->_selected(@_);

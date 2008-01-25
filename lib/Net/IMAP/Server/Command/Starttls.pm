@@ -25,7 +25,13 @@ sub validate {
 sub run {
     my $self = shift;
 
+    unless (-r "certs/server-cert.pem" and -r "certs/server-key.pem") {
+        return $self->bad_command("Server error");
+    }
+
     $self->ok_completed;
+
+    require Net::Server::Proto::SSL;
     my $handle = $self->connection->io_handle;
     $handle = tied(${$handle})->[0];
     IO::Socket::SSL->start_SSL( $handle,
