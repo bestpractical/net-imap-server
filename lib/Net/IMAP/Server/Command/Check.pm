@@ -20,7 +20,7 @@ sub validate {
 
 sub run {
     my $self = shift;
-
+    $self->connection->poll;
     $self->ok_completed();
 }
 

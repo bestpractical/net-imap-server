@@ -8,11 +8,11 @@ use base 'Class::Accessor';
 use Net::IMAP::Server::Command;
 use Coro;
 
-__PACKAGE__->mk_accessors(qw(server io_handle _selected selected_read_only model pending temporary_messages temporary_sequence_map previous_exists untagged_expunge untagged_fetch ignore_flags));
+__PACKAGE__->mk_accessors(qw(server io_handle _selected selected_read_only model pending temporary_messages temporary_sequence_map previous_exists untagged_expunge untagged_fetch ignore_flags last_poll));
 
 sub new {
     my $class = shift;
-    my $self = $class->SUPER::new( { @_, state => "unauth", untagged_expunge => [], untagged_fetch => {} } );
+    my $self = $class->SUPER::new( { @_, state => "unauth", untagged_expunge => [], untagged_fetch => {}, last_poll => time } );
     $self->greeting;
     return $self;
 }
@@ -160,17 +160,31 @@ sub untagged_response {
     }
 }
 
+sub poll {
+    my $self = shift;
+    my($mbox) = @_;
+    $mbox ||= $self->selected;
+
+    $self->selected->poll;
+    $self->last_poll(time);
+}
+
+sub force_poll {
+    my $self = shift;
+    $self->last_poll(0);
+}
+
 sub send_untagged {
     my $self = shift;
     my %args = ( expunged => 1,
                  @_ );
     return unless $self->is_auth and $self->is_selected;
 
-    {
+    if (time > $self->last_poll + $self->server->poll_every) {
         # When we poll, the things that we find should affect this
         # connection as well; hence, the local to be "connection-less"
         local $Net::IMAP::Server::Server->{connection};
-        $self->selected->poll;
+        $self->poll;
     }
 
     for my $s (keys %{$self->untagged_fetch}) {

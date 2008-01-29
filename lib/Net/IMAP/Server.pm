@@ -58,7 +58,7 @@ authorization backend.
 =cut
 
 __PACKAGE__->mk_accessors(
-    qw/connections port ssl_port auth_class model_class user group/);
+    qw/connections port ssl_port auth_class model_class user group poll_every/);
 
 =head2 new PARAMHASH
 
@@ -111,6 +111,7 @@ sub new {
             ssl_port    => 0,
             auth_class  => "Net::IMAP::Server::DefaultAuth",
             model_class => "Net::IMAP::Server::DefaultModel",
+            poll_every  => 0,
             @_,
             connections => [],
         }
