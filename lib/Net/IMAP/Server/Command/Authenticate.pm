@@ -30,9 +30,10 @@ sub run {
     my($type, $arg) = $self->parsed_options;
     $self->server->auth_class->require || warn $@;
     my $auth = $self->server->auth_class->new;
-    if ( $auth->provides_sasl( uc $type ) ) {
+    if ( grep {uc $type eq uc $_} $auth->sasl_provides ) {
         $type = lc $type;
-        $self->sasl( $auth->$type() );
+        my $function = "sasl_$type";
+        $self->sasl( $auth->$function() );
         $self->pending_auth($auth);
         $self->connection->pending(sub {$self->continue(@_)});
         $self->continue( $arg || "");
@@ -55,7 +56,7 @@ sub continue {
 
     my $response = $self->sasl->($line);
     if ( ref $response ) {
-        $self->out( "+ " . encode_base64($$response) . "\r\n" );
+        $self->out( "+ " . encode_base64($$response) );
     } elsif ($response) {
         $self->connection->pending(undef);
         $self->connection->auth( $self->pending_auth );

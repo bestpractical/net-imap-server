@@ -5,43 +5,149 @@ use strict;
 
 use base 'Class::Accessor';
 
-use Net::IMAP::Server::Command;
 use Coro;
 
-__PACKAGE__->mk_accessors(qw(server io_handle _selected selected_read_only model pending temporary_messages temporary_sequence_map previous_exists untagged_expunge untagged_fetch ignore_flags last_poll));
+use Net::IMAP::Server::Command;
+
+__PACKAGE__->mk_accessors(
+    qw(server io_handle _selected selected_read_only model pending temporary_messages temporary_sequence_map previous_exists untagged_expunge untagged_fetch ignore_flags last_poll)
+);
+
+=head1 NAME
+
+Net::IMAP::Server::Connection - Connection to a client
+
+=head1 DESCRIPTION
+
+Maintains all of the state for a client connection to the IMAP server.
+
+=head1 METHODS
+
+=head2 new
+
+Creates a new connection; the server will take care of this step.
+
+=cut
 
 sub new {
     my $class = shift;
-    my $self = $class->SUPER::new( { @_, state => "unauth", untagged_expunge => [], untagged_fetch => {}, last_poll => time } );
+    my $self  = $class->SUPER::new(
+        {   @_,
+            state            => "unauth",
+            untagged_expunge => [],
+            untagged_fetch   => {},
+            last_poll        => time
+        }
+    );
     $self->greeting;
     return $self;
 }
 
-sub greeting {
+=head2 server
+
+Returns the L<Net::IMAP::Server> that this connection is on.
+
+=head2 io_handle
+
+Returns the IO handle that can be used to read from or write to the
+client.
+
+=head2 model
+
+Gets or sets the L<Net::IMAP::Server::DefaultModel> or descendant
+associated with this connection.  Note that connections which have not
+authenticated yet do not have a model.
+
+=head2 auth
+
+Gets or sets the L<Net::IMAP::Server::DefaultAuth> or descendant
+associated with this connection.  Note that connections which have not
+authenticated yet do not have an auth object.
+
+=cut
+
+sub auth {
     my $self = shift;
-    $self->out( '* OK IMAP4rev1 Server' . "\r\n" );
+    if (@_) {
+        $self->{auth} = shift;
+        $self->server->{auth} = $self->{auth};
+        $self->server->model_class->require || warn $@;
+        $self->model(
+            $self->server->model_class->new( { auth => $self->{auth} } ) );
+    }
+    return $self->{auth};
 }
 
+=head2 selected [MAILBOX]
+
+Gets or sets the currently selected mailbox for this connection.  This
+may trigger the sending of untagged notifications to the client.
+
+=cut
+
+sub selected {
+    my $self = shift;
+    if ( @_ and $self->selected ) {
+        unless ( $self->selected eq $_[0] ) {
+            $self->send_untagged;
+            $self->selected->close;
+        }
+        $self->selected_read_only(0);
+    }
+    return $self->_selected(@_);
+}
+
+=head2 greeting
+
+Sends out a one-line untagged greeting to the client.
+
+=cut
+
+sub greeting {
+    my $self = shift;
+    $self->untagged_response('OK IMAP4rev1 Server');
+}
+
+=head2 handle_lines
+
+The main line handling loop.  Since we are using L<Coro>, this cedes
+to other coroutines whenever we block, given them a chance to run.  We
+additionally cede after handling every command.
+
+=cut
+
 sub handle_lines {
-    my $self    = shift;
-    while ($self->io_handle and $_ = $self->io_handle->getline()) {
+    my $self = shift;
+    while ( $self->io_handle and $_ = $self->io_handle->getline() ) {
         $self->handle_command($_);
         cede;
     }
 
-    $self->log("-(@{[$self]},@{[$self->auth ? $self->auth->user : '???']},@{[$self->is_selected ? $self->selected->full_path : 'unselected']}): Connection closed by remote host");
+    $self->log(
+        "-(@{[$self]},@{[$self->auth ? $self->auth->user : '???']},@{[$self->is_selected ? $self->selected->full_path : 'unselected']}): Connection closed by remote host"
+    );
     $self->close;
 }
 
+=head2 handle_command
+
+Handles a single line from the client.  This is not quite the same as
+handling a command, because of client literals and continuation
+commands.
+
+=cut
+
 sub handle_command {
-    my $self = shift;
+    my $self    = shift;
     my $content = shift;
 
     local $self->server->{connection} = $self;
-    local $self->server->{model} = $self->model;
-    local $self->server->{auth} = $self->auth;
+    local $self->server->{model}      = $self->model;
+    local $self->server->{auth}       = $self->auth;
 
-    $self->log("C(@{[$self]},@{[$self->auth ? $self->auth->user : '???']},@{[$self->is_selected ? $self->selected->full_path : 'unselected']}): $content");
+    $self->log(
+        "C(@{[$self]},@{[$self->auth ? $self->auth->user : '???']},@{[$self->is_selected ? $self->selected->full_path : 'unselected']}): $content"
+    );
 
     if ( $self->pending ) {
         $self->pending->($content);
@@ -66,35 +172,55 @@ sub handle_command {
     );
     return if $handler->has_literal;
 
-    eval {
-        $handler->run() if $handler->validate;
-    };
-    if (my $error = $@) {
+    eval { $handler->run() if $handler->validate; };
+    if ( my $error = $@ ) {
         $handler->no_command("Server error");
         $self->log($error);
     }
 }
 
+=head2 pending
+
+If a connection has pending state, contains the callback that will
+recieve the next line of input.
+
+=cut
+
+=head2 close
+
+Shuts down this connection, also closing the model and mailboxes.
+
+=cut
+
 sub close {
     my $self = shift;
-    $self->server->connections([grep {$_ ne $self} @{$self->server->connections}]);
-    if ($self->io_handle) {
+    $self->server->connections(
+        [ grep { $_ ne $self } @{ $self->server->connections } ] );
+    if ( $self->io_handle ) {
         $self->log("Closing connection $self");
         $self->io_handle->close;
         $self->io_handle(undef);
     }
-    $self->model->close if $self->model;
+    $self->selected->close if $self->selected;
+    $self->model->close    if $self->model;
 }
+
+=head2 parse_command LINE
+
+Parses the line into the C<tag>, C<ommand>, and C<options>.  Returns
+undef if parsing fails for some reason.
+
+=cut
 
 sub parse_command {
     my $self = shift;
     my $line = shift;
     $line =~ s/[\r\n]+$//;
     unless ( $line =~ /^([^\(\)\{ \*\%"\\\+}]+)\s+(\w+)(?:\s+(.+?))?$/ ) {
-        if ( $line !~ /^([^\(\)\{ \*\%"\\\+]+)\s+/ ) {
-            $self->out("* BAD Invalid tag\r\n");
+        if ( $line !~ /^([^\(\)\{ \*\%"\\\+}]+)\s+/ ) {
+            $self->out("* BAD Invalid tag");
         } else {
-            $self->out("* BAD Null command ('$line')\r\n");
+            $self->out("* BAD Null command ('$line')");
         }
         return undef;
     }
@@ -106,114 +232,147 @@ sub parse_command {
     return ( $id, $cmd, $args );
 }
 
+=head2 is_unauth
+
+Returns true if the connection is unauthenticated.
+
+=cut
+
 sub is_unauth {
     my $self = shift;
     return not defined $self->auth;
 }
+
+=head2 is_auth
+
+Returns true if the connection is authenticated.
+
+=cut
 
 sub is_auth {
     my $self = shift;
     return defined $self->auth;
 }
 
+=head2 is_selected
+
+Returns true if the connection has selected a mailbox.
+
+=cut
+
 sub is_selected {
     my $self = shift;
     return defined $self->selected;
 }
 
+=head2 is_encrypted
+
+Returns true if the connection is protected by SSL or TLS.
+
+=cut
+
 sub is_encrypted {
-    my $self = shift;
+    my $self   = shift;
     my $handle = $self->io_handle;
-    $handle = tied(${$handle})->[0];
+    $handle = tied( ${$handle} )->[0];
     return $handle->isa("IO::Socket::SSL");
 }
 
-sub auth {
-    my $self = shift;
-    if (@_) {
-        $self->{auth} = shift;
-        $self->server->{auth} = $self->{auth};
-        $self->server->model_class->require || warn $@;
-        $self->model(
-            $self->server->model_class->new( { auth => $self->{auth} } ) );
-    }
-    return $self->{auth};
-}
+=head2 poll
 
-sub selected {
-    my $self = shift;
-    if (@_ and $self->selected) {
-        unless ($self->selected eq $_[0]) {
-            $self->send_untagged;
-            $self->selected->close;
-        }
-        $self->selected_read_only(0);
-    }
-    return $self->_selected(@_);
-}
+Polls the currently selected mailbox, and resets the poll timer.
 
-sub untagged_response {
-    my $self = shift;
-    while ( my $message = shift ) {
-        next unless $message;
-        $self->out( "* " . $message . "\r\n" );
-    }
-}
+=cut
 
 sub poll {
     my $self = shift;
-    my($mbox) = @_;
-    $mbox ||= $self->selected;
-
     $self->selected->poll;
     $self->last_poll(time);
 }
+
+=head2 force_poll
+
+Forces a poll of the selected mailbox the next chance we get.
+
+=cut
 
 sub force_poll {
     my $self = shift;
     $self->last_poll(0);
 }
 
+=head2 last_poll
+
+Gets or sets the last time the selected mailbox was polled, in seconds
+since the epoch.
+
+=cut
+
+=head2 send_untagged
+
+Sends any untagged updates about the current mailbox to the client.
+
+=cut
+
 sub send_untagged {
     my $self = shift;
-    my %args = ( expunged => 1,
-                 @_ );
+    my %args = (
+        expunged => 1,
+        @_
+    );
     return unless $self->is_auth and $self->is_selected;
 
-    if (time > $self->last_poll + $self->server->poll_every) {
+    if ( time >= $self->last_poll + $self->server->poll_every ) {
+
         # When we poll, the things that we find should affect this
         # connection as well; hence, the local to be "connection-less"
         local $Net::IMAP::Server::Server->{connection};
         $self->poll;
     }
 
-    for my $s (keys %{$self->untagged_fetch}) {
-        my($m) = $self->get_messages($s);
-        $self->untagged_response( $s
+    for my $s ( keys %{ $self->untagged_fetch } ) {
+        my ($m) = $self->get_messages($s);
+        $self->untagged_response(
+                  $s 
                 . " FETCH "
-                . Net::IMAP::Server::Command->data_out( [ $m->fetch([keys %{$self->untagged_fetch->{$s}}]) ] ) );
+                . Net::IMAP::Server::Command->data_out(
+                [ $m->fetch( [ keys %{ $self->untagged_fetch->{$s} } ] ) ]
+                )
+        );
     }
-    $self->untagged_fetch({});
+    $self->untagged_fetch( {} );
 
-    if ($args{expunged}) {
-        # Make sure that they know of at least the existance of what's being expunged.
+    if ( $args{expunged} ) {
+
+# Make sure that they know of at least the existance of what's being expunged.
         my $max = 0;
-        $max = $max < $_ ? $_ : $max for @{$self->untagged_expunge};
-        $self->untagged_response( "$max EXISTS" ) if $max > $self->previous_exists;
+        $max = $max < $_ ? $_ : $max for @{ $self->untagged_expunge };
+        $self->untagged_response("$max EXISTS")
+            if $max > $self->previous_exists;
 
         # Send the expnges, clear out the temporary message store
-        $self->previous_exists( $self->previous_exists - @{$self->untagged_expunge} );
-        $self->untagged_response( map {"$_ EXPUNGE"} @{$self->untagged_expunge} );
-        $self->untagged_expunge([]);
+        $self->previous_exists(
+            $self->previous_exists - @{ $self->untagged_expunge } );
+        $self->untagged_response( map {"$_ EXPUNGE"}
+                @{ $self->untagged_expunge } );
+        $self->untagged_expunge( [] );
         $self->temporary_messages(undef);
     }
 
     # Let them know of more EXISTS
     my $expected = $self->previous_exists;
-    my $now = @{$self->temporary_messages || $self->selected->messages};
+    my $now = @{ $self->temporary_messages || $self->selected->messages };
     $self->untagged_response( $now . ' EXISTS' ) if $expected != $now;
     $self->previous_exists($now);
 }
+
+=head2 get_messages STR
+
+Parses and returns messages fitting the given sequence range.  This is
+on the connection and not the mailbox because messages have
+connection-dependent sequence numbers.
+
+=cut
 
 sub get_messages {
     my $self = shift;
@@ -225,38 +384,65 @@ sub get_messages {
     for ( split ',', $str ) {
         if (/^(\d+):(\d+)$/) {
             $ids{$_}++ for $2 > $1 ? $1 .. $2 : $2 .. $1;
-        } elsif (/^(\d+):\*$/ or /^\*:(\d+)$/) {
-            $ids{$_}++ for @{ $messages } + 0, $1 .. @{ $messages } + 0;
+        } elsif ( /^(\d+):\*$/ or /^\*:(\d+)$/ ) {
+            $ids{$_}++ for @{$messages} + 0, $1 .. @{$messages} + 0;
         } elsif (/^(\d+)$/) {
             $ids{$1}++;
         } elsif (/^\*$/) {
-            $ids{@{$messages} + 0}++;
+            $ids{ @{$messages} + 0 }++;
         }
     }
     return
-        grep {defined} map { $messages->[ $_ - 1 ] } sort {$a <=> $b} keys %ids;
+        grep {defined}
+        map { $messages->[ $_ - 1 ] } sort { $a <=> $b } keys %ids;
 }
 
+=head2 sequence MESSAGE
+
+Returns the sequence number for the given message.
+
+=cut
+
 sub sequence {
-    my $self = shift;
+    my $self    = shift;
     my $message = shift;
 
     return $message->sequence unless $self->temporary_messages;
     return $self->temporary_sequence_map->{$message};
 }
 
+=head2 capability
+
+Returns the current capability list for this connection, as a string.
+Connections not under TLS or SSL always have the C<LOGINDISABLED>
+capability, and no authentication capabilities.  The
+L<Net::IMAP::Server/auth_class>'s
+L<Net::IMAP::Server::DefaultAuth/sasl_provides> method is used to list
+known C<AUTH=> types.
+
+=cut
+
 sub capability {
     my $self = shift;
 
     my $base = $self->server->capability;
     if ( $self->is_encrypted ) {
-        $base = join(" ", grep {$_ ne "STARTTLS"} split(' ', $base));
+        my $auth = $self->auth || $self->server->auth_class->new;
+        $base = join( " ",
+            grep { $_ ne "STARTTLS" } split( ' ', $base ),
+            map {"AUTH=$_"} $auth->sasl_provides );
     } else {
-        $base = join(" ", grep {not /^AUTH=\S+$/} split(' ', $base), "LOGINDISABLED");
+        $base = "$base LOGINDISABLED";
     }
 
     return $base;
 }
+
+=head2 log MESSAGE
+
+Logs the message to standard error, using C<warn>.
+
+=cut
 
 sub log {
     my $self = shift;
@@ -265,24 +451,44 @@ sub log {
     warn $msg . "\n";
 }
 
-sub connected {
+=head2 untagged_response STRING
+
+Sends an untagged response to the client; a newline ia automatically
+appended.
+
+=cut
+
+sub untagged_response {
     my $self = shift;
-    return $self->io_handle and $self->io_handle->peerport;
+    $self->out("* $_") for grep defined, @_;
 }
+
+=head2 out STRING
+
+Sends the mesage to the client.  If the client's connection has
+dropped, or the send fails for whatever reason, L</close> the
+connection and then abort the coroutine; in which case, this function
+never returns!
+
+=cut
 
 sub out {
     my $self = shift;
     my $msg  = shift;
-    if ($self->io_handle and $self->io_handle->peerport) {
-        if ($self->io_handle->print($msg)) {
-            $self->log("S(@{[$self]},@{[$self->auth ? $self->auth->user : '???']},@{[$self->is_selected ? $self->selected->full_path : 'unselected']}): $msg");
+    if ( $self->io_handle and $self->io_handle->peerport ) {
+        if ( $self->io_handle->print( $msg . "\r\n" ) ) {
+            $self->log(
+                "S(@{[$self]},@{[$self->auth ? $self->auth->user : '???']},@{[$self->is_selected ? $self->selected->full_path : 'unselected']}): $msg"
+            );
         } else {
             $self->close;
+
             # Bail out; never returns
             $Coro::current->cancel;
         }
     } else {
         $self->close;
+
         # Bail out; never returns
         $Coro::current->cancel;
     }

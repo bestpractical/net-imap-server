@@ -6,15 +6,9 @@ use strict;
 use base qw/Net::Server::Coro Class::Accessor/;
 
 use UNIVERSAL::require;
-use Module::Refresh;    # for development
-use Carp;
 use Coro;
 
-use Net::IMAP::Server::Mailbox;
-use Net::IMAP::Server::Connection;
-
-our $VERSION = '0.001';
-
+our $VERSION = '0.1';
 
 =head1 NAME
 
@@ -29,6 +23,8 @@ implementation, using L<Net::Server::Coro>.
       ssl_port    => 993,
       auth_class  => "Your::Auth::Class",
       model_class => "Your::Model::Class",
+      user        => "nobody",
+      group       => "nobody",
   )->run;
 
 =head1 DESCRIPTION
@@ -51,14 +47,16 @@ and auth classes, which inherit from
 L<Net::IMAP::Server::DefaultModel> and
 L<Net::IMAP::Server::DefaultAuth>.  This allows you to back your
 messages from arbitrary data sources, or provide your own
-authorization backend.
+authorization backend.  For the most part, the implementation of the
+IMAP components should be opaque.
 
 =head1 METHODS
 
 =cut
 
 __PACKAGE__->mk_accessors(
-    qw/connections port ssl_port auth_class model_class user group poll_every/);
+    qw/connections port ssl_port auth_class model_class connection_class user group poll_every/
+);
 
 =head2 new PARAMHASH
 
@@ -71,7 +69,7 @@ C<new> include:
 
 =item port
 
-The port to bind to.  Defaults to port 4242.
+The port to bind to.  Defaults to port 1430.
 
 =item ssl_port
 
@@ -88,6 +86,11 @@ subclass of L<Net::IMAP::Server::DefaultAuth>.
 The name of the class which implements the model backend.  This must
 be a subclass of L<Net::IMAP::Server::DefaultModel>.
 
+=item connection_class
+
+On rare occasions, you may wish to subclass the connection class; this
+class must be a subclass of L<Net::IMAP::Server::Connection>.
+
 =item user
 
 The name or ID of the user that the server should run as; this
@@ -96,22 +99,35 @@ binding to the port and reading the certificates, so escalated
 privileges should not be needed.  Running as your C<nobody> user or
 equivilent is suggested.
 
+=item group
+
+The name or ID of the group that the server should run as; see
+C<user>, above.
+
+=item poll_every
+
+How often the current mailbox should be polled, in seconds; defaults
+to 0, which means it will be polled after every client command.
+
 =back
 
 =cut
 
 sub new {
     my $class = shift;
-    unless (-r "certs/server-cert.pem" and -r "certs/server-key.pem") {
-        die "Can't read certs (certs/server-cert.pem and certs/server-key.pem)\n";
+    unless ( -r "certs/server-cert.pem" and -r "certs/server-key.pem" ) {
+        die
+            "Can't read certs (certs/server-cert.pem and certs/server-key.pem)\n";
     }
 
-    my $self = Class::Accessor::new($class,
-        {   port        => 8080,
-            ssl_port    => 0,
-            auth_class  => "Net::IMAP::Server::DefaultAuth",
-            model_class => "Net::IMAP::Server::DefaultModel",
-            poll_every  => 0,
+    my $self = Class::Accessor::new(
+        $class,
+        {   port             => 1430,
+            ssl_port         => 0,
+            auth_class       => "Net::IMAP::Server::DefaultAuth",
+            model_class      => "Net::IMAP::Server::DefaultModel",
+            connection_class => "Net::IMAP::Server::Connection",
+            poll_every       => 0,
             @_,
             connections => [],
         }
@@ -119,23 +135,41 @@ sub new {
     UNIVERSAL::require( $self->auth_class )
         or die "Can't require auth class: $@\n";
     $self->auth_class->isa("Net::IMAP::Server::DefaultAuth")
-        or die "Auth class (@{[$self->auth_class]}) doesn't inherit from Net::IMAP::Server::DefaultAuth\n";
+        or die
+        "Auth class (@{[$self->auth_class]}) doesn't inherit from Net::IMAP::Server::DefaultAuth\n";
 
     UNIVERSAL::require( $self->model_class )
         or die "Can't require model class: $@\n";
     $self->model_class->isa("Net::IMAP::Server::DefaultModel")
-        or die "Auth class (@{[$self->model_class]}) doesn't inherit from Net::IMAP::Server::DefaultModel\n";
+        or die
+        "Model class (@{[$self->model_class]}) doesn't inherit from Net::IMAP::Server::DefaultModel\n";
+
+    UNIVERSAL::require( $self->connection_class )
+        or die "Can't require connection class: $@\n";
+    $self->connection_class->isa("Net::IMAP::Server::Connection")
+        or die
+        "Connection class (@{[$self->connection_class]}) doesn't inherit from Net::IMAP::Server::Connection\n";
 
     return $self;
 }
 
+=head2 run
+
+Starts the server; this method shouldn't be expected to return.
+Within this method, C<$Net::IMAP::Server::Server> is set to the object
+that this was called on; thus, all IMAP objecst have a way of
+referring to the server -- and though L</connection>, L</auth>, and
+L</model>, whatever parts of the IMAP internals they need.
+
+=cut
+
 sub run {
-    my $self = shift;
+    my $self  = shift;
     my @proto = qw/TCP/;
     my @port  = $self->port;
-    if ($self->ssl_port) {
+    if ( $self->ssl_port ) {
         push @proto, "SSL";
-        push @port, $self->ssl_port;
+        push @port,  $self->ssl_port;
     }
     local $Net::IMAP::Server::Server = $self;
     $self->SUPER::run(
@@ -146,17 +180,30 @@ sub run {
     );
 }
 
+=head2 process_request
+
+Accepts a client connection.
+
+=cut
+
 sub process_request {
-    my $self = shift;
+    my $self   = shift;
     my $handle = $self->{server}{client};
-    my $conn = Net::IMAP::Server::Connection->new(
+    my $conn   = $self->connection_class->new(
         io_handle => $handle,
         server    => $self,
     );
     $Coro::current->prio(-4);
-    push @{$self->connections}, $conn;
+    push @{ $self->connections }, $conn;
     $conn->handle_lines;
 }
+
+=head2 DESTROY
+
+On destruction, ensure that we close all client connections and
+listening sockets.
+
+=cut
 
 DESTROY {
     my $self = shift;
@@ -164,57 +211,118 @@ DESTROY {
     $self->socket->close if $self->socket;
 }
 
+=head2 connections
+
+Returns an arrayref of L<Net::IMAP::Server::Connection> objects which
+are currently connected to the server.
+
+=cut
+
+=head2 connection
+
+Returns the currently active L<Net::IMAP::Server::Connection> object,
+if there is one.
+
+=cut
+
 sub connection {
     my $self = shift;
     return $self->{connection};
 }
+
+=head2 auth
+
+Returns the current L<Net::IMAP::Server::DefaultAuth> (or, more
+probably, descendant thereof) for the active connection.
+
+=cut
 
 sub auth {
     my $self = shift;
     return $self->{auth};
 }
 
+=head2 auth
+
+Returns the current L<Net::IMAP::Server::DefaultModel> (or, more
+probably, descendant thereof) for the active connection.
+
+=cut
+
 sub model {
     my $self = shift;
     return $self->{model};
 }
 
+=head2 concurrent_mailbox_connections [MAILBOX]
+
+This can be called as either a class method or an instance method; it
+returns the set of connections which are concurrently connected to the
+given mailbox object (which defaults to the current connection's
+selected mailbox)
+
+=cut
+
 sub concurrent_mailbox_connections {
-    my $class = shift;
-    my $self = ref $class ? $class : $Net::IMAP::Server::Server;
+    my $class    = shift;
+    my $self     = ref $class ? $class : $Net::IMAP::Server::Server;
     my $selected = shift || $self->connection->selected;
 
     return () unless $selected;
-    return grep {$_->is_auth and $_->is_selected
-                 and $_->selected eq $selected} @{$self->connections};
+    return
+        grep { $_->is_auth and $_->is_selected and $_->selected eq $selected }
+        @{ $self->connections };
 }
+
+=head2 concurrent_user_connections [USER]
+
+This can be called as either a class method or an instance method; it
+returns the set of connections whose
+L<Net::IMAP::Server::DefaultAuth/user> is the same as the given
+L<USER> (which defaults to the current connection's user)
+
+=cut
 
 sub concurrent_user_connections {
     my $class = shift;
-    my $self = ref $class ? $class : $Net::IMAP::Server::Server;
-    my $user = shift || $self->connection->auth->user;
+    my $self  = ref $class ? $class : $Net::IMAP::Server::Server;
+    my $user  = shift || $self->connection->auth->user;
 
     return () unless $user;
-    return grep {$_->is_auth
-                 and $_->auth->user eq $user} @{$self->connections};
+    return
+        grep { $_->is_auth and $_->auth->user eq $user }
+        @{ $self->connections };
 }
+
+=head2 capability
+
+Returns the C<CAPABILITY> string for the server.  This string my be
+modified by the connection before being sent to the client (see
+L<Net::IMAP::Server::Connection/capability>).
+
+=cut
 
 sub capability {
     my $self = shift;
-    return "IMAP4rev1 STARTTLS AUTH=PLAIN CHILDREN LITERAL+ UIDPLUS ID";
+    return "IMAP4rev1 STARTTLS CHILDREN LITERAL+ UIDPLUS ID";
 }
+
+=head2 id
+
+Returns a hash of properties to be conveyed to the client, should they
+ask the server's identity.
+
+=cut
 
 sub id {
     return (
-            name => "Net-IMAP-Server",
-            version => $Net::IMAP::Server::VERSION,
-           );
+        name    => "Net-IMAP-Server",
+        version => $Net::IMAP::Server::VERSION,
+    );
 }
 
 1;    # Magic true value required at end of module
 __END__
-
-
 
 =head1 DEPENDENCIES
 

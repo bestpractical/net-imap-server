@@ -10,26 +10,91 @@ __PACKAGE__->mk_accessors(
     qw(name is_inbox parent children _path uidnext uids uidvalidity messages subscribed is_selectable)
 );
 
+=head1 NAME
+
+Net::IMAP::Server::Mailbox - A user's view of a mailbox
+
+=head1 DESCRIPTION
+
+This class encapsulates the view of messages in a mailbox.  You may
+wish to subclass this class in order to source our messages from, say,
+a database.
+
+=head1 METHODS
+
+=head2 Initialization
+
+=head3 new
+
+Creates a new mailbox; returns C<undef> if a mailbox with the same
+full path already exists.  It calls L</init>, then L</load_data>.
+
+=cut
+
 sub new {
     my $class = shift;
     my $self  = $class->SUPER::new(@_);
-    return if $self->parent and grep {$self->full_path eq $_->full_path} @{$self->parent->children};
+    return
+        if $self->parent
+        and grep { $self->full_path eq $_->full_path }
+        @{ $self->parent->children };
     $self->init;
     $self->load_data;
     return $self;
 }
 
+=head3 init
+
+Sets up basic properties of the mailbox:
+
+=over
+
+=item *
+
+L</uidnext> is set to 1000
+
+=item *
+
+L</messages> and L</uids> are initialized to an empty list reference
+and an empty hash reference, respectively.
+
+=item *
+
+L</children> is set to an empty list reference.
+
+=item *
+
+L</uidvalidity> is set to the number of seconds since the epoch.
+
+=item *
+
+L</subscribed> and L</is_selectable> are set true.
+
+=back
+
+=cut
+
 sub init {
     my $self = shift;
-
     $self->uidnext(1000);
     $self->messages( [] );
     $self->uids( {} );
     $self->children( [] );
-    $self->uidvalidity( scalar time );
-    $self->subscribed( 1 );
-    $self->is_selectable( 1 );
+    $self->uidvalidity(time);
+    $self->subscribed(1);
+    $self->is_selectable(1);
 }
+
+=head3 load_data
+
+This default mailbox implementation attempts to find a C<mbox> file
+whose name is based on the full path of the mailbox, and load messages
+from that file.  It makes no attempt to write back any changes to the
+file.
+
+Subclasses will probably wish to override this method.
+
+=cut
 
 sub load_data {
     my $self = shift;
@@ -47,15 +112,27 @@ sub load_data {
     }
 }
 
-sub seperator {
-    return "/";
-}
+=head2 Actions
 
-sub selected {
-    my $self = shift;
-    return $Net::IMAP::Server::Server->connection->selected
-      and $Net::IMAP::Server::Server->connection->selected eq $self;
-}
+=head3 poll
+
+Called when the server wishes the mailbox to update its state.  By
+default, does nothing.  Subclasses will probably wish to override this
+method.
+
+=cut
+
+sub poll { }
+
+=head3 add_message MESSAGE
+
+Adds the gven L<Net::IMAP::Server::Message> C<MESSAGE> to the mailbox,
+setting its L<Net::IMAP::Server::Message/sequence> and
+L<Net::IMAP::Server::Message/mailbox>.
+L<Net::IMAP::Server::Message/uid> is set to L</uidnext> if the message
+does not already have a C<uid>.
+
+=cut
 
 sub add_message {
     my $self    = shift;
@@ -67,8 +144,9 @@ sub add_message {
     push @{ $self->messages }, $message;
 
     # Some messages may supply their own uids
-    if ($message->uid) {
-        $self->uidnext( $message->uid + 1 ) if $message->uid >= $self->uidnext;
+    if ( $message->uid ) {
+        $self->uidnext( $message->uid + 1 )
+            if $message->uid >= $self->uidnext;
     } else {
         $message->uid( $self->uidnext );
         $self->uidnext( $self->uidnext + 1 );
@@ -77,14 +155,307 @@ sub add_message {
 
     # Also need to add it to anyone that has this folder as a
     # temporary message store
-    for my $c (Net::IMAP::Server->concurrent_mailbox_connections($self)) {
+    for my $c ( Net::IMAP::Server->concurrent_mailbox_connections($self) ) {
         next unless $c->temporary_messages;
 
-        push @{$c->temporary_messages}, $message;
-        $c->temporary_sequence_map->{$message} = scalar @{$c->temporary_messages};
+        push @{ $c->temporary_messages }, $message;
+        $c->temporary_sequence_map->{$message}
+            = scalar @{ $c->temporary_messages };
     }
     return $message;
 }
+
+=head3 add_child [...]
+
+Creates a mailbox under this mailbox, of the same class as this
+mailbox is.  Any arguments are passed to L</new>.  Returns the newly
+added subfolder, or undef if a folder with that name already exists.
+
+=cut
+
+sub add_child {
+    my $self = shift;
+    my $node = ( ref $self )->new( { @_, parent => $self } );
+    return unless $node;
+    push @{ $self->children }, $node;
+    return $node;
+}
+
+=head3 create [...]
+
+Identical to L</add_child>.  Should return false if the create is
+denied or fails.
+
+=cut
+
+sub create {
+    my $self = shift;
+    return $self->add_child(@_);
+}
+
+=head3 reparent MAILBOX
+
+Reparents this mailbox to be a child of the given
+L<Net::IMAP::Server::Mailbox> C<MAILBOX>.  Shold return 0 if the
+reparenting is denied or fails.
+
+=cut
+
+sub reparent {
+    my $self   = shift;
+    my $parent = shift;
+
+    $self->parent->children(
+        [ grep { $_ ne $self } @{ $self->parent->children } ] );
+    push @{ $parent->children }, $self;
+    $self->parent($parent);
+    my @uncache = ($self);
+    while (@uncache) {
+        my $o = shift @uncache;
+        $o->_path(undef);
+        push @uncache, @{ $o->children };
+    }
+    return 1;
+}
+
+=head3 delete
+
+Deletes this mailbox, removing it from its parent's list of children.
+Should return false if the deletion is denied or fails.
+
+=cut
+
+sub delete {
+    my $self = shift;
+    $self->parent->children(
+        [ grep { $_ ne $self } @{ $self->parent->children } ] );
+
+    return 1;
+}
+
+=head3 expunge [ARRAYREF]
+
+Expunges messages marked as C<\Deleted>.  If an arrayref of message
+sequence numbers is provided, only expunges message from that set.
+
+=cut
+
+sub expunge {
+    my $self = shift;
+    my $only = shift;
+    return if $only and not @{$only};
+    my %only;
+    $only{$_}++ for @{ $only || [] };
+
+    my @ids;
+    my $offset   = 0;
+    my @messages = @{ $self->messages };
+    $self->messages(
+        [   grep {
+                not( $_->has_flag('\Deleted')
+                    and ( not $only or $only{ $_->sequence } ) )
+                } @messages
+        ]
+    );
+    for my $c ( Net::IMAP::Server->concurrent_mailbox_connections($self) ) {
+
+        # Ensure that all other connections with this selected get a
+        # temporary message list, if they don't already have one
+        unless (
+            (       $Net::IMAP::Server::Server->connection
+                and $c eq $Net::IMAP::Server::Server->connection
+            )
+            or $c->temporary_messages
+            )
+        {
+            $c->temporary_messages( [@messages] );
+            $c->temporary_sequence_map( {} );
+            $c->temporary_sequence_map->{$_} = $_->sequence for @messages;
+        }
+    }
+
+    for my $m (@messages) {
+        if ( $m->has_flag('\Deleted')
+            and ( not $only or $only{ $m->sequence } ) )
+        {
+            push @ids, $m->sequence - $offset;
+            delete $self->uids->{ $m->uid };
+            $offset++;
+            $m->expunge;
+        } elsif ($offset) {
+            $m->sequence( $m->sequence - $offset );
+        }
+    }
+
+    for my $c ( Net::IMAP::Server->concurrent_mailbox_connections($self) ) {
+
+        # Also, each connection gets these added to their expunge list
+        push @{ $c->untagged_expunge }, @ids;
+    }
+
+    return 1;
+}
+
+=head3 append MESSAGE
+
+Appends, and returns, the given C<MESSAGE>, which should be a string
+containing the message.  Returns false is the append is denied or
+fails.
+
+=cut
+
+sub append {
+    my $self = shift;
+    my $m    = Net::IMAP::Server::Message->new(@_);
+    $m->set_flag( '\Recent', 1 );
+    $self->add_message($m);
+    return $m;
+}
+
+=head3 close
+
+Called when the client selects a different mailbox, or when the
+client's connection closes.  By default, does nothing.
+
+=cut
+
+sub close { }
+
+=head2 Inspection
+
+=head3 seperator
+
+Returns the path seperator.  Note that only the path seperator of the
+root mailbox matters.  Defaults to a forward slash.
+
+=cut
+
+sub seperator {
+    return "/";
+}
+
+=head3 full_path
+
+Returns the full path to this mailbox.
+
+=cut
+
+sub full_path {
+    my $self = shift;
+    return $self->_path if defined $self->_path;
+    $self->_path(
+          !$self->parent         ? ""
+        : !$self->parent->parent ? $self->name
+        : $self->parent->full_path . $self->seperator . $self->name
+    );
+    return $self->_path;
+}
+
+=head3 flags
+
+Returns the list of flags that this mailbox supports.
+
+=cut
+
+sub flags {
+    my $self = shift;
+    return qw(\Answered \Flagged \Deleted \Seen \Draft);
+}
+
+=head3 can_set_flag FLAG
+
+Returns true if the client is allowed to set the given flag in this
+mailbox; this simply scans L</flags> to check.
+
+=cut
+
+sub can_set_flag {
+    my $self = shift;
+    my $flag = shift;
+
+    return 1 if grep { lc $_ eq lc $flag } $self->flags;
+    return;
+}
+
+=head3 exists
+
+Returns the number of messages in this mailbox.  Observing this also
+sets the "high water mark" for notifying the client of messages added.
+
+=cut
+
+sub exists {
+    my $self = shift;
+    $Net::IMAP::Server::Server->connection->previous_exists(
+        scalar @{ $self->messages } )
+        if $self->selected;
+    return scalar @{ $self->messages };
+}
+
+=head3 recent
+
+Returns the number of messages which have the C<\Recent> flag set.
+
+=cut
+
+sub recent {
+    my $self = shift;
+    return scalar grep { $_->has_flag('\Recent') } @{ $self->messages };
+}
+
+=head3 unseen
+
+Returns the number of messages which do not have the C<\Seen> flag set.
+
+=cut
+
+sub unseen {
+    my $self = shift;
+    return scalar grep { not $_->has_flag('\Seen') } @{ $self->messages };
+}
+
+=head3 permanentflags
+
+Returns the flags which will be stored permanently for this mailbox;
+defaults to the same set as L</flags> returns.
+
+=cut
+
+sub permanentflags {
+    my $self = shift;
+    return $self->flags;
+}
+
+=head3 read_only
+
+Returns true if this mailbox is read-only.  By default, always returns
+false.
+
+=cut
+
+sub read_only {
+    my $self = shift;
+    return 0;
+}
+
+=head3 selected
+
+Returns true if this mailbox is the mailbox selected by the current
+L<Net::IMAP::Server::Connection>.
+
+=cut
+
+sub selected {
+    my $self = shift;
+    return $Net::IMAP::Server::Server->connection->selected
+        and $Net::IMAP::Server::Server->connection->selected eq $self;
+}
+
+=head3 get_uids STR
+
+Parses and returns messages fitting the given UID range.
+
+=cut
 
 sub get_uids {
     my $self = shift;
@@ -94,8 +465,10 @@ sub get_uids {
     for ( split ',', $str ) {
         if (/^(\d+):(\d+)$/) {
             $ids{$_}++ for $2 > $1 ? $1 .. $2 : $2 .. $1;
-        } elsif (/^(\d+):\*$/ or /^\*:(\d+)$/) {
-            $ids{$_}++ for $self->messages->[-1]->uid, $1 .. $self->messages->[-1]->uid;
+        } elsif ( /^(\d+):\*$/ or /^\*:(\d+)$/ ) {
+            $ids{$_}++
+                for $self->messages->[-1]->uid,
+                $1 .. $self->messages->[-1]->uid;
         } elsif (/^(\d+)$/) {
             $ids{$1}++;
         } elsif (/^\*$/) {
@@ -103,161 +476,45 @@ sub get_uids {
         }
     }
     return
-        grep {defined} map { $self->uids->{$_} } sort {$a <=> $b} keys %ids;
+        grep {defined} map { $self->uids->{$_} } sort { $a <=> $b } keys %ids;
 }
 
-sub add_child {
+=head3 get_messages STR
+
+Parses and returns messages fitting the given sequence range.  Note
+that since sequence numbers are connection-dependent, this simply
+passes the buck to L</Net::IMAP::Server::Connection/get_messages>.
+
+=cut
+
+sub get_messages {
     my $self = shift;
-    my $node = ( ref $self )
-        ->new( { @_, parent => $self } );
-    return unless $node;
-    push @{ $self->children }, $node;
-    return $node;
+    return $Net::IMAP::Server::Server->connection->get_messages(@_);
 }
 
-sub create {
-    my $self = shift;
-    return $self->add_child(@_);
-}
+=head3 prep_for_destroy
 
-sub reparent {
-    my $self = shift;
-    my $parent = shift;
+Called before the mailbox is destroyed; this deals with cleaning up
+the several circular references involved.  In turn, it calls
+L</prep_for_destroy> on all child mailboxes, as well as all messages
+it has.
 
-    $self->parent->children([grep {$_ ne $self} @{$self->parent->children}]);
-    push @{$parent->children}, $self;
-    $self->parent($parent);
-    my @uncache = ($self);
-    while (@uncache) {
-        my $o = shift @uncache;
-        $o->_path(undef);
-        push @uncache, @{$o->children};
-    }
-    return 1;
-}
-
-sub delete {
-    my $self = shift;
-    $self->parent->children([grep {$_ ne $self} @{$self->parent->children}]);
-
-    return 1;
-}
-
-sub full_path {
-    my $self = shift;
-    return $self->_path if defined $self->_path;
-    $self->_path(
-                 !$self->parent ? "" :
-                 !$self->parent->parent ? $self->name :
-        $self->parent->full_path . $self->seperator . $self->name );
-    return $self->_path;
-}
-
-sub flags {
-    my $self = shift;
-    return qw(\Answered \Flagged \Deleted \Seen \Draft);
-}
-
-sub can_set_flag {
-    my $self = shift;
-    my $flag = shift;
-
-    return 1 if grep {lc $_ eq lc $flag} $self->flags;
-    return;
-}
-
-sub exists {
-    my $self = shift;
-    $Net::IMAP::Server::Server->connection->previous_exists( scalar @{ $self->messages } )
-      if $self->selected;
-    return scalar @{ $self->messages };
-}
-
-sub recent {
-    my $self = shift;
-    return scalar grep {$_->has_flag('\Recent')} @{$self->messages};
-}
-
-sub unseen {
-    my $self = shift;
-    return scalar grep {not $_->has_flag('\Seen')} @{$self->messages};
-}
-
-sub permanentflags {
-    my $self = shift;
-    return $self->flags;
-}
-
-sub read_only {
-    my $self = shift;
-    return 0;
-}
-
-sub expunge {
-    my $self = shift;
-    my $only = shift;
-    return if $only and not @{$only};
-    my %only; $only{$_}++ for @{$only || []};
-
-    my @ids;
-    my $offset   = 0;
-    my @messages = @{ $self->messages };
-    $self->messages( [ grep { not ( $_->has_flag('\Deleted') and (not $only or $only{$_->sequence}))} @messages ] );
-    for my $c (Net::IMAP::Server->concurrent_mailbox_connections($self)) {
-        # Ensure that all other connections with this selected get a
-        # temporary message list, if they don't already have one
-        unless (($Net::IMAP::Server::Server->connection and $c eq $Net::IMAP::Server::Server->connection)
-             or $c->temporary_messages) {
-            $c->temporary_messages([@messages]);
-            $c->temporary_sequence_map({});
-            $c->temporary_sequence_map->{$_} = $_->sequence for @messages;
-        }
-    }
-
-    for my $m (@messages) {
-        if ( $m->has_flag('\Deleted') and (not $only or $only{$m->sequence})) {
-            push @ids, $m->sequence - $offset;
-            delete $self->uids->{$m->uid};
-            $offset++;
-            $m->expunge;
-        } elsif ($offset) {
-            $m->sequence( $m->sequence - $offset );
-        }
-    }
-
-    for my $c (Net::IMAP::Server->concurrent_mailbox_connections($self)) {
-        # Also, each connection gets these added to their expunge list
-        push @{$c->untagged_expunge}, @ids;
-    }
-}
-
-sub append {
-    my $self = shift;
-    my $m = Net::IMAP::Server::Message->new(@_);
-    $m->set_flag('\Recent', 1);
-    $self->add_message($m);
-    return $m;
-}
-
-sub poll {}
+=cut
 
 sub prep_for_destroy {
     my $self = shift;
-    my @kids = @{$self->children || []};
-    $self->children([]);
+    my @kids = @{ $self->children || [] };
+    $self->children( [] );
     $_->prep_for_destroy for @kids;
-    my @messages = @{$self->messages || []};
-    $self->messages([]);
-    $self->uids({});
+    my @messages = @{ $self->messages || [] };
+    $self->messages( [] );
+    $self->uids( {} );
     $_->prep_for_destroy for @messages;
     $self->parent(undef);
 }
 
-sub close {}
-
 package Email::IMAPFolder;
 use base 'Email::Folder';
-use YAML;
 
 sub bless_message {
     my $self = shift;
