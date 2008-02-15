@@ -6,6 +6,8 @@ use strict;
 use base 'Class::Accessor';
 __PACKAGE__->mk_accessors(qw(auth root));
 
+use Net::IMAP::Server::Mailbox;
+
 my %roots;
 
 =head1 NAME

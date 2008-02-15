@@ -5,7 +5,7 @@ use strict;
 use bytes;
 
 use base 'Class::Accessor';
-use Regexp::Common qw/delimited/;
+use Regexp::Common qw/delimited balanced/;
 __PACKAGE__->mk_accessors(
     qw(server connection command_id options_str command _parsed_options _literals _pending_literal)
 );
@@ -141,12 +141,14 @@ sub parse_options {
     for my $term (
         grep {/\S/}
         split
-        /($RE{delimited}{-delim=>'"'}|$RE{balanced}{-parens=>'()'}|\S+$RE{balanced}{-parens=>'()[]<>'}|\S+)/,
+        /($RE{delimited}{-delim=>'"'}{-esc=>'\\'}|$RE{balanced}{-parens=>'()'}|\S+$RE{balanced}{-parens=>'()[]<>'}|\S+)/,
         defined $str ? $str : $self->options_str
         )
     {
-        if ( $term =~ /^$RE{delimited}{-delim=>'"'}{-keep}$/ ) {
-            push @parsed, $3;
+        if ( $term =~ /^$RE{delimited}{-delim=>'"'}{-esc=>'\\'}{-keep}$/ ) {
+            my $value = $3;
+            $value =~ s/\\([\\"])/$1/g;
+            push @parsed, $value;
         } elsif ( $term =~ /^$RE{balanced}{-parens=>'()'}$/ ) {
             $term =~ s/^\((.*)\)$/$1/;
             push @parsed, [ $self->parse_options($term) ];
