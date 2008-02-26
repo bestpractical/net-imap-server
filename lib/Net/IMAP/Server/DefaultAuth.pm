@@ -91,7 +91,7 @@ sub sasl_plain {
     };
 }
 
-=head client_id
+=head2 client_id
 
 Called when the client provides identifying information via the C<ID>
 command; by default, does nothing.  See RFC 2971.
