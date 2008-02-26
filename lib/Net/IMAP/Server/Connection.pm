@@ -10,7 +10,7 @@ use Coro;
 use Net::IMAP::Server::Command;
 
 __PACKAGE__->mk_accessors(
-    qw(server io_handle _selected selected_read_only model pending temporary_messages temporary_sequence_map previous_exists untagged_expunge untagged_fetch ignore_flags last_poll)
+    qw(server io_handle _selected selected_read_only model pending temporary_messages temporary_sequence_map previous_exists untagged_expunge untagged_fetch ignore_flags last_poll commands timer coro)
 );
 
 =head1 NAME
@@ -36,16 +36,24 @@ sub new {
             state            => "unauth",
             untagged_expunge => [],
             untagged_fetch   => {},
-            last_poll        => time
+            last_poll        => time,
+            commands         => 0,
+            coro             => $Coro::current,
         }
     );
-    $self->greeting;
+    $self->update_timer;
     return $self;
 }
 
 =head2 server
 
 Returns the L<Net::IMAP::Server> that this connection is on.
+
+=head2 coro
+
+Returns the L<Coro> process associated with this connection.  For
+things interacting with this conneciton, it will probably be the
+current coroutine, except for interactions coming from event loops.
 
 =head2 io_handle
 
@@ -72,6 +80,7 @@ sub auth {
         $self->{auth} = shift;
         $self->server->{auth} = $self->{auth};
         $self->server->model_class->require || warn $@;
+        $self->update_timer;
         $self->model(
             $self->server->model_class->new( { auth => $self->{auth} } ) );
     }
@@ -118,16 +127,60 @@ additionally cede after handling every command.
 
 sub handle_lines {
     my $self = shift;
-    while ( $self->io_handle and $_ = $self->io_handle->getline() ) {
-        $self->handle_command($_);
-        cede;
-    }
+    $self->coro->prio(-4);
+    eval {
+        $self->greeting;
+        while ( $self->io_handle and $_ = $self->io_handle->getline() ) {
+            $self->handle_command($_);
+            $self->commands( $self->commands + 1 );
+            if (    $self->is_unauth
+                and $self->server->unauth_commands
+                and $self->commands >= $self->server->unauth_commands )
+            {
+                $self->out(
+                    "* BYE Don't noodle around so much before logging in!");
+                $self->close;
+                last;
+            }
+            $self->update_timer;
+            cede;
+        }
 
-    $self->log(
-        "-(@{[$self]},@{[$self->auth ? $self->auth->user : '???']},@{[$self->is_selected ? $self->selected->full_path : 'unselected']}): Connection closed by remote host"
-    );
-    $self->close;
+        $self->log(
+            "-(@{[$self]},@{[$self->auth ? $self->auth->user : '???']},@{[$self->is_selected ? $self->selected->full_path : 'unselected']}): Connection closed by remote host"
+        );
+        $self->close;
+    };
+    my $err = $@;
+    warn $err
+        if $err and not( $err eq "Error printing\n" or $err eq "Timeout\n" );
 }
+
+=head2 update_timer
+
+Updates the inactivity timer.
+
+=cut
+
+sub update_timer {
+    my $self = shift;
+    $self->timer->stop if $self->timer;
+    $self->timer(undef);
+    my $timeout = sub {
+        eval { $self->out("* BYE Idle timeout; I fell asleep."); };
+        $self->coro->throw("Timeout\n");
+        $self->coro->ready;
+    };
+    if ( $self->is_unauth and $self->server->unauth_idle ) {
+        $self->timer( EV::timer $self->server->unauth_idle, 0, $timeout );
+    } elsif ( $self->server->auth_idle ) {
+        $self->timer( EV::timer $self->server->auth_idle, 0, $timeout );
+    }
+}
+
+=head2 timer [EV watcher]
+
+Returns the L<EV> watcher in charge of the inactivity timer.
 
 =head2 handle_command
 
@@ -197,10 +250,10 @@ sub close {
     $self->server->connections(
         [ grep { $_ ne $self } @{ $self->server->connections } ] );
     if ( $self->io_handle ) {
-        $self->log("Closing connection $self");
         $self->io_handle->close;
         $self->io_handle(undef);
     }
+    $self->timer->stop     if $self->timer;
     $self->selected->close if $self->selected;
     $self->model->close    if $self->model;
 }
@@ -273,9 +326,7 @@ Returns true if the connection is protected by SSL or TLS.
 
 sub is_encrypted {
     my $self   = shift;
-    my $handle = $self->io_handle;
-    $handle = tied( ${$handle} )->[0];
-    return $handle->isa("IO::Socket::SSL");
+    return $self->io_handle->is_ssl;
 }
 
 =head2 poll
@@ -392,8 +443,7 @@ sub get_messages {
             $ids{ @{$messages} + 0 }++;
         }
     }
-    return
-        grep {defined}
+    return grep {defined}
         map { $messages->[ $_ - 1 ] } sort { $a <=> $b } keys %ids;
 }
 
@@ -467,8 +517,7 @@ sub untagged_response {
 
 Sends the mesage to the client.  If the client's connection has
 dropped, or the send fails for whatever reason, L</close> the
-connection and then abort the coroutine; in which case, this function
-never returns!
+connection and then die, which is caught by L</handle_lines>.
 
 =cut
 
@@ -482,15 +531,11 @@ sub out {
             );
         } else {
             $self->close;
-
-            # Bail out; never returns
-            $Coro::current->cancel;
+            die "Error printing\n";
         }
     } else {
         $self->close;
-
-        # Bail out; never returns
-        $Coro::current->cancel;
+        die "Error printing\n";
     }
 }
 

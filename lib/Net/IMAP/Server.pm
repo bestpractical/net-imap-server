@@ -55,7 +55,7 @@ IMAP components should be opaque.
 =cut
 
 __PACKAGE__->mk_accessors(
-    qw/connections port ssl_port auth_class model_class connection_class user group poll_every/
+    qw/connections port ssl_port auth_class model_class connection_class user group poll_every unauth_idle auth_idle unauth_commands/
 );
 
 =head2 new PARAMHASH
@@ -109,6 +109,23 @@ C<user>, above.
 How often the current mailbox should be polled, in seconds; defaults
 to 0, which means it will be polled after every client command.
 
+=item unauth_commands
+
+The number of commands before unauthenticated users are disconnected.
+The default is 10; set to zero to disable.
+
+=item unauth_idle
+
+How long, in seconds, to wait before disconnecting idle connections
+which have not authenticated yet.  The default is 5 minutes; set to
+zero to disable (which is not advised).
+
+=item auth_idle
+
+How long, in seconds, to wait before disconnecting authentiated
+connections.  By RFC specification, this B<must> be longer than 30
+minutes.  The default is an hour; set to zero to disable.
+
 =back
 
 =cut
@@ -128,6 +145,9 @@ sub new {
             model_class      => "Net::IMAP::Server::DefaultModel",
             connection_class => "Net::IMAP::Server::Connection",
             poll_every       => 0,
+            unauth_idle      => 5*60,
+            auth_idle        => 60*60,
+            unauth_commands  => 10,
             @_,
             connections => [],
         }
@@ -193,7 +213,6 @@ sub process_request {
         io_handle => $handle,
         server    => $self,
     );
-    $Coro::current->prio(-4);
     push @{ $self->connections }, $conn;
     $conn->handle_lines;
 }

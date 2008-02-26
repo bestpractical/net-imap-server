@@ -31,12 +31,7 @@ sub run {
 
     $self->ok_completed;
 
-    require Net::Server::Proto::SSL;
-    my $handle = $self->connection->io_handle;
-    $handle = tied(${$handle})->[0];
-    IO::Socket::SSL->start_SSL( $handle,
-        SSL_server => 1, );
-    bless $handle, "Net::Server::Proto::SSL";
+    $self->connection->io_handle->start_SSL;
 }
 
 1;
