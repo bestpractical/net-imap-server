@@ -78,7 +78,6 @@ sub auth {
     my $self = shift;
     if (@_) {
         $self->{auth} = shift;
-        $self->server->{auth} = $self->{auth};
         $self->server->model_class->require || warn $@;
         $self->update_timer;
         $self->model(
@@ -97,7 +96,7 @@ may trigger the sending of untagged notifications to the client.
 sub selected {
     my $self = shift;
     if ( @_ and $self->selected ) {
-        unless ( $self->selected eq $_[0] ) {
+        unless ( $_[0] and $self->selected eq $_[0] ) {
             $self->send_untagged;
             $self->selected->close;
         }
@@ -128,9 +127,13 @@ additionally cede after handling every command.
 sub handle_lines {
     my $self = shift;
     $self->coro->prio(-4);
+
+    local $self->server->{connection} = $self;
+
     eval {
         $self->greeting;
         while ( $self->io_handle and $_ = $self->io_handle->getline() ) {
+            $self->server->{connection} = $self;
             $self->handle_command($_);
             $self->commands( $self->commands + 1 );
             if (    $self->is_unauth
@@ -194,10 +197,6 @@ sub handle_command {
     my $self    = shift;
     my $content = shift;
 
-    local $self->server->{connection} = $self;
-    local $self->server->{model}      = $self->model;
-    local $self->server->{auth}       = $self->auth;
-
     $self->log(
         "C(@{[$self]},@{[$self->auth ? $self->auth->user : '???']},@{[$self->is_selected ? $self->selected->full_path : 'unselected']}): $content"
     );
@@ -235,7 +234,7 @@ sub handle_command {
 =head2 pending
 
 If a connection has pending state, contains the callback that will
-recieve the next line of input.
+receive the next line of input.
 
 =cut
 
@@ -537,6 +536,8 @@ sub out {
         $self->close;
         die "Error printing\n";
     }
+    warn "Connection is no longer me!" if $self->server->connection ne $self;
+    $self->server->{connection} = $self;
 }
 
 1;

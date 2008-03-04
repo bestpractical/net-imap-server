@@ -461,6 +461,9 @@ sub get_uids {
     my $self = shift;
     my $str  = shift;
 
+    # Otherwise $self->messages->[-1] explodes
+    return () unless @{$self->messages};
+
     my %ids;
     for ( split ',', $str ) {
         if (/^(\d+):(\d+)$/) {

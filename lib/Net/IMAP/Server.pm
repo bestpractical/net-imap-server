@@ -249,30 +249,6 @@ sub connection {
     return $self->{connection};
 }
 
-=head2 auth
-
-Returns the current L<Net::IMAP::Server::DefaultAuth> (or, more
-probably, descendant thereof) for the active connection.
-
-=cut
-
-sub auth {
-    my $self = shift;
-    return $self->{auth};
-}
-
-=head2 auth
-
-Returns the current L<Net::IMAP::Server::DefaultModel> (or, more
-probably, descendant thereof) for the active connection.
-
-=cut
-
-sub model {
-    my $self = shift;
-    return $self->{model};
-}
-
 =head2 concurrent_mailbox_connections [MAILBOX]
 
 This can be called as either a class method or an instance method; it
