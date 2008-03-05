@@ -262,8 +262,11 @@ sub expunge {
         # Ensure that all other connections with this selected get a
         # temporary message list, if they don't already have one
         unless (
-            (       $Net::IMAP::Server::Server->connection
-                and $c eq $Net::IMAP::Server::Server->connection
+                # Except if we find our own connection; if this is
+                # *not* part of a poll, we asked for it, so no need to
+                # set up temporary messages.
+            ( $c eq $Net::IMAP::Server::Server->connection
+              and not $c->in_poll
             )
             or $c->temporary_messages
             )

@@ -31,8 +31,6 @@ sub run {
                 . " FETCH "
                 . $self->data_out( [ $m->fetch($spec) ] ) );
         cede;
-        warn "Connection is no longer me!" if $self->connection->server->connection ne $self->connection;
-        $self->connection->server->{connection} = $self->connection;
     }
 
     $self->ok_completed();

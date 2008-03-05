@@ -10,7 +10,7 @@ use Coro;
 use Net::IMAP::Server::Command;
 
 __PACKAGE__->mk_accessors(
-    qw(server io_handle _selected selected_read_only model pending temporary_messages temporary_sequence_map previous_exists untagged_expunge untagged_fetch ignore_flags last_poll commands timer coro)
+    qw(server io_handle _selected selected_read_only model pending temporary_messages temporary_sequence_map previous_exists untagged_expunge untagged_fetch ignore_flags last_poll in_poll commands timer coro)
 );
 
 =head1 NAME
@@ -127,13 +127,11 @@ additionally cede after handling every command.
 sub handle_lines {
     my $self = shift;
     $self->coro->prio(-4);
-
-    local $self->server->{connection} = $self;
+    $self->server->connection($self);
 
     eval {
         $self->greeting;
         while ( $self->io_handle and $_ = $self->io_handle->getline() ) {
-            $self->server->{connection} = $self;
             $self->handle_command($_);
             $self->commands( $self->commands + 1 );
             if (    $self->is_unauth
@@ -255,6 +253,7 @@ sub close {
     $self->timer->stop     if $self->timer;
     $self->selected->close if $self->selected;
     $self->model->close    if $self->model;
+    $self->server->connection(undef);
 }
 
 =head2 parse_command LINE
@@ -373,11 +372,12 @@ sub send_untagged {
     return unless $self->is_auth and $self->is_selected;
 
     if ( time >= $self->last_poll + $self->server->poll_every ) {
-
-        # When we poll, the things that we find should affect this
-        # connection as well; hence, the local to be "connection-less"
-        local $Net::IMAP::Server::Server->{connection};
+        # We record that we're in a poll so that EXPUNGE knows that
+        # this connection should get a temporary message store if need
+        # be.
+        $self->in_poll(1);
         $self->poll;
+        $self->in_poll(0);
     }
 
     for my $s ( keys %{ $self->untagged_fetch } ) {
@@ -536,8 +536,6 @@ sub out {
         $self->close;
         die "Error printing\n";
     }
-    warn "Connection is no longer me!" if $self->server->connection ne $self;
-    $self->server->{connection} = $self;
 }
 
 1;

@@ -246,7 +246,10 @@ if there is one.
 
 sub connection {
     my $self = shift;
-    return $self->{connection};
+    if (@_) {
+        $self->{connection}{$Coro::current . ""} = shift;
+    }
+    return $self->{connection}{$Coro::current . ""};
 }
 
 =head2 concurrent_mailbox_connections [MAILBOX]
