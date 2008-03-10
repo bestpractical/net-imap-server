@@ -339,7 +339,7 @@ sub ok_completed {
         %extra_responses );
 }
 
-=head2 ok_command MESSAGE [, RESPONSECODE => STRING, ...]
+=head2 no_command MESSAGE [, RESPONSECODE => STRING, ...]
 
 Sends untagged NO responses for any C<RESPONSECODE> pairs, then
 outputs untagged messages via L</send_untagged>, then sends a tagged

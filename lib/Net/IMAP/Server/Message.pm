@@ -307,9 +307,9 @@ sub fetch {
         } elsif ( uc $part eq "RFC822.SIZE" ) {
             push @out, length $self->mime_select( [], undef, undef );
         } elsif ( uc $part eq "BODY" ) {
-            push @out, $self->mime_bodystructure( $self->mime, 0 );
+            push @out, $self->mime_bodystructure( 0 );
         } elsif ( uc $part eq "BODYSTRUCTURE" ) {
-            push @out, $self->mime_bodystructure( $self->mime, 1 );
+            push @out, $self->mime_bodystructure( 1 );
         } elsif ( uc $part eq "ENVELOPE" ) {
             push @out, $self->mime_envelope;
         } else {
@@ -319,13 +319,25 @@ sub fetch {
     return @out;
 }
 
+=head2 mime_select SECTIONS [, START [, END [, EXTRA]]]
+
+This method is generally only used internally by L</fetch>.
+
+C<SECTIONS> should be an array reference of indexes into MIME parts,
+or pulled from the set of strings: C<HEADER>, C<MIME>, C<FIELDS>,
+C<TEXT>.  C<START> and C<END> determine which bytes of the resulting
+content to send.  C<EXTRA> is used only for C<FIELDS>, and supplies
+the names of headers to fetch.
+
+=cut
+
 sub mime_select {
     my $self = shift;
     my ( $sections, $start, $end, $extras ) = @_;
 
     my $mime;
 
-    my @sections = @{$sections};
+    my @sections = @{$sections || []};
     my $result;
     $result = $self->mime->as_string unless @sections;
     for (@sections) {
@@ -337,7 +349,7 @@ sub mime_select {
             my $mime_header = $mime ? $mime->header_obj : $self->mime_header;
             $case{ uc $_ } = $_ for $mime_header->header_names;
             my $copy = Email::Simple::Header->new("");
-            for my $h ( @{$extras} ) {
+            for my $h ( @{$extras || []} ) {
                 $copy->header_set( $case{$h}
                         || $h => $mime_header->header($h) );
             }
@@ -358,9 +370,16 @@ sub mime_select {
     return substr( $result, $start, $end );
 }
 
+=head2 mime_bodystructure [LONG [, MIME]]
+
+Returns a string describing the MIME body structure of the message.
+
+=cut
+
 sub mime_bodystructure {
     my $self = shift;
-    my ( $mime, $long ) = @_;
+    my ( $long, $mime ) = @_;
+    $mime ||= $self->mime;
 
     # Grab the content type
     my $data = parse_content_type( $mime->content_type );
@@ -387,7 +406,7 @@ sub mime_bodystructure {
         @parts = () if @parts == 1 and $parts[0] == $mime;
         my $parts = join '', map {
             Net::IMAP::Server::Command->data_out(
-                $self->mime_bodystructure( $_, $long ) )
+                $self->mime_bodystructure( $long, $_ ) )
         } @parts;
 
         return [
@@ -449,6 +468,13 @@ sub mime_bodystructure {
     }
 }
 
+=head2 address_envelope HEADER
+
+Returns a data structure defining the email addresses listed in the
+given C<HEADER>.  This is used internally by L</mime_envelope>.
+
+=cut
+
 sub address_envelope {
     my $self   = shift;
     my $header = shift;
@@ -465,6 +491,13 @@ sub address_envelope {
             } Email::Address->parse( $mime->header($header) )
     ];
 }
+
+=head2 mime_envelope
+
+Returns a data structure defining properties of significant header
+fields.  This is used internally by L</fetch>.
+
+=cut
 
 sub mime_envelope {
     my $self = shift;
