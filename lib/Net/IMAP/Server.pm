@@ -178,8 +178,8 @@ sub new {
 Starts the server; this method shouldn't be expected to return.
 Within this method, C<$Net::IMAP::Server::Server> is set to the object
 that this was called on; thus, all IMAP objecst have a way of
-referring to the server -- and though L</connection>, L</auth>, and
-L</model>, whatever parts of the IMAP internals they need.
+referring to the server -- and though L</connection>, whatever parts
+of the IMAP internals they need.
 
 =cut
 
@@ -202,7 +202,8 @@ sub run {
 
 =head2 process_request
 
-Accepts a client connection.
+Accepts a client connection; this method is needed for the
+L<Net::Server> infrastructure.
 
 =cut
 
@@ -240,7 +241,8 @@ are currently connected to the server.
 =head2 connection
 
 Returns the currently active L<Net::IMAP::Server::Connection> object,
-if there is one.
+if there is one.  This is determined by examining the current
+coroutine.
 
 =cut
 
