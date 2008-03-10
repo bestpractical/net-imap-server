@@ -12,9 +12,8 @@ requires('Email::Address');
 requires('Email::MIME');
 requires('Email::MIME::ContentType');
 requires('Email::Simple' => 1.999);
-requires('IO::Socket::SSL');
 requires('MIME::Base64');
-requires('Net::Server::Coro');
+requires('Net::Server::Coro' => 0.2);
 requires('Regexp::Common');
 requires('Test::More');
 

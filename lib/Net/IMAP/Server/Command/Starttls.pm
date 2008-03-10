@@ -5,8 +5,6 @@ use strict;
 
 use base qw/Net::IMAP::Server::Command/;
 
-use IO::Socket::SSL;
-
 sub validate {
     my $self = shift;
 
