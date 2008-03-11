@@ -140,7 +140,6 @@ sub handle_lines {
             {
                 $self->out(
                     "* BYE Don't noodle around so much before logging in!");
-                $self->close;
                 last;
             }
             $self->update_timer;
@@ -150,11 +149,11 @@ sub handle_lines {
         $self->log(
             "-(@{[$self]},@{[$self->auth ? $self->auth->user : '???']},@{[$self->is_selected ? $self->selected->full_path : 'unselected']}): Connection closed by remote host"
         );
-        $self->close;
     };
     my $err = $@;
     warn $err
         if $err and not( $err eq "Error printing\n" or $err eq "Timeout\n" );
+    $self->close;
 }
 
 =head2 update_timer

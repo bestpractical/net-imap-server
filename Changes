@@ -1,4 +1,7 @@
 Revision history for Net-IMAP-Server
 
+0.3    Tue Mar 11 12:33:14 2008
+       Connections weren't being fully closed on timeout
+
 0.2    Mon Mar 10 16:47:52 2008
        Initial release to CPAN
