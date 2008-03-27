@@ -153,6 +153,7 @@ sub handle_lines {
     my $err = $@;
     warn $err
         if $err and not( $err eq "Error printing\n" or $err eq "Timeout\n" );
+    eval { $self->out("* BYE Idle timeout; I fell asleep.") if $err eq "Timeout\n"; };
     $self->close;
 }
 
@@ -167,7 +168,6 @@ sub update_timer {
     $self->timer->stop if $self->timer;
     $self->timer(undef);
     my $timeout = sub {
-        eval { $self->out("* BYE Idle timeout; I fell asleep."); };
         $self->coro->throw("Timeout\n");
         $self->coro->ready;
     };
