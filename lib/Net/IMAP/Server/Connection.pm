@@ -6,6 +6,7 @@ use strict;
 use base 'Class::Accessor';
 
 use Coro;
+use Scalar::Util qw/weaken/;
 
 use Net::IMAP::Server::Command;
 
@@ -127,7 +128,6 @@ additionally cede after handling every command.
 sub handle_lines {
     my $self = shift;
     $self->coro->prio(-4);
-    $self->server->connection($self);
 
     eval {
         $self->greeting;
@@ -167,9 +167,11 @@ sub update_timer {
     my $self = shift;
     $self->timer->stop if $self->timer;
     $self->timer(undef);
+    my $weakself = $self;
+    weaken($weakself);
     my $timeout = sub {
-        $self->coro->throw("Timeout\n");
-        $self->coro->ready;
+        $weakself->coro->throw("Timeout\n");
+        $weakself->coro->ready;
     };
     if ( $self->is_unauth and $self->server->unauth_idle ) {
         $self->timer( EV::timer $self->server->unauth_idle, 0, $timeout );
@@ -243,8 +245,6 @@ Shuts down this connection, also closing the model and mailboxes.
 
 sub close {
     my $self = shift;
-    $self->server->connections(
-        [ grep { $_ ne $self } @{ $self->server->connections } ] );
     if ( $self->io_handle ) {
         $self->io_handle->close;
         $self->io_handle(undef);
@@ -253,6 +253,7 @@ sub close {
     $self->selected->close if $self->selected;
     $self->model->close    if $self->model;
     $self->server->connection(undef);
+    $self->coro(undef);
 }
 
 =head2 parse_command LINE

@@ -55,7 +55,7 @@ IMAP components should be opaque.
 =cut
 
 __PACKAGE__->mk_accessors(
-    qw/connections port ssl_port auth_class model_class connection_class user group poll_every unauth_idle auth_idle unauth_commands/
+    qw/port ssl_port auth_class model_class connection_class user group poll_every unauth_idle auth_idle unauth_commands/
 );
 
 =head2 new PARAMHASH
@@ -149,7 +149,7 @@ sub new {
             auth_idle        => 60*60,
             unauth_commands  => 10,
             @_,
-            connections => [],
+            connection       => {},
         }
     );
     UNIVERSAL::require( $self->auth_class )
@@ -214,7 +214,7 @@ sub process_request {
         io_handle => $handle,
         server    => $self,
     );
-    push @{ $self->connections }, $conn;
+    $self->connection($conn);
     $conn->handle_lines;
 }
 
@@ -238,6 +238,11 @@ are currently connected to the server.
 
 =cut
 
+sub connections {
+    my $self = shift;
+    return [ values %{$self->{connection}} ];
+}
+
 =head2 connection
 
 Returns the currently active L<Net::IMAP::Server::Connection> object,
@@ -249,7 +254,11 @@ coroutine.
 sub connection {
     my $self = shift;
     if (@_) {
-        $self->{connection}{$Coro::current . ""} = shift;
+        if (defined $_[0]) {
+            $self->{connection}{$Coro::current . ""} = shift;
+        } else {
+            delete $self->{connection}{$Coro::current . ""};
+        }
     }
     return $self->{connection}{$Coro::current . ""};
 }
