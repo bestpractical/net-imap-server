@@ -1,7 +1,17 @@
 Revision history for Net-IMAP-Server
 
+0.4    Fri Apr 11 15:29:15 2008
+        * Weaken the timeout callback, so we don't leak connection
+          objects
+        * Don't double-store refs to connections
+        * Actually clean out old keys in the connection hash
+        * Try to print from the right coro, so EV doesn't complain
+          about recursive entry, and then wedge the next time it
+          happens.
+        * Drop some more 'cede's in for commands which do many things
+
 0.3    Tue Mar 11 12:33:14 2008
-       Connections weren't being fully closed on timeout
+        * Connections weren't being fully closed on timeout
 
 0.2    Mon Mar 10 16:47:52 2008
-       Initial release to CPAN
+        * Initial release to CPAN

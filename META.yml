@@ -1,5 +1,5 @@
-abstract: "[One line description of module's purpose here]"
-author: Jesse Vincent <jesse@bestpractical.com>
+abstract: "A single-threaded multiplexing IMAP server implementation"
+author: Alex Vandiver <alexmv@bestpractical.com>
 distribution_type: module
 generated_by: Module::Install version 0.61
 license: perl
@@ -10,4 +10,4 @@ no_index:
     - t
 requires: 
   Test::More: 0
-version: 0.001
+version: 0.4
