@@ -31,7 +31,10 @@ sub run {
 
     my @messages = $self->connection->get_messages($messages);
     $self->connection->ignore_flags(1) if $what =~ /\.SILENT$/i;
-    $_->store( $what => $flags ) for @messages;
+    for my $m (@messages) {
+        $m->store( $what => $flags );
+        cede;
+    }
     $self->connection->ignore_flags(0) if $what =~ /\.SILENT$/i;
 
     $self->ok_completed();
