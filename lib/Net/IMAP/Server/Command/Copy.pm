@@ -5,6 +5,8 @@ use strict;
 
 use base qw/Net::IMAP::Server::Command/;
 
+use Coro;
+
 sub validate {
     my $self = shift;
 

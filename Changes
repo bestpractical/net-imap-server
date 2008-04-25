@@ -1,6 +1,10 @@
 Revision history for Net-IMAP-Server
 
-0.4    Fri Apr 11 15:29:15 2008
+0.5    Fri Apr 25 12:18:17 2008
+        * Add 'use Coro's for the places I added 'cede's
+        * Module::Install version bump
+
+0.4    Wed Apr 23 15:24:22 2008
         * Weaken the timeout callback, so we don't leak connection
           objects
         * Don't double-store refs to connections
