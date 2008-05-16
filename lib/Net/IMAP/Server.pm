@@ -8,7 +8,7 @@ use base qw/Net::Server::Coro Class::Accessor/;
 use UNIVERSAL::require;
 use Coro;
 
-our $VERSION = '0.5';
+our $VERSION = '0.6';
 
 =head1 NAME
 

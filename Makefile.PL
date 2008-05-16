@@ -13,6 +13,7 @@ requires('Email::MIME');
 requires('Email::MIME::ContentType');
 requires('Email::Simple' => 1.999);
 requires('MIME::Base64');
+requires('Net::SSLeay');
 requires('Net::Server::Coro' => 0.2);
 requires('Regexp::Common');
 requires('Test::More');

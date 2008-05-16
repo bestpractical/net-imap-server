@@ -21,7 +21,8 @@ requires:
   Email::MIME::ContentType: 0
   Email::Simple: 1.999
   MIME::Base64: 0
+  Net::SSLeay: 0
   Net::Server::Coro: 0.2
   Regexp::Common: 0
   Test::More: 0
-version: 0.5
+version: 0.6
