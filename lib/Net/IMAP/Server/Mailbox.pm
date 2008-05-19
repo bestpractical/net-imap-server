@@ -315,6 +315,34 @@ sub append {
     return $m;
 }
 
+=head3 status
+
+=cut
+
+sub status {
+    my $self = shift;
+    my (@keys) = @_;
+    $self->poll;
+    my %items;
+    for my $i ( @keys ) {
+        if ( $i eq "MESSAGES" ) {
+            $items{$i} = $self->exists;
+        } elsif ( $i eq "RECENT" ) {
+            $items{$i} = $self->recent;
+        } elsif ( $i eq "UNSEEN" ) {
+            my $unseen = $self->unseen;
+            $items{$i} = $unseen if defined $unseen;
+        } elsif ( $i eq "UIDVALIDITY" ) {
+            my $uidvalidity = $self->uidvalidity;
+            $items{$i} = $uidvalidity if defined $uidvalidity;
+        } elsif ( $i eq "UIDNEXT" ) {
+            my $uidnext = $self->uidnext;
+            $items{$i} = $uidnext if defined $uidnext;
+        }
+    }
+    return %items;
+}
+
 =head3 close
 
 Called when the client selects a different mailbox, or when the

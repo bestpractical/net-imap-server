@@ -11,7 +11,7 @@ use Scalar::Util qw/weaken/;
 use Net::IMAP::Server::Command;
 
 __PACKAGE__->mk_accessors(
-    qw(server io_handle _selected selected_read_only model pending temporary_messages temporary_sequence_map previous_exists untagged_expunge untagged_fetch ignore_flags last_poll in_poll commands timer coro)
+    qw(server io_handle _selected selected_read_only model pending temporary_messages temporary_sequence_map previous_exists untagged_expunge untagged_fetch ignore_flags last_poll in_poll commands timer coro _session_flags)
 );
 
 =head1 NAME
@@ -40,6 +40,7 @@ sub new {
             last_poll        => time,
             commands         => 0,
             coro             => $Coro::current,
+            _session_flags   => {},
         }
     );
     $self->update_timer;
@@ -485,6 +486,17 @@ sub capability {
     }
 
     return $base;
+}
+
+=head2 session_flags MESSAGE
+
+=cut
+
+sub session_flags {
+    my $self = shift;
+    my ($message) = shift;
+    $self->_session_flags->{$message . ""} ||= {};
+    return $self->_session_flags->{$message . ""};
 }
 
 =head2 log MESSAGE

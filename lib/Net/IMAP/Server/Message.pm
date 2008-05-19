@@ -119,6 +119,23 @@ sub copy {
     return $clone;
 }
 
+=head2 session_flags
+
+Returns the list of flags that are stored per-session.
+
+=cut
+
+sub session_flags {
+    return ('\Recent');
+}
+
+sub _session_flags {
+    my $self = shift;
+    my $conn = $Net::IMAP::Server::Server->connection;
+    return {} unless $conn;
+    return $conn->session_flags($self) || {};
+}
+
 =head2 set_flag FLAG [, SILENT]
 
 Sets the given flag on the message; if a true value is passed for
@@ -131,8 +148,11 @@ sub set_flag {
     my $self = shift;
     my ( $flag, $silent ) = @_;
     $flag = $FLAGS{ lc $flag } || $flag;
-    my $old = exists $self->_flags->{$flag};
-    $self->_flags->{$flag} = 1;
+
+    my $hash = (grep $flag eq $_, $self->session_flags) ? $self->_session_flags : $self->_flags;
+
+    my $old = exists $hash->{$flag};
+    $hash->{$flag} = 1;
 
     my $changed = not $old;
     if ( $changed and not $silent ) {
@@ -162,8 +182,11 @@ sub clear_flag {
     my $self = shift;
     my ( $flag, $silent ) = @_;
     $flag = $FLAGS{ lc $flag } || $flag;
-    my $old = exists $self->_flags->{$flag};
-    delete $self->_flags->{$flag};
+
+    my $hash = (grep $flag eq $_, $self->session_flags) ? $self->_session_flags : $self->_flags;
+
+    my $old = exists $hash->{$flag};
+    delete $hash->{$flag};
 
     my $changed = $old;
     if ( $changed and not $silent ) {
@@ -191,7 +214,10 @@ sub has_flag {
     my $self = shift;
     my $flag = shift;
     $flag = $FLAGS{ lc $flag } || $flag;
-    return exists $self->_flags->{$flag};
+
+    my $hash = (grep $flag eq $_, $self->session_flags) ? $self->_session_flags : $self->_flags;
+
+    return exists $hash->{$flag};
 }
 
 =head2 flags
@@ -202,7 +228,8 @@ Returns the list of flags which are set on the message.
 
 sub flags {
     my $self = shift;
-    return sort keys %{ $self->_flags };
+    my %flags = ( %{ $self->_flags }, %{ $self->_session_flags } );
+    return sort keys %flags;
 }
 
 =head2 store STRING FLAGS

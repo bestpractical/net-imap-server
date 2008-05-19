@@ -29,41 +29,8 @@ sub run {
 
     my ( $name, $flags ) = $self->parsed_options;
     my $mailbox = $self->connection->model->lookup( $name );
-    $mailbox->poll;
 
-    my %items;
-    $items{ uc $_ } = undef for @{$flags};
-
-    for my $i ( keys %items ) {
-        if ( $i eq "MESSAGES" ) {
-            $items{$i} = $mailbox->exists;
-        } elsif ( $i eq "RECENT" ) {
-            $items{$i} = $mailbox->recent;
-        } elsif ( $i eq "UNSEEN" ) {
-            my $unseen = $mailbox->unseen;
-            if ( defined $unseen ) {
-                $items{$i} = $unseen;
-            } else {
-                delete $items{$i};
-            }
-        } elsif ( $i eq "UIDVALIDITY" ) {
-            my $uidvalidity = $mailbox->uidvalidity;
-            if ( defined $uidvalidity ) {
-                $items{$i} = $uidvalidity;
-            } else {
-                delete $items{$i};
-            }
-        } elsif ( $i eq "UIDNEXT" ) {
-            my $uidnext = $mailbox->uidnext;
-            if ( defined $uidnext ) {
-                $items{$i} = $uidnext;
-            } else {
-                delete $items{$i};
-            }
-        } else {
-            delete $items{$i};
-        }
-    }
+    my %items = $mailbox->status(map {uc $_} @{$flags});
     $self->untagged_response( "STATUS ".$self->data_out({type=>"string", value => $name}) . " "
                               . $self->data_out([map {(\$_, $items{$_})}keys %items]) );
     $self->ok_completed;
