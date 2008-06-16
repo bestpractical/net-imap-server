@@ -131,7 +131,7 @@ sub session_flags {
 
 sub _session_flags {
     my $self = shift;
-    my $conn = $Net::IMAP::Server::Server->connection;
+    my $conn = Net::IMAP::Server->connection;
     return {} unless $conn;
     return $conn->session_flags($self) || {};
 }

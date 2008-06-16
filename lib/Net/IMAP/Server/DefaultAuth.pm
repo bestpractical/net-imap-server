@@ -91,15 +91,6 @@ sub sasl_plain {
     };
 }
 
-=head2 client_id
-
-Called when the client provides identifying information via the C<ID>
-command; by default, does nothing.  See RFC 2971.
-
-=cut
-
-sub client_id { }
-
 =head1 IMPLEMENTING NEW SASL METHODS
 
 The L</sasl_plain> method is a simple example of implementing a SASL

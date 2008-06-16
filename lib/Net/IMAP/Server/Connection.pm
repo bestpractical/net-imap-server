@@ -88,6 +88,22 @@ sub auth {
     return $self->{auth};
 }
 
+=head2 client_id
+
+When called with no arguments, returns a hashref of identifying
+information provided by the client.  When key-value pairs are
+provided, sets the client properties.  See RFC 2971.
+
+=cut
+
+sub client_id {
+    my $self = shift;
+    if (@_ > 1) {
+        $self->{client} = {%{$self->{client} || {}}, @_};
+    }
+    return $self->{client} || {};
+}
+
 =head2 selected [MAILBOX]
 
 Gets or sets the currently selected mailbox for this connection.  This

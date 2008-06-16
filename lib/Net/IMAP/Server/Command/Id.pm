@@ -22,8 +22,7 @@ sub run {
 
     my @options = $self->parsed_options;
     $options[0] = [] if $options[0] eq "NIL";
-    $self->connection->auth->client_id(@{$options[0]})
-      if $self->connection->is_auth;
+    $self->connection->client_id(@{$options[0]});
     $self->untagged_response("ID " . $self->data_out([$self->server->id]));
 
     $self->ok_completed();

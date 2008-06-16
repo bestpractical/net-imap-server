@@ -7,7 +7,7 @@ use Net::IMAP::Server::Message;
 use base 'Class::Accessor';
 
 __PACKAGE__->mk_accessors(
-    qw(name is_inbox parent children _path uidnext uids uidvalidity messages subscribed is_selectable)
+    qw(is_inbox parent children _path uidnext uids uidvalidity messages subscribed is_selectable)
 );
 
 =head1 NAME
@@ -112,6 +112,34 @@ sub load_data {
     }
 }
 
+=head3 name
+
+Gets or sets the name of the mailbox.  This includes a workaround for
+Zimbra, which doesn't understand mailbox names with colons in them --
+so we substitute dashes.
+
+=cut
+
+sub name {
+    my $self = shift;
+    if (@_) {
+        $self->{name} = shift;
+    }
+
+    # Zimbra can't handle mailbox names with colons in them, for no
+    # obvious reason.  Handily, it identifies itself as Zimbra before
+    # login, so we know when to perform a colonoscopy.  We do this on
+    # get, and not on set, because the same model might be used by
+    # other clients.
+    my $name = $self->{name};
+    $name =~ s/:+/-/g
+        if Net::IMAP::Server->connection
+        and exists Net::IMAP::Server->connection->client_id->{vendor}
+        and Net::IMAP::Server->connection->client_id->{vendor} eq "Zimbra";
+
+    return $name;
+}
+
 =head2 Actions
 
 =head3 poll
@@ -209,10 +237,12 @@ sub reparent {
         [ grep { $_ ne $self } @{ $self->parent->children } ] );
     push @{ $parent->children }, $self;
     $self->parent($parent);
+    return 1 unless Net::IMAP::Server->connection;
+
     my @uncache = ($self);
     while (@uncache) {
         my $o = shift @uncache;
-        $o->_path(undef);
+        delete Net::IMAP::Server->connection->{path_cache}{$o.""};
         push @uncache, @{ $o->children };
     }
     return 1;
@@ -265,7 +295,8 @@ sub expunge {
                 # Except if we find our own connection; if this is
                 # *not* part of a poll, we asked for it, so no need to
                 # set up temporary messages.
-            ( $c eq $Net::IMAP::Server::Server->connection
+            ( Net::IMAP::Server->connection and
+              $c eq Net::IMAP::Server->connection
               and not $c->in_poll
             )
             or $c->temporary_messages
@@ -373,13 +404,17 @@ Returns the full path to this mailbox.
 
 sub full_path {
     my $self = shift;
-    return $self->_path if defined $self->_path;
-    $self->_path(
+    my $cache
+        = Net::IMAP::Server->connection
+        ? ( Net::IMAP::Server->connection->{path_cache} ||= {} )
+        : {};
+    return $cache->{$self.""}
+      if defined $cache->{$self.""};
+    $cache->{$self.""} =
           !$self->parent         ? ""
         : !$self->parent->parent ? $self->name
-        : $self->parent->full_path . $self->seperator . $self->name
-    );
-    return $self->_path;
+        : $self->parent->full_path . $self->seperator . $self->name;
+    return $cache->{$self.""};
 }
 
 =head3 flags
@@ -417,7 +452,7 @@ sets the "high water mark" for notifying the client of messages added.
 
 sub exists {
     my $self = shift;
-    $Net::IMAP::Server::Server->connection->previous_exists(
+    Net::IMAP::Server->connection->previous_exists(
         scalar @{ $self->messages } )
         if $self->selected;
     return scalar @{ $self->messages };
@@ -478,8 +513,9 @@ L<Net::IMAP::Server::Connection>.
 
 sub selected {
     my $self = shift;
-    return $Net::IMAP::Server::Server->connection->selected
-        and $Net::IMAP::Server::Server->connection->selected eq $self;
+    return Net::IMAP::Server->connection
+      and Net::IMAP::Server->connection->selected
+        and Net::IMAP::Server->connection->selected eq $self;
 }
 
 =head3 get_uids STR
@@ -523,7 +559,8 @@ passes the buck to L</Net::IMAP::Server::Connection/get_messages>.
 
 sub get_messages {
     my $self = shift;
-    return $Net::IMAP::Server::Server->connection->get_messages(@_);
+    return () unless Net::IMAP::Server->connection;
+    return Net::IMAP::Server->connection->get_messages(@_);
 }
 
 =head3 prep_for_destroy

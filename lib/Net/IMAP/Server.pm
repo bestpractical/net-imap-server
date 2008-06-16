@@ -252,7 +252,8 @@ coroutine.
 =cut
 
 sub connection {
-    my $self = shift;
+    my $class = shift;
+    my $self  = ref $class ? $class : $Net::IMAP::Server::Server;
     if (@_) {
         if (defined $_[0]) {
             $self->{connection}{$Coro::current . ""} = shift;
