@@ -1,5 +1,6 @@
 certs/server-cert.pem
 certs/server-key.pem
+ex/trivial-server.pl
 Changes
 inc/Module/Install.pm
 inc/Module/Install/Base.pm
