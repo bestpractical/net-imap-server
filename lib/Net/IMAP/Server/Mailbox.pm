@@ -563,6 +563,19 @@ sub get_messages {
     return Net::IMAP::Server->connection->get_messages(@_);
 }
 
+=head3 update_tree
+
+Called before the model's children are listed to the client.  This is
+the right place to hook into for mailboxes whose children shift with
+time.
+
+=cut
+
+sub update_tree {
+    my $self = shift;
+    $_->update_tree for @{ $self->children };
+}
+
 =head3 prep_for_destroy
 
 Called before the mailbox is destroyed; this deals with cleaning up

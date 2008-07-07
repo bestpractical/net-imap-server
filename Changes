@@ -1,5 +1,13 @@
 Revision history for Net-IMAP-Server
 
+0.9    Mon Jul  7 17:35:04 2008
+        * Add update-tree hook so servers can dynamically create sub-mailboxes
+
+0.8    Mon Jun 16 18:34:56 2008
+        * Special-casing for Zimbra clients
+        * client_id is a connection property, not an auth property
+        * Bump the Net::Server::Coro dep
+
 0.7    Mon May 19 13:30:17 2008
         * Per-session message flags actually stored on the session
         * STATUS is now on the mailbox

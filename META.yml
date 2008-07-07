@@ -22,7 +22,7 @@ requires:
   Email::Simple: 1.999
   MIME::Base64: 0
   Net::SSLeay: 0
-  Net::Server::Coro: 0.2
+  Net::Server::Coro: 0.3
   Regexp::Common: 0
   Test::More: 0
-version: 0.8
+version: 0.9

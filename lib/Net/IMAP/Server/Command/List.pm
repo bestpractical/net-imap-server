@@ -33,6 +33,7 @@ sub run {
         $search =~ s/\\\*/.*/g;
         $search =~ s/\\%/[^$sep]+/g;
         my $regex = qr{^\Q$root\E$search$};
+        $self->connection->model->root->update_tree;
         $self->traverse( $self->connection->model->root, $regex );
     }
 
