@@ -1,21 +1,26 @@
 #!/usr/bin/perl
 use Net::IMAP::Server;
 
-package Demo::IMAP::Auth; $INC{'Demo/IMAP/Auth.pm'} = 1;
+package Demo::IMAP::Auth;
+$INC{'Demo/IMAP/Auth.pm'} = 1;
 use base 'Net::IMAP::Server::DefaultAuth';
+
 sub auth_plain {
     my ( $self, $user, $pass ) = @_;
+
     # XXX DO AUTH CHECK
+    $self->user($user);
     return 1;
 }
 
-package Demo::IMAP::Model; $INC{'Demo/IMAP/Model.pm'} = 1;
+package Demo::IMAP::Model;
+$INC{'Demo/IMAP/Model.pm'} = 1;
 use base 'Net::IMAP::Server::DefaultModel';
 
 sub init {
     my $self = shift;
     $self->root( Demo::IMAP::Mailbox->new() );
-    $self->root->add_child( name     => "INBOX", is_inbox => 1);
+    $self->root->add_child( name => "INBOX" );
 }
 
 package Demo::IMAP::Mailbox;
@@ -43,5 +48,6 @@ Net::IMAP::Server->new(
     model_class => "Demo::IMAP::Model",
     user        => 'nobody',
     port        => 143,
-    ssl_port    => 993 )->run();
+    ssl_port    => 993
+)->run();
 
