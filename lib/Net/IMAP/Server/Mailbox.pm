@@ -38,6 +38,10 @@ sub new {
         if $self->parent
         and grep { $self->full_path eq $_->full_path }
         @{ $self->parent->children };
+    $self->is_inbox(1)
+        if $self->parent
+        and not $self->parent->parent
+        and $self->name =~ /^inbox$/i;
     $self->init;
     $self->load_data;
     return $self;

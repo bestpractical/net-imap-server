@@ -44,8 +44,7 @@ Called when the class is instantiated, with no arguments.  Subclasses
 should override this methtod to inspect the L</auth> object, and
 determine what folders the user should have.  The primary purpose of
 this method is to set L</root> to the top level of the mailbox tree.
-The root is expected to contain a mailbox named C<INBOX>, which should
-have L<Net::IMAP::Server::Mailbox/is_inbox> set.
+The root is expected to contain a mailbox named C<INBOX>.
 
 =cut
 
@@ -57,7 +56,7 @@ sub init {
         $self->root( $roots{$user} );
     } else {
         $self->root( Net::IMAP::Server::Mailbox->new() )
-            ->add_child( name => "INBOX", is_inbox => 1 )
+            ->add_child( name => "INBOX" )
             ->add_child( name => $user );
         $roots{$user} = $self->root;
     }
