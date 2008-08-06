@@ -1,7 +1,11 @@
 Revision history for Net-IMAP-Server
 
+0.95   Wed Aug  6 18:46:09 2008
+        * We can intuit the is_inbox mailbox property
+        * Include a simple example server
+
 0.9    Mon Jul  7 17:35:04 2008
-        * Add update-tree hook so servers can dynamically create sub-mailboxes
+        * Add update_tree hook so servers can dynamically create sub-mailboxes
 
 0.8    Mon Jun 16 18:34:56 2008
         * Special-casing for Zimbra clients
