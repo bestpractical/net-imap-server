@@ -1,5 +1,12 @@
 Revision history for Net-IMAP-Server
 
+1.01   Sat Aug 16 21:06:31 2008
+        * Now with updated changelog and signatures - no functionality
+          changes
+
+1.00   Sat Aug 16 21:05:25 2008
+        * Remove Email::Folder dep, and default lod_data behavior
+
 0.95   Wed Aug  6 18:46:09 2008
         * We can intuit the is_inbox mailbox property
         * Include a simple example server
