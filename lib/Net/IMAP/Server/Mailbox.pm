@@ -91,29 +91,12 @@ sub init {
 
 =head3 load_data
 
-This default mailbox implementation attempts to find a C<mbox> file
-whose name is based on the full path of the mailbox, and load messages
-from that file.  It makes no attempt to write back any changes to the
-file.
-
+This default mailbox implementation simply returns an empty mailbox.
 Subclasses will probably wish to override this method.
 
 =cut
 
 sub load_data {
-    my $self = shift;
-    my $name = $self->full_path;
-    return unless $name;
-    $name =~ s/\W+/_/g;
-    $name .= ".mailbox";
-    if ( -e $name ) {
-        my $folder = Email::IMAPFolder->new( $name, eol => "\r\n" );
-        my @messages = $folder->messages;
-        warn "Loaded " . ( @messages + 0 ) . " messages from $name\n";
-        $self->add_message($_) for @messages;
-    } else {
-        warn "No $name file\n";
-    }
 }
 
 =head3 name
@@ -599,16 +582,6 @@ sub prep_for_destroy {
     $self->uids( {} );
     $_->prep_for_destroy for @messages;
     $self->parent(undef);
-}
-
-package Email::IMAPFolder;
-use base 'Email::Folder';
-
-sub bless_message {
-    my $self = shift;
-    my $message = shift || "";
-
-    return Net::IMAP::Server::Message->new($message);
 }
 
 1;
