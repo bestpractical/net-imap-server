@@ -334,6 +334,113 @@ sub id {
 1;    # Magic true value required at end of module
 __END__
 
+=head1 Object model
+
+An ASCII model of the relationship between objects is below.  In it,
+single lines represent scalar values, and lines made of other
+characters denote array references or relations.
+
+   +----------------------------------------------+
+   |                                              |
+   |                    Server                    |
+   |                                              |
+   +1-----2---------------------------------------+
+    #     '      ^         ^            ^        ^
+    #     '      |         |            |        |
+    #     v      |         |            |        |
+    #   +--------1-------+ |     +------1------+ |
+    ###>|   Connection   |<------2   Command   | |
+    #   +--4-----3------2+ |     +-------------+ |
+  /-#------/     |      \--------------\         |
+  | #            v         |           v         |
+  | #   +----------------+ |     +-------------+ |
+  | #   |     Model      2------>|    Auth     | |
+  | #   +--------1-------+ |     +-------------+ |
+  | #            \---------------------------------\
+  | #                      |                     | |
+  | #                  /---/                 /---/ |
+  | #   +--------------1-+       +-----------1-+   |
+  | ###>|   Connection   |<------2   Command   |   |
+  |     +--4-5---3------2+       +-------------+   |
+  | /------/ *   |      \--------------\           |
+  | | ********   v                     v           |
+  | | * +----------------+       +-------------+   |
+  | | * |     Model      2------>|    Auth     |   |
+  | | * +--------1-------+       +-------------+   |
+  | | *          |                                 |
+  | | *          |  /------------------------------/
+  | | *          |  |           ^ SERVER
+  |.|.*..........|..|................................
+  | | *          |  |           v MODEL
+  | | *          v  v
+  | \-*---->+-------------+<------------\
+  \---*---->|   Mailbox   |<----------\ |
+      *     +-1------2-3--+<----\     | |
+      *       @   ^  $ %        |     | |
+      *       @   |  $$%$>+-----1---+ | |
+      *       @   |  $ %%>| Message | | |
+      ********@***|****%*>+---------+ | |
+      *       @   |  $ %              | |
+      *       @   |  $$%$>+---------+ | |
+      *       @   |    %%>| Message 1-/ |
+      ********@***|******>+---------+   |
+      *       @   |                     |
+      *       @   |       +---------+   |
+      *       @   |       | Message 1---/
+      ********@***|******>+---------+
+              @   |
+              @  +4----------+
+              @@>|  Mailbox  |
+                 +-----------+
+
+The top half consists of the parts which implement the IMAP protocol
+itself; the bottom contains the models for the backing store.  Note
+that, for the most part, the backing store is unaware of the framework
+of the server itself.
+
+Each model has references to others, as follows:
+
+=over
+
+=item Server
+
+Contains references to the set of C<connections> (1).  It also has a
+sense of the I<current> C<connection> (2), based on the active L<Coro>
+thread.
+
+=item Connection
+
+Connections hold a reference to their C<server> (1).  If the
+connection has authenticated, they hold a reference to the C<auth>
+object (2), and to their C<model> (3).  If a mailbox is C<selected>
+(4), they hold a pointer to that, as well.  Infrequently, the
+connection will need to temporarily store references to the set of
+C<temporary_messages> (5) which have been expunged in other
+connections, but we have been unable to notify this connection of.
+
+=item Command
+
+Commands store their C<server> (1) and C<connection> (2).
+
+=item Model
+
+Models store a reference to the C<root> (1) of their mailbox tree, as
+well as to the C<auth> (2) which gives them access to such.
+
+=item Mailbox
+
+Mailboxes store a list of C<children> mailboxes (1), and C<messages>
+(2) contained within them, which are stored in sequence order.  They
+also contain a hash of C<uids> (3) for fast UID retrieval of
+messages. If they are not the root mailbox, they also store a
+reference to their C<parent> mailbox (4).
+
+=item Message
+
+Messages store the C<mailbox> (1) in which they are contained.
+
+=back
+
 =head1 DEPENDENCIES
 
 L<Coro>, L<Net::Server::Coro>
