@@ -64,6 +64,20 @@ sub init {
     return $self;
 }
 
+=head2 root MAILBOX
+
+Gets or sets the root L<Net::IMAP::Server::Mailbox> for this model.
+The root mailbox should contain no messages, and have no name -- it
+exists purely to contain sub-mailboxes, like C<INBOX>.  The L</init>
+method is resposible for setting up the appropriate root mailbox, and
+all sub-mailboxes for the model.
+
+=head2 auth
+
+Returns the L<Net::IMAP::Server::DefaultAuth> object for this model;
+this is set by the connection when the model is created, and will
+always reference a valid authentication object.
+
 =head2 close
 
 Called when this model's connection closes, for any reason.  By
