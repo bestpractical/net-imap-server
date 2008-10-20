@@ -1,11 +1,16 @@
 Revision history for Net-IMAP-Server
 
+1.05   Mon Oct 20 16:40:19 2008
+        * Fixed spelling of 'separator' -- THIS BREAKS BACKWARDS
+          COMPATIBILITY if you had overridden the 'seperator' method.
+        * Added some missing pod on Net::IMAP::Server::DefaultModel
+
 1.01   Sat Aug 16 21:06:31 2008
         * Now with updated changelog and signatures - no functionality
           changes
 
 1.00   Sat Aug 16 21:05:25 2008
-        * Remove Email::Folder dep, and default lod_data behavior
+        * Remove Email::Folder dep, and default load_data behavior
 
 0.95   Wed Aug  6 18:46:09 2008
         * We can intuit the is_inbox mailbox property

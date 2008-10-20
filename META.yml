@@ -25,4 +25,4 @@ requires:
   Net::Server::Coro: 0.3
   Regexp::Common: 0
   Test::More: 0
-version: 1.01
+version: 1.05
