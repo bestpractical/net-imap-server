@@ -372,14 +372,14 @@ sub close { }
 
 =head2 Inspection
 
-=head3 seperator
+=head3 separator
 
-Returns the path seperator.  Note that only the path seperator of the
+Returns the path separator.  Note that only the path separator of the
 root mailbox matters.  Defaults to a forward slash.
 
 =cut
 
-sub seperator {
+sub separator {
     return "/";
 }
 
@@ -400,7 +400,7 @@ sub full_path {
     $cache->{$self.""} =
           !$self->parent         ? ""
         : !$self->parent->parent ? $self->name
-        : $self->parent->full_path . $self->seperator . $self->name;
+        : $self->parent->full_path . $self->separator . $self->name;
     return $cache->{$self.""};
 }
 

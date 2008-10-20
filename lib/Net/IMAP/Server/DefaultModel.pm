@@ -91,14 +91,14 @@ sub close {
 =head2 split PATH
 
 Utility method which splits a given C<PATH> according to the mailbox
-seperator, as determinded by the
-L<Net::IMAP::Server::Mailbox/seperator> of the L</root>.
+separator, as determinded by the
+L<Net::IMAP::Server::Mailbox/separator> of the L</root>.
 
 =cut
 
 sub split {
     my $self = shift;
-    return grep {length} split quotemeta $self->root->seperator, shift;
+    return grep {length} split quotemeta $self->root->separator, shift;
 }
 
 =head2 lookup PATH

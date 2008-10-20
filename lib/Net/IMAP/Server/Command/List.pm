@@ -25,10 +25,10 @@ sub run {
     # In the special case of a query for the delimiter, give them our delimiter
     if ( $search eq "" ) {
         $self->tagged_response( q{(\Noselect) "}
-                . $self->connection->model->root->seperator
+                . $self->connection->model->root->separator
                 . q{" ""} );
     } else {
-        my $sep = $self->connection->model->root->seperator;
+        my $sep = $self->connection->model->root->separator;
         $search = quotemeta($search);
         $search =~ s/\\\*/.*/g;
         $search =~ s/\\%/[^$sep]+/g;
@@ -46,7 +46,7 @@ sub list_out {
     my @props = @_;
 
     my $str = $self->data_out([map {\$_} @props]);
-    $str .= q{ "} . $self->connection->model->root->seperator . q{" };
+    $str .= q{ "} . $self->connection->model->root->separator . q{" };
     $str .= q{"} . $node->full_path . q{"};
     $self->tagged_response($str);
 }
