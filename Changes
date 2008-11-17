@@ -1,5 +1,8 @@
 Revision history for Net-IMAP-Server
 
+1.06   Mon Nov 17 17:06:52 2008
+        * Added NAMESPACE support
+
 1.05   Mon Oct 20 16:40:19 2008
         * Fixed spelling of 'separator' -- THIS BREAKS BACKWARDS
           COMPATIBILITY if you had overridden the 'seperator' method.

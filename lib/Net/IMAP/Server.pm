@@ -8,7 +8,7 @@ use base qw/Net::Server::Coro Class::Accessor/;
 use UNIVERSAL::require;
 use Coro;
 
-our $VERSION = '1.05';
+our $VERSION = '1.06';
 
 =head1 NAME
 
@@ -314,7 +314,7 @@ L<Net::IMAP::Server::Connection/capability>).
 
 sub capability {
     my $self = shift;
-    return "IMAP4rev1 STARTTLS CHILDREN LITERAL+ UIDPLUS ID";
+    return "IMAP4rev1 STARTTLS CHILDREN LITERAL+ UIDPLUS ID NAMESPACE";
 }
 
 =head2 id

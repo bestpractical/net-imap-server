@@ -14,9 +14,9 @@ not run its Makefile.PL or Build.PL.
 -----BEGIN PGP SIGNED MESSAGE-----
 Hash: SHA1
 
-SHA1 04f9bc07d848378f9669de577a1e72445b099f1e Changes
+SHA1 64e6bdf06350584b5719b4ba1521b62b968e7e69 Changes
 SHA1 78245bf5055b3e7965e1632b17b25f6cf8cb9963 MANIFEST
-SHA1 0ca62fd64162c01583a1dda50b1bfb34b8e5cf77 META.yml
+SHA1 5aff6d8645902311120089d4ca39206805cecb81 META.yml
 SHA1 ac8dc2041d86b0d5fb25756b3c7421ff62e7bc79 Makefile.PL
 SHA1 f4c6e4793fd7815aec4abfcd69018d8f34d832a8 README
 SHA1 f5333026061a6f347e7f2a3ce8bb6847081c200c certs/server-cert.pem
@@ -30,7 +30,7 @@ SHA1 54fcbed19232ec959bb17cfb4410599afc7f0779 inc/Module/Install/Makefile.pm
 SHA1 7d3be9b158e37b2b2c22084740099955623b1d56 inc/Module/Install/Metadata.pm
 SHA1 0a8b66180229ba2f9deaea1fedd0aacf7a7ace6b inc/Module/Install/Win32.pm
 SHA1 d3352eb33fe43a5f3ead513f645224fe34d73bc9 inc/Module/Install/WriteAll.pm
-SHA1 cdcc0a4132854bc54572618459c3c334bae91b89 lib/Net/IMAP/Server.pm
+SHA1 e32c18667c44cbf22b7f93c6edb4905469164450 lib/Net/IMAP/Server.pm
 SHA1 a9b20e80cfe76e9fed6b3703818306950669a839 lib/Net/IMAP/Server/Command.pm
 SHA1 636e390f8f44ee6c51321220a44c20ceba08b44d lib/Net/IMAP/Server/Command/Append.pm
 SHA1 5c203d47099444ceb8ce9e8927353d91ba0545cd lib/Net/IMAP/Server/Command/Authenticate.pm
@@ -60,7 +60,7 @@ SHA1 c73f4ad4b6177c7efacca44f09b6629a35b63c04 lib/Net/IMAP/Server/Command/Uid.pm
 SHA1 4591be8d501ea8877f3b4d4418620cce094256ab lib/Net/IMAP/Server/Command/Unsubscribe.pm
 SHA1 69b160ff78baf6be4296e0f0c593930c41765b02 lib/Net/IMAP/Server/Connection.pm
 SHA1 6179dda2e20152bb00193b5490c58137fb0a2465 lib/Net/IMAP/Server/DefaultAuth.pm
-SHA1 bc42ff267fc0544228e1a7097008476cd6e6831e lib/Net/IMAP/Server/DefaultModel.pm
+SHA1 64a9c3c244776c4103891f7de908c1f3457e2c2c lib/Net/IMAP/Server/DefaultModel.pm
 SHA1 1ecad572e0aa33e592a7b30cdef96cf2e25f3b5f lib/Net/IMAP/Server/Mailbox.pm
 SHA1 28abf48bfb787289cafcb5781ef4dbdbadbdb1af lib/Net/IMAP/Server/Message.pm
 SHA1 2e67e318edc490da7367ebcc789d35d0810e00e6 t/00.load.t
@@ -69,7 +69,7 @@ SHA1 0190346d7072d458c8a10a45c19f86db641dcc48 t/pod.t
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.9 (GNU/Linux)
 
-iEYEARECAAYFAkj87RwACgkQMflWJZZAbqBBIwCdFw2VjVlC8H/wiAcV/ztyvioI
-xaoAoK5YpWt6Ai/BZEQOpHaLgk+tm1W2
-=g+1m
+iEYEARECAAYFAkkh6ywACgkQMflWJZZAbqAqgQCeK6AItCchFg26/HcTNhP0rnvy
+S3YAoK8soTy/5viHRozHH6P+Fex/yCMB
+=5J3a
 -----END PGP SIGNATURE-----
