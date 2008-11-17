@@ -15,7 +15,7 @@ not run its Makefile.PL or Build.PL.
 Hash: SHA1
 
 SHA1 64e6bdf06350584b5719b4ba1521b62b968e7e69 Changes
-SHA1 78245bf5055b3e7965e1632b17b25f6cf8cb9963 MANIFEST
+SHA1 1d36665e7d4a4a7a531de37b45e18fe4b9b4b412 MANIFEST
 SHA1 5aff6d8645902311120089d4ca39206805cecb81 META.yml
 SHA1 ac8dc2041d86b0d5fb25756b3c7421ff62e7bc79 Makefile.PL
 SHA1 f4c6e4793fd7815aec4abfcd69018d8f34d832a8 README
@@ -48,6 +48,7 @@ SHA1 69cc30cbdf263fc4a55001bba1342e653ef99280 lib/Net/IMAP/Server/Command/List.p
 SHA1 7ec3ec0e5f4d7b17105b9ea16d7450f846de5c78 lib/Net/IMAP/Server/Command/Login.pm
 SHA1 30579885dfc9b80c2c7873bb283e4105d3c74f2a lib/Net/IMAP/Server/Command/Logout.pm
 SHA1 757faacdf957afddd0b0ff659258b8b0e09a0e4b lib/Net/IMAP/Server/Command/Lsub.pm
+SHA1 5b70addb768db9687d7657e2990fe4509e2da960 lib/Net/IMAP/Server/Command/Namespace.pm
 SHA1 78902aa13c8e79d5abc95fc6de637c1af8783ce2 lib/Net/IMAP/Server/Command/Noop.pm
 SHA1 84adf33de0822b0357bd26f207db9812b655c85f lib/Net/IMAP/Server/Command/Rename.pm
 SHA1 c26ac00f5af0d972516f3f40132489ec026fecb9 lib/Net/IMAP/Server/Command/Search.pm
@@ -69,7 +70,7 @@ SHA1 0190346d7072d458c8a10a45c19f86db641dcc48 t/pod.t
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.9 (GNU/Linux)
 
-iEYEARECAAYFAkkh6ywACgkQMflWJZZAbqAqgQCeK6AItCchFg26/HcTNhP0rnvy
-S3YAoK8soTy/5viHRozHH6P+Fex/yCMB
-=5J3a
+iEYEARECAAYFAkkh73IACgkQMflWJZZAbqCT8wCgq7lrSLoHM89X4V8u6eMLikxp
+JMsAnA2yhQ58HNtkms7O1uX12bIeM8wv
+=K3D0
 -----END PGP SIGNATURE-----

@@ -28,6 +28,7 @@ lib/Net/IMAP/Server/Command/List.pm
 lib/Net/IMAP/Server/Command/Login.pm
 lib/Net/IMAP/Server/Command/Logout.pm
 lib/Net/IMAP/Server/Command/Lsub.pm
+lib/Net/IMAP/Server/Command/Namespace.pm
 lib/Net/IMAP/Server/Command/Noop.pm
 lib/Net/IMAP/Server/Command/Rename.pm
 lib/Net/IMAP/Server/Command/Search.pm
