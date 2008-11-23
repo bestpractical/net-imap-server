@@ -1,5 +1,8 @@
 Revision history for Net-IMAP-Server
 
+1.07   Sun Nov 23 01:03:24 2008
+        * Fixed missing UNIVERSAL::require dep
+
 1.06   Mon Nov 17 17:06:52 2008
         * Added NAMESPACE support
 

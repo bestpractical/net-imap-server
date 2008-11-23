@@ -14,10 +14,10 @@ not run its Makefile.PL or Build.PL.
 -----BEGIN PGP SIGNED MESSAGE-----
 Hash: SHA1
 
-SHA1 64e6bdf06350584b5719b4ba1521b62b968e7e69 Changes
+SHA1 6b4f833c3a6b8aad752a645a5b8cb80e65cc6110 Changes
 SHA1 1d36665e7d4a4a7a531de37b45e18fe4b9b4b412 MANIFEST
-SHA1 5aff6d8645902311120089d4ca39206805cecb81 META.yml
-SHA1 ac8dc2041d86b0d5fb25756b3c7421ff62e7bc79 Makefile.PL
+SHA1 f97dc082bc691bcd0a67d89420e868d3dfb48f92 META.yml
+SHA1 1d695686548db6de21a2630b0b91d0a505216153 Makefile.PL
 SHA1 f4c6e4793fd7815aec4abfcd69018d8f34d832a8 README
 SHA1 f5333026061a6f347e7f2a3ce8bb6847081c200c certs/server-cert.pem
 SHA1 4b963cd4c2b0a7e073241b4bac727cb6f96276f8 certs/server-key.pem
@@ -30,7 +30,7 @@ SHA1 54fcbed19232ec959bb17cfb4410599afc7f0779 inc/Module/Install/Makefile.pm
 SHA1 7d3be9b158e37b2b2c22084740099955623b1d56 inc/Module/Install/Metadata.pm
 SHA1 0a8b66180229ba2f9deaea1fedd0aacf7a7ace6b inc/Module/Install/Win32.pm
 SHA1 d3352eb33fe43a5f3ead513f645224fe34d73bc9 inc/Module/Install/WriteAll.pm
-SHA1 e32c18667c44cbf22b7f93c6edb4905469164450 lib/Net/IMAP/Server.pm
+SHA1 328cb9ff9283f1b89b9b0278f682a025ce4393ba lib/Net/IMAP/Server.pm
 SHA1 a9b20e80cfe76e9fed6b3703818306950669a839 lib/Net/IMAP/Server/Command.pm
 SHA1 636e390f8f44ee6c51321220a44c20ceba08b44d lib/Net/IMAP/Server/Command/Append.pm
 SHA1 5c203d47099444ceb8ce9e8927353d91ba0545cd lib/Net/IMAP/Server/Command/Authenticate.pm
@@ -70,7 +70,7 @@ SHA1 0190346d7072d458c8a10a45c19f86db641dcc48 t/pod.t
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.9 (GNU/Linux)
 
-iEYEARECAAYFAkkh73IACgkQMflWJZZAbqCT8wCgq7lrSLoHM89X4V8u6eMLikxp
-JMsAnA2yhQ58HNtkms7O1uX12bIeM8wv
-=K3D0
+iEYEARECAAYFAkko8kIACgkQMflWJZZAbqDNiQCgiB4FJxxfIBHnUoBK7+lNk5Jk
+fTkAoLBHFzclsvpeT5aLkPuNUQliyc9p
+=KSm/
 -----END PGP SIGNATURE-----
