@@ -5,6 +5,9 @@ use strict;
 
 use base qw/Net::IMAP::Server::Command/;
 
+use Encode;
+use Encode::IMAPUTF7;
+
 sub validate {
     my $self = shift;
 
@@ -14,7 +17,11 @@ sub validate {
     return $self->bad_command("Not enough options") if @options < 1;
     return $self->bad_command("Too many options") if @options > 1;
 
-    my $mailbox = $self->connection->model->lookup( @options );
+    my ($name) = @options;
+    $name = eval { Encode::decode('IMAP-UTF-7', $name) };
+    return $self->bad_command("Invalid UTF-7 encoding") unless defined $name;
+
+    my $mailbox = $self->connection->model->lookup( $name );
     return $self->no_command("Mailbox already exists") if $mailbox;
 
     return 1;
@@ -24,6 +31,7 @@ sub run {
     my $self = shift;
 
     my($name) = $self->parsed_options;
+    $name = Encode::decode('IMAP-UTF-7',$name);
     my @parts = $self->connection->model->split($name);
 
     my $base = $self->connection->model->root;

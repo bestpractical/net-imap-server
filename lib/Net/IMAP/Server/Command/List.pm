@@ -5,6 +5,9 @@ use strict;
 
 use base qw/Net::IMAP::Server::Command/;
 
+use Encode;
+use Encode::IMAPUTF7;
+
 sub validate {
     my $self = shift;
 
@@ -47,7 +50,7 @@ sub list_out {
 
     my $str = $self->data_out([map {\$_} @props]);
     $str .= q{ "} . $self->connection->model->root->separator . q{" };
-    $str .= q{"} . $node->full_path . q{"};
+    $str .= q{"} . Encode::encode('IMAP-UTF-7',$node->full_path) . q{"};
     $self->tagged_response($str);
 }
 
