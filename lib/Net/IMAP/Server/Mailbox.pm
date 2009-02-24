@@ -224,14 +224,7 @@ sub reparent {
         [ grep { $_ ne $self } @{ $self->parent->children } ] );
     push @{ $parent->children }, $self;
     $self->parent($parent);
-    return 1 unless Net::IMAP::Server->connection;
-
-    my @uncache = ($self);
-    while (@uncache) {
-        my $o = shift @uncache;
-        delete Net::IMAP::Server->connection->{path_cache}{$o.""};
-        push @uncache, @{ $o->children };
-    }
+    $self->full_path( purge => 1 );
     return 1;
 }
 
@@ -383,18 +376,31 @@ sub separator {
     return "/";
 }
 
-=head3 full_path
+=head3 full_path [purge => 1]
 
-Returns the full path to this mailbox.
+Returns the full path to this mailbox.  This value is cached
+aggressively on a per-connection basis; passing C<purge> flushes this
+cache, if the path name has changed.
 
 =cut
 
 sub full_path {
     my $self = shift;
+    my %args = @_;
     my $cache
         = Net::IMAP::Server->connection
         ? ( Net::IMAP::Server->connection->{path_cache} ||= {} )
         : {};
+
+    if ($args{purge}) {
+        my @uncache = ($self);
+        while (@uncache) {
+            my $o = shift @uncache;
+            delete $cache->{$o.""};
+            push @uncache, @{ $o->children };
+        }
+    }
+
     return $cache->{$self.""}
       if defined $cache->{$self.""};
     $cache->{$self.""} =
