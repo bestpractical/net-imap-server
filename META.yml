@@ -3,7 +3,7 @@ abstract: A single-threaded multiplexing IMAP server
 author: 
   - Alex Vandiver <alexmv@mit.edu>
 distribution_type: module
-generated_by: Module::Install version 0.68
+generated_by: Module::Install version 0.70
 license: perl
 meta-spec: 
   url: http://module-build.sourceforge.net/META-spec-v1.3.html

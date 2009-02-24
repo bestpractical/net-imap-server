@@ -1,5 +1,9 @@
 Revision history for Net-IMAP-Server
 
+1.08   Tue Deb 24 16:27:17 2008
+        * UTF-7 support for mailbox naming
+        * Add and document purge => 1 option to full_path
+
 1.07   Sun Nov 23 01:03:24 2008
         * Fixed missing UNIVERSAL::require dep
 
