@@ -378,7 +378,7 @@ sub mime_select {
             my $copy = Email::Simple::Header->new("");
             for my $h ( @{$extras || []} ) {
                 $copy->header_set( $case{$h}
-                        || $h => $mime_header->header($h) );
+                        || $h => $mime_header->header_raw($h) );
             }
             $result = $copy->as_string ? $copy->as_string . "\r\n" : "";
         } elsif ( uc $_ eq "TEXT" ) {
@@ -450,8 +450,8 @@ sub mime_bodystructure {
                             ]
                         : undef
                     ),
-                    scalar $mime->header("Content-Language"),
-                    scalar $mime->header("Content-Location"),
+                    scalar $mime->header_raw("Content-Language"),
+                    scalar $mime->header_raw("Content-Location"),
                     )
                 : ()
             ),
@@ -470,24 +470,24 @@ sub mime_bodystructure {
                 ? [ %{ $data->{attributes} } ]
                 : undef
             ),
-            scalar $mime->header("Content-ID"),
-            scalar $mime->header("Content-Description"),
-            ( scalar $mime->header("Content-Transfer-Encoding") or "7BIT" ),
+            scalar $mime->header_raw("Content-ID"),
+            scalar $mime->header_raw("Content-Description"),
+            ( scalar $mime->header_raw("Content-Transfer-Encoding") or "7BIT" ),
             length $body,
             (   defined $lines
                 ? ( $lines, )
                 : ()
             ),
             (   $long
-                ? ( scalar $mime->header("Content-MD5"),
+                ? ( scalar $mime->header_raw("Content-MD5"),
                     (   $disposition
                         ? [ $disposition,
                             ( $attrs && %{$attrs} ? [ %{$attrs} ] : undef ),
                             ]
                         : undef
                     ),
-                    scalar $mime->header("Content-Language"),
-                    scalar $mime->header("Content-Location"),
+                    scalar $mime->header_raw("Content-Language"),
+                    scalar $mime->header_raw("Content-Location"),
                     )
                 : ()
             ),
@@ -515,7 +515,7 @@ sub address_envelope {
                 { type => "string", value => $_->user },
                 { type => "string", value => $_->host }
             ]
-            } Email::Address->parse( $mime->header($header) )
+            } Email::Address->parse( $mime->header_raw($header) )
     ];
 }
 
@@ -531,8 +531,8 @@ sub mime_envelope {
     my $mime = $self->mime_header;
 
     return [
-        scalar $mime->header("Date"),
-        scalar $mime->header("Subject"),
+        scalar $mime->header_raw("Date"),
+        scalar $mime->header_raw("Subject"),
 
         $self->address_envelope("From"),
         $self->address_envelope(
@@ -545,8 +545,8 @@ sub mime_envelope {
         $self->address_envelope("Cc"),
         $self->address_envelope("Bcc"),
 
-        scalar $mime->header("In-Reply-To"),
-        scalar $mime->header("Message-ID"),
+        scalar $mime->header_raw("In-Reply-To"),
+        scalar $mime->header_raw("Message-ID"),
     ];
 }
 
