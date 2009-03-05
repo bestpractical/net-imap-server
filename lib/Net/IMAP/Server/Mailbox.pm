@@ -464,13 +464,21 @@ sub recent {
 
 =head3 unseen
 
-Returns the number of messages which do not have the C<\Seen> flag set.
+Returns the sequence number of the first messages which does not have
+the C<\Seen> flag set.  Returns undef if all messages have been marked
+as C<\Seen>.
 
 =cut
 
 sub unseen {
     my $self = shift;
-    return scalar grep { not $_->has_flag('\Seen') } @{ $self->messages };
+    for ( @{ $self->messages } ) {
+        next if $_->has_flag('\Seen');
+        return Net::IMAP::Server->connection
+            ? Net::IMAP::Server->connection->sequence($_)
+            : $_->sequence;
+    }
+    return undef;
 }
 
 =head3 permanentflags
