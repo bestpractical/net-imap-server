@@ -23,7 +23,7 @@ sub run {
     return unless $filter;
 
     my @results = map {$self->connection->sequence($_)} grep {$filter->($_)} $self->connection->get_messages('1:*');
-    $self->untagged_response("SEARCH @results");
+    $self->untagged_response(join(" ", SEARCH => @results));
     $self->ok_completed;
 }
 
@@ -31,6 +31,7 @@ sub filter {
     my $self = shift;
     my @tokens = [@_]; # This ref is intentional!  It gets us the top-level AND
     my $filters = []; my @stack;
+    # TODO: CHARSET support
     while (@tokens) {
         my $token = shift @tokens;
         $token = uc $token unless ref $token;

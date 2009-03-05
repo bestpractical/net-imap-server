@@ -25,7 +25,7 @@ sub run {
             ? "(" . join( "", map { $self->data_out($_) } @{$_} ) . ")"
             : $self->data_out($_)
     } @namespaces;
-    $self->untagged_response("NAMESPACE @namespaces");
+    $self->untagged_response(join(" ", NAMESPACE => @namespaces));
 
     $self->ok_completed();
 }
