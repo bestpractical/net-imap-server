@@ -92,13 +92,18 @@ sub close {
 
 Utility method which splits a given C<PATH> according to the mailbox
 separator, as determinded by the
-L<Net::IMAP::Server::Mailbox/separator> of the L</root>.
+L<Net::IMAP::Server::Mailbox/separator> of the L</root>.  May C<die>
+if the path (which is expected to be encoded using IMAP-UTF-7) is
+invalid.  See L<Encode::IMAPUTF7>.
 
 =cut
 
 sub split {
     my $self = shift;
-    return grep {length} split quotemeta $self->root->separator, shift;
+    my $name = shift;
+    $name = eval { Encode::decode('IMAP-UTF-7', $name) };
+    die "BAD Invalid UTF-7 encoding\n" unless defined $name;
+    return grep {length} split quotemeta $self->root->separator, $name;
 }
 
 =head2 lookup PATH

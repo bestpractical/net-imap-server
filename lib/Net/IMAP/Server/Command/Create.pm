@@ -17,11 +17,7 @@ sub validate {
     return $self->bad_command("Not enough options") if @options < 1;
     return $self->bad_command("Too many options") if @options > 1;
 
-    my ($name) = @options;
-    $name = eval { Encode::decode('IMAP-UTF-7', $name) };
-    return $self->bad_command("Invalid UTF-7 encoding") unless defined $name;
-
-    my $mailbox = $self->connection->model->lookup( $name );
+    my $mailbox = $self->connection->model->lookup( @options );
     return $self->no_command("Mailbox already exists") if $mailbox;
 
     return 1;
@@ -30,9 +26,7 @@ sub validate {
 sub run {
     my $self = shift;
 
-    my($name) = $self->parsed_options;
-    $name = Encode::decode('IMAP-UTF-7',$name);
-    my @parts = $self->connection->model->split($name);
+    my @parts = $self->connection->model->split( $self->parsed_options );
 
     my $base = $self->connection->model->root;
     for my $n (0.. $#parts) {

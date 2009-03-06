@@ -242,8 +242,16 @@ sub handle_command {
 
     eval { $handler->run() if $handler->validate; };
     if ( my $error = $@ ) {
-        $handler->no_command("Server error");
-        $self->log($error);
+        if ($error eq "Timeout\n" or $error eq "Error printing\n") {
+            die $error;
+        } elsif ($error =~ /^NO (.*)/) {
+            $handler->no_command($1);
+        } elsif ($error =~ /^BAD (.*)/) {
+            $handler->bad_command($1);
+        } else {
+            $handler->no_command("Server error");
+            $self->log($error);
+        }
     }
 }
 
