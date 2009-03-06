@@ -76,7 +76,7 @@ L</bad_command>.
 sub run {
     my $self = shift;
 
-    $self->bad_command( "command '" . $self->command . "' not recognized" );
+    $self->bad_command( "command '" . uc($self->command) . "' not recognized" );
 }
 
 =head2 has_literal
