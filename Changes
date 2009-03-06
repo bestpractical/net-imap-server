@@ -1,6 +1,17 @@
 Revision history for Net-IMAP-Server
 
-1.10   Thu Mar  5 14:27:17 2008
+1.11   Fri Mar  6 14:20:17 2009
+        * Move IMAP-UTF-7 handling into model's ->split, so it runs
+          for _all_ client-given input.  Then adjust ->handle_command
+          to be able to send specific messages to the client on some
+          exceptions.  Reported by Jan Dvorak
+          <jdvorak@uikt.mendelu.cz>.
+        * Add a case for the suspected edge case where a timeout or
+          printing error is discovered while handling a command
+        * Upper-case command name in "command not recognized" to not
+          leak implementation as much
+
+1.10   Thu Mar  5 14:27:17 2009
         * Fix a major bug where UNSEEN reported the total number of
           unseen messages in the mailbox, rather than the sequence of
           the first unseen message.  Reported by Jan Dvorak
@@ -9,7 +20,7 @@ Revision history for Net-IMAP-Server
           Jan Dvorak <jdvorak@uikt.mendelu.cz>
         * Fixes for people who have set $" to something odd
 
-1.08   Tue Feb 24 16:27:17 2008
+1.08   Tue Feb 24 16:27:17 2009
         * UTF-7 support for mailbox naming
         * Add and document purge => 1 option to full_path
 
