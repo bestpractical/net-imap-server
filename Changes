@@ -1,6 +1,15 @@
 Revision history for Net-IMAP-Server
 
-1.08   Tue Deb 24 16:27:17 2008
+1.10   Thu Mar  5 14:27:17 2008
+        * Fix a major bug where UNSEEN reported the total number of
+          unseen messages in the mailbox, rather than the sequence of
+          the first unseen message.  Reported by Jan Dvorak
+          <jdvorak@uikt.mendelu.cz>
+        * Always return un-decoded headers to the client.  Reported by
+          Jan Dvorak <jdvorak@uikt.mendelu.cz>
+        * Fixes for people who have set $" to something odd
+
+1.08   Tue Feb 24 16:27:17 2008
         * UTF-7 support for mailbox naming
         * Add and document purge => 1 option to full_path
 
