@@ -225,12 +225,7 @@ sub handle_command {
     my ( $id, $cmd, $options ) = $self->parse_command($content);
     return unless defined $id;
 
-    my $cmd_class = "Net::IMAP::Server::Command::$cmd";
-    $cmd_class->require() || warn $@;
-    unless ( $cmd_class->can('run') ) {
-        $cmd_class = "Net::IMAP::Server::Command";
-    }
-    my $handler = $cmd_class->new(
+    my $handler = $self->class_for($cmd)->new(
         {   server      => $self->server,
             connection  => $self,
             options_str => $options,
@@ -253,6 +248,22 @@ sub handle_command {
             $self->log($error);
         }
     }
+}
+
+=head2 class_for COMMAND
+
+Returns the package name that implements the given C<COMMAND>.
+
+=cut
+
+sub class_for {
+    my $self = shift;
+    my $cmd = shift;
+    my $classref = $self->server->command_class;
+    my $cmd_class = $classref->{lc $cmd} || $classref->{$cmd} || $classref->{uc $cmd}
+         || "Net::IMAP::Server::Command::$cmd";
+    $cmd_class->require() || ($@ =~ /^Can't locate \S+ in \@INC/) || warn $@;
+    return $cmd_class->can('run') ? $cmd_class : "Net::IMAP::Server::Command";
 }
 
 =head2 pending

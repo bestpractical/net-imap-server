@@ -55,7 +55,13 @@ IMAP components should be opaque.
 =cut
 
 __PACKAGE__->mk_accessors(
-    qw/port ssl_port auth_class model_class connection_class user group poll_every unauth_idle auth_idle unauth_commands/
+    qw/port ssl_port
+       auth_class model_class connection_class
+       command_class
+       user group
+       poll_every
+       unauth_idle auth_idle unauth_commands
+      /
 );
 
 =head2 new PARAMHASH
@@ -149,6 +155,7 @@ sub new {
             auth_idle        => 60*60,
             unauth_commands  => 10,
             @_,
+            command_class    => {},
             connection       => {},
         }
     );
@@ -329,6 +336,26 @@ sub id {
         name    => "Net-IMAP-Server",
         version => $Net::IMAP::Server::VERSION,
     );
+}
+
+=head2 add_command NAME => PACKAGE
+
+Adds the given command C<NAME> to the server's list of known commands.
+C<PACKAGE> should be the name of a class which inherits from
+L<Net::IMAP::Server::Command>.
+
+=cut
+
+sub add_command {
+    my $self = shift;
+    my ($name, $package) = @_;
+    if (not $package->require) {
+        warn $@;
+    } elsif (not $package->isa('Net::IMAP::Server::Command')) {
+        warn "$package is not a Net::IMAP::Server::Command!";
+    } else {
+        $self->command_class->{uc $name} = $package;
+    }
 }
 
 1;    # Magic true value required at end of module
