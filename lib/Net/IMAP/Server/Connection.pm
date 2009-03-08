@@ -303,8 +303,9 @@ sub parse_command {
     my $self = shift;
     my $line = shift;
     $line =~ s/[\r\n]+$//;
-    unless ( $line =~ /^([^\(\)\{ \*\%"\\\+}]+)\s+(\w+)(?:\s+(.+?))?$/ ) {
-        if ( $line !~ /^([^\(\)\{ \*\%"\\\+}]+)\s+/ ) {
+    my $TAG = qr/([^\(\)\{ \*\%"\\\+}]+)/;
+    unless ( $line =~ /^$TAG\s+(\w+)(?:\s+(.+?))?$/ ) {
+        if ( $line !~ /^$TAG\s+/ ) {
             $self->out("* BAD Invalid tag");
         } else {
             $self->out("* BAD Null command ('$line')");
