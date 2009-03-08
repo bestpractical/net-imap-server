@@ -8,6 +8,9 @@ __PACKAGE__->mk_accessors(qw(auth root));
 
 use Net::IMAP::Server::Mailbox;
 
+use Encode;
+use Encode::IMAPUTF7;
+
 my %roots;
 
 =head1 NAME

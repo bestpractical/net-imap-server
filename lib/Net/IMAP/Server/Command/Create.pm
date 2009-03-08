@@ -5,9 +5,6 @@ use strict;
 
 use base qw/Net::IMAP::Server::Command/;
 
-use Encode;
-use Encode::IMAPUTF7;
-
 sub validate {
     my $self = shift;
 
