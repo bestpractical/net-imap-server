@@ -35,8 +35,8 @@ sub run {
     $self->untagged_response( $mailbox->exists . ' EXISTS' );
     $self->untagged_response( $mailbox->recent . ' RECENT' );
 
-    my $unseen = $mailbox->unseen;
-    $self->untagged_response("OK [UNSEEN $unseen]") if defined $unseen;
+    my $unseen = $mailbox->first_unseen;
+    $self->untagged_response("OK [UNSEEN $unseen]");
 
     my $uidvalidity = $mailbox->uidvalidity;
     $self->untagged_response("OK [UIDVALIDITY $uidvalidity]")

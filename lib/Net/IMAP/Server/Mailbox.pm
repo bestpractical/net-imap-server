@@ -341,8 +341,7 @@ sub status {
         } elsif ( $i eq "RECENT" ) {
             $items{$i} = $self->recent;
         } elsif ( $i eq "UNSEEN" ) {
-            my $unseen = $self->unseen;
-            $items{$i} = $unseen if defined $unseen;
+            $items{$i} = $self->unseen;
         } elsif ( $i eq "UIDVALIDITY" ) {
             my $uidvalidity = $self->uidvalidity;
             $items{$i} = $uidvalidity if defined $uidvalidity;
@@ -462,15 +461,15 @@ sub recent {
     return scalar grep { $_->has_flag('\Recent') } @{ $self->messages };
 }
 
-=head3 unseen
+=head3 first_unseen
 
-Returns the sequence number of the first messages which does not have
-the C<\Seen> flag set.  Returns undef if all messages have been marked
-as C<\Seen>.
+Returns the sequence number of the first message which does not have
+the C<\Seen> flag set.  Returns 0 if all messages have been marked as
+C<\Seen>.
 
 =cut
 
-sub unseen {
+sub first_unseen {
     my $self = shift;
     for ( @{ $self->messages } ) {
         next if $_->has_flag('\Seen');
@@ -478,7 +477,18 @@ sub unseen {
             ? Net::IMAP::Server->connection->sequence($_)
             : $_->sequence;
     }
-    return undef;
+    return 0;
+}
+
+=head3 unseen
+
+Returns the number of messages which have the C<\Seen> flag set.
+
+=cut
+
+sub unseen {
+    my $self = shift;
+    return scalar grep { $_->has_flag('\Seen') } @{ $self->messages };
 }
 
 =head3 permanentflags
