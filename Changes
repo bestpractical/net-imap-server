@@ -1,5 +1,10 @@
 Revision history for Net-IMAP-Server
 
+1.13   Fri Mar 20 14:11:17 2009
+        * More UNSEEN fixes; the UNSEEN reported by STATUS and the
+          UNSEEN reported by SELECT are different beasts, and have
+          been split into different methods.
+
 1.12   Tue Mar 10 13:46:17 2009
         * Ensure that mailboxes passed to CREATE aren't trying to
           encode things they shouldn't be, by round-tripping and
