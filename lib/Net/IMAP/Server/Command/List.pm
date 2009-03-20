@@ -63,7 +63,8 @@ sub traverse {
     push @props, @{$node->children} ? '\HasChildren' : '\HasNoChildren';
     push @props, '\Noselect' unless $node->is_selectable;
 
-    $self->list_out($node, @props) if $node->parent and $node->full_path =~ $regex;
+    $self->list_out($node, @props) if $node->parent and 
+        Encode::encode('IMAP-UTF-7',$node->full_path) =~ $regex;
     $self->traverse( $_, $regex ) for @{ $node->children };
 }
 
