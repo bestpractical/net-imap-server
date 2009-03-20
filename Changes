@@ -1,5 +1,14 @@
 Revision history for Net-IMAP-Server
 
+1.12   Tue Mar 10 13:46:17 2009
+        * Ensure that mailboxes passed to CREATE aren't trying to
+          encode things they shouldn't be, by round-tripping and
+          comparing.
+        * Match query in LIST and LSUB against encoded path, not raw
+          utf8 path
+        * Support for adding new commands via 'add_command' in
+          Net::IMAP::Server
+
 1.11   Fri Mar  6 14:20:17 2009
         * Move IMAP-UTF-7 handling into model's ->split, so it runs
           for _all_ client-given input.  Then adjust ->handle_command
