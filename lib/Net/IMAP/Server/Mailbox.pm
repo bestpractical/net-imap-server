@@ -141,7 +141,7 @@ sub poll { }
 
 =head3 add_message MESSAGE
 
-Adds the gven L<Net::IMAP::Server::Message> C<MESSAGE> to the mailbox,
+Adds the given L<Net::IMAP::Server::Message> C<MESSAGE> to the mailbox,
 setting its L<Net::IMAP::Server::Message/sequence> and
 L<Net::IMAP::Server::Message/mailbox>.
 L<Net::IMAP::Server::Message/uid> is set to L</uidnext> if the message
@@ -211,7 +211,7 @@ sub create {
 =head3 reparent MAILBOX
 
 Reparents this mailbox to be a child of the given
-L<Net::IMAP::Server::Mailbox> C<MAILBOX>.  Shold return 0 if the
+L<Net::IMAP::Server::Mailbox> C<MAILBOX>.  Should return 0 if the
 reparenting is denied or fails.
 
 =cut

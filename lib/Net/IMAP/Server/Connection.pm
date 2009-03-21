@@ -54,7 +54,7 @@ Returns the L<Net::IMAP::Server> that this connection is on.
 =head2 coro
 
 Returns the L<Coro> process associated with this connection.  For
-things interacting with this conneciton, it will probably be the
+things interacting with this connection, it will probably be the
 current coroutine, except for interactions coming from event loops.
 
 =head2 io_handle
@@ -294,7 +294,7 @@ sub close {
 
 =head2 parse_command LINE
 
-Parses the line into the C<tag>, C<ommand>, and C<options>.  Returns
+Parses the line into the C<tag>, C<command>, and C<options>.  Returns
 undef if parsing fails for some reason.
 
 =cut
@@ -431,13 +431,13 @@ sub send_untagged {
 
     if ( $args{expunged} ) {
 
-# Make sure that they know of at least the existance of what's being expunged.
+# Make sure that they know of at least the existence of what's being expunged.
         my $max = 0;
         $max = $max < $_ ? $_ : $max for @{ $self->untagged_expunge };
         $self->untagged_response("$max EXISTS")
             if $max > $self->previous_exists;
 
-        # Send the expnges, clear out the temporary message store
+        # Send the expunges, clear out the temporary message store
         $self->previous_exists(
             $self->previous_exists - @{ $self->untagged_expunge } );
         $self->untagged_response( map {"$_ EXPUNGE"}
@@ -562,7 +562,7 @@ sub untagged_response {
 
 =head2 out STRING
 
-Sends the mesage to the client.  If the client's connection has
+Sends the message to the client.  If the client's connection has
 dropped, or the send fails for whatever reason, L</close> the
 connection and then die, which is caught by L</handle_lines>.
 

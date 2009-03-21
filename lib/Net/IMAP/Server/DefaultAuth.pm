@@ -15,8 +15,8 @@ authorization information for an IMAP user.
 
 IMAP credentials are passed in one of two ways: using the L<LOGIN>
 command, or the C<AUTHENTICATE> command.  L<LOGIN> sends the password
-unencrpyted; note, however, that L<Net::IMAP::Server> will not allow
-the LOGIN command unless the connection is protected by eiher SSL or
+unencrypted; note, however, that L<Net::IMAP::Server> will not allow
+the LOGIN command unless the connection is protected by either SSL or
 TLS.  Thus, even when the C<LOGIN> command is used, the password is
 not sent in the clear.
 
@@ -75,7 +75,7 @@ sub sasl_provides {
 =head2 sasl_plain
 
 Called when the client requests C<PLAIN> SASL authentication.  This
-parses the SASL protocal, and defers to L</auth_plain> to determine if
+parses the SASL protocol, and defers to L</auth_plain> to determine if
 the username and password is actually allowed to log in.
 
 =cut
@@ -94,7 +94,7 @@ sub sasl_plain {
 =head1 IMPLEMENTING NEW SASL METHODS
 
 The L</sasl_plain> method is a simple example of implementing a SASL
-protocol, albeat a very simple one.  SASL authentication methods
+protocol, albeit a very simple one.  SASL authentication methods
 should expect to be called with no arguments, and should return an
 anonymous function, which will be called each time the client
 transmits more information.
@@ -103,8 +103,8 @@ Each time it is called, it will be passed the client data, which will
 already have been base-64 decoded (the exception being the first time
 it is called, when it will be called with the empty string).
 
-If the fnuction returns a scalar reference, the scalar will be base-64
-encoded and transmitted to the client.  Anthing which is not a scalar
+If the function returns a scalar reference, the scalar will be base-64
+encoded and transmitted to the client.  Anything which is not a scalar
 reference will be interpreted as a boolean, as to whether the
 authentication was successful.  Successful authentications should be
 sure to set L</user> themselves.

@@ -44,7 +44,7 @@ sub new {
 =head2 init
 
 Called when the class is instantiated, with no arguments.  Subclasses
-should override this methtod to inspect the L</auth> object, and
+should override this method to inspect the L</auth> object, and
 determine what folders the user should have.  The primary purpose of
 this method is to set L</root> to the top level of the mailbox tree.
 The root is expected to contain a mailbox named C<INBOX>.
@@ -72,7 +72,7 @@ sub init {
 Gets or sets the root L<Net::IMAP::Server::Mailbox> for this model.
 The root mailbox should contain no messages, and have no name -- it
 exists purely to contain sub-mailboxes, like C<INBOX>.  The L</init>
-method is resposible for setting up the appropriate root mailbox, and
+method is responsible for setting up the appropriate root mailbox, and
 all sub-mailboxes for the model.
 
 =head2 auth
@@ -94,7 +94,7 @@ sub close {
 =head2 split PATH
 
 Utility method which splits a given C<PATH> according to the mailbox
-separator, as determinded by the
+separator, as determined by the
 L<Net::IMAP::Server::Mailbox/separator> of the L</root>.  May C<die>
 if the path (which is expected to be encoded using IMAP-UTF-7) is
 invalid.  See L<Encode::IMAPUTF7>.

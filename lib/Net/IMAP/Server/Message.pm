@@ -62,7 +62,7 @@ UIDVALIDITY of its mailbox, is a unique designator of the message.
 
 =head2 internaldate [STRING]
 
-Gets ot sets the string representing when the message was recieved by
+Gets or sets the string representing when the message was received by
 the server.  According to RFC specification, this must be formatted as
 C<01-Jan-2008 15:42 -0500>.
 
@@ -70,7 +70,7 @@ C<01-Jan-2008 15:42 -0500>.
 
 Marks the message as expunged -- this is called by
 L<Net::IMAP::Server::Mailbox/expunge>, which deals with actually
-removing the mesage from the appropriate places..
+removing the message from the appropriate places..
 
 =cut
 
@@ -277,7 +277,7 @@ Gets or sets the L<Email::MIME> object for this message.
 
 =head2 fetch SPEC
 
-Takes C<SPEC>, which is either a string or an array refence of
+Takes C<SPEC>, which is either a string or an array reference of
 strings, and returns a list of strings or data structures which match
 the specification.  The specification is defined by section 7.4.2 of
 RFC 3501.
@@ -424,7 +424,7 @@ sub mime_bodystructure {
 
     if ( $data->{discrete} eq "multipart" ) {
 
-        # The first element is a binch of lists, which looks like
+        # The first element is a bunch of lists, which looks like
         # (...)(...) -- note the lack of space!  RFC 3501, how do we
         # hate thee.  Make the mime structures, hack them into the
         # IMAP format, concat them, and insert their reference so they

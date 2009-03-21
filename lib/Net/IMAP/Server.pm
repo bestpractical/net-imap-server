@@ -103,7 +103,7 @@ The name or ID of the user that the server should run as; this
 defaults to the current user.  Note that privileges are dropped after
 binding to the port and reading the certificates, so escalated
 privileges should not be needed.  Running as your C<nobody> user or
-equivilent is suggested.
+equivalent is suggested.
 
 =item group
 
@@ -128,7 +128,7 @@ zero to disable (which is not advised).
 
 =item auth_idle
 
-How long, in seconds, to wait before disconnecting authentiated
+How long, in seconds, to wait before disconnecting authenticated
 connections.  By RFC specification, this B<must> be longer than 30
 minutes.  The default is an hour; set to zero to disable.
 
@@ -184,7 +184,7 @@ sub new {
 
 Starts the server; this method shouldn't be expected to return.
 Within this method, C<$Net::IMAP::Server::Server> is set to the object
-that this was called on; thus, all IMAP objecst have a way of
+that this was called on; thus, all IMAP objects have a way of
 referring to the server -- and though L</connection>, whatever parts
 of the IMAP internals they need.
 

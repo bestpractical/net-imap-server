@@ -82,7 +82,7 @@ sub run {
 =head2 has_literal
 
 Analyzes the options line, and returns true if the line has literals
-(as defined in the FRC, a literal is of the form C<{42}>).  If the
+(as defined in the RFC, a literal is of the form C<{42}>).  If the
 line has literals, installs a L<Net::IMAP::Server::Connection/pending>
 callback to continue the parsing, and returns true.
 
@@ -183,7 +183,7 @@ sub parsed_options {
 
 =head2 options_str
 
-Returns the flat string represetnation of the options the client gave.
+Returns the flat string representation of the options the client gave.
 
 =cut
 
@@ -196,7 +196,7 @@ conveys the C<DATA>.
 
 =item *
 
-Array references are converted into "paranthesized lists," and each
+Array references are converted into "parenthesized lists," and each
 element is recursively output.
 
 =item *
@@ -213,11 +213,11 @@ Scalar values containing special characters are output as literals
 
 =item *
 
-Purely numerical scalra values are output with no change
+Purely numerical scalar values are output with no change
 
 =item *
 
-All other scalar values are ouput within quotes.
+All other scalar values are output within quotes.
 
 =back
 
@@ -284,8 +284,8 @@ sub tagged_response {
 
 =head2 poll_after
 
-Returns a true value if the command should send untagged updates abou
-tthe selected mailbox after the command completes.  Defaults to always
+Returns a true value if the command should send untagged updates about
+the selected mailbox after the command completes.  Defaults to always
 true.
 
 =cut
@@ -362,7 +362,7 @@ sub no_command {
 =head2 bad_command REASON
 
 Sends any untagged updates to the client using L</send_untagged>, then
-sents a tagged C<BAD> response with the given C<REASON>.
+sends a tagged C<BAD> response with the given C<REASON>.
 
 =cut
 
