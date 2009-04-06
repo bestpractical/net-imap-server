@@ -14,9 +14,9 @@ not run its Makefile.PL or Build.PL.
 -----BEGIN PGP SIGNED MESSAGE-----
 Hash: SHA1
 
-SHA1 4ec642b2439d40710316779b7e99fe49ec39dd66 Changes
+SHA1 67b8d8821326817ff205276794a9760ed4e2f415 Changes
 SHA1 1d36665e7d4a4a7a531de37b45e18fe4b9b4b412 MANIFEST
-SHA1 8ae209f27516f1db9036840ed7a28a31a1b848c2 META.yml
+SHA1 185078041f49728810bb00cdf1abdb0db472653b META.yml
 SHA1 bc012de893bb939fcbd66eeecc445b12f2ad1348 Makefile.PL
 SHA1 f4c6e4793fd7815aec4abfcd69018d8f34d832a8 README
 SHA1 f5333026061a6f347e7f2a3ce8bb6847081c200c certs/server-cert.pem
@@ -30,7 +30,7 @@ SHA1 9f6beaa2f4749ceb5dd0c9b0c647d0f3289c7b46 inc/Module/Install/Makefile.pm
 SHA1 7ad1da4fff7a1e7a634c9d734111c8292be08884 inc/Module/Install/Metadata.pm
 SHA1 e9aa83f3e8b16ccfce544a90a57b63b70a497759 inc/Module/Install/Win32.pm
 SHA1 ade2ac0b0246d4d8e28fa46942e53f6925abda46 inc/Module/Install/WriteAll.pm
-SHA1 7600cf3c0253f7e418a86687d93f70e921ea3849 lib/Net/IMAP/Server.pm
+SHA1 c57909aeb2b998e4de90173bddee28bb9c3a4378 lib/Net/IMAP/Server.pm
 SHA1 e0016d978a1d896866cf27494ae9651d8af50311 lib/Net/IMAP/Server/Command.pm
 SHA1 636e390f8f44ee6c51321220a44c20ceba08b44d lib/Net/IMAP/Server/Command/Append.pm
 SHA1 5c203d47099444ceb8ce9e8927353d91ba0545cd lib/Net/IMAP/Server/Command/Authenticate.pm
@@ -63,14 +63,14 @@ SHA1 581f96324ef9d5b023465fe84fef67447d57c087 lib/Net/IMAP/Server/Connection.pm
 SHA1 716c1bb33a3b970dfc80b2d19366b719a48caef3 lib/Net/IMAP/Server/DefaultAuth.pm
 SHA1 0f7b172c55ee7a7f378fd63a983b487cc01967f7 lib/Net/IMAP/Server/DefaultModel.pm
 SHA1 b0f6a616e7a6b557603f9ca03a452c409420c056 lib/Net/IMAP/Server/Mailbox.pm
-SHA1 f8156f62e7227c3a3d8f13e4988645fca0329f7c lib/Net/IMAP/Server/Message.pm
+SHA1 304b0d74141a70537b8c847acac806e18a966757 lib/Net/IMAP/Server/Message.pm
 SHA1 2e67e318edc490da7367ebcc789d35d0810e00e6 t/00.load.t
 SHA1 ec035a09e3f370620874e9c706d6c8ae4bdfa6a1 t/pod-coverage.t
 SHA1 0190346d7072d458c8a10a45c19f86db641dcc48 t/pod.t
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.9 (GNU/Linux)
 
-iEYEARECAAYFAknZtkcACgkQMflWJZZAbqAh4QCeOCf9paTLgj2Z84HktLZZI3It
-K0IAn3WORxyYIyzu1MxErsuuNslEzrZ9
-=ecWa
+iEYEARECAAYFAknaMtQACgkQMflWJZZAbqCOFACeK4z4EmuAYb4RuUTLvfIkk+GV
+9yQAnjN8uVNMjzZVjfOIxTVm8U77faeV
+=bO2r
 -----END PGP SIGNATURE-----

@@ -1,5 +1,10 @@
 Revision history for Net-IMAP-Server
 
+1.15   Mon Apr  6 12:49:17 2009
+        * Calls to ->header_raw were being made on Email::MIME
+          objects, instead of Email::MIME::Header objects.  Reported
+          by <dan@moore.cx>
+
 1.14   Mon Apr  6 03:55:17 2009
         * Bump Email::MIME dep, for ->header_raw method
         * Fix typo in RFC reference.  Reported by <dan@moore.cx>
