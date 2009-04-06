@@ -9,7 +9,7 @@ license('perl');
 requires('Class::Accessor');
 requires('Coro');
 requires('Email::Address');
-requires('Email::MIME');
+requires('Email::MIME' => 1.862);
 requires('Email::MIME::ContentType');
 requires('Email::Simple' => 1.999);
 requires('Encode::IMAPUTF7');
