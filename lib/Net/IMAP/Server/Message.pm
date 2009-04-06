@@ -407,12 +407,13 @@ sub mime_bodystructure {
     my $self = shift;
     my ( $long, $mime ) = @_;
     $mime ||= $self->mime;
+    my $mime_header = $mime->header_obj;
 
     # Grab the content type
     my $data = parse_content_type( $mime->content_type );
 
     # And the content disposition
-    my $dis_header = $mime->header("Content-Disposition");
+    my $dis_header = $mime_header->header("Content-Disposition");
     my ( $attrs, $disposition );
     if ($dis_header) {
 
@@ -450,8 +451,8 @@ sub mime_bodystructure {
                             ]
                         : undef
                     ),
-                    scalar $mime->header_raw("Content-Language"),
-                    scalar $mime->header_raw("Content-Location"),
+                    scalar $mime_header->header_raw("Content-Language"),
+                    scalar $mime_header->header_raw("Content-Location"),
                     )
                 : ()
             ),
@@ -470,24 +471,24 @@ sub mime_bodystructure {
                 ? [ %{ $data->{attributes} } ]
                 : undef
             ),
-            scalar $mime->header_raw("Content-ID"),
-            scalar $mime->header_raw("Content-Description"),
-            ( scalar $mime->header_raw("Content-Transfer-Encoding") or "7BIT" ),
+            scalar $mime_header->header_raw("Content-ID"),
+            scalar $mime_header->header_raw("Content-Description"),
+            ( scalar $mime_header->header_raw("Content-Transfer-Encoding") or "7BIT" ),
             length $body,
             (   defined $lines
                 ? ( $lines, )
                 : ()
             ),
             (   $long
-                ? ( scalar $mime->header_raw("Content-MD5"),
+                ? ( scalar $mime_header->header_raw("Content-MD5"),
                     (   $disposition
                         ? [ $disposition,
                             ( $attrs && %{$attrs} ? [ %{$attrs} ] : undef ),
                             ]
                         : undef
                     ),
-                    scalar $mime->header_raw("Content-Language"),
-                    scalar $mime->header_raw("Content-Location"),
+                    scalar $mime_header->header_raw("Content-Language"),
+                    scalar $mime_header->header_raw("Content-Location"),
                     )
                 : ()
             ),
@@ -505,9 +506,9 @@ given C<HEADER>.  This is used internally by L</mime_envelope>.
 sub address_envelope {
     my $self   = shift;
     my $header = shift;
-    my $mime   = $self->mime_header;
+    my $mime_header = $self->mime_header;
 
-    return undef unless $mime->header($header);
+    return undef unless $mime_header->header($header);
     return [
         map {
             [   { type => "string", value => $_->name },
@@ -515,7 +516,7 @@ sub address_envelope {
                 { type => "string", value => $_->user },
                 { type => "string", value => $_->host }
             ]
-            } Email::Address->parse( $mime->header_raw($header) )
+            } Email::Address->parse( $mime_header->header_raw($header) )
     ];
 }
 
@@ -528,25 +529,25 @@ fields.  This is used internally by L</fetch>.
 
 sub mime_envelope {
     my $self = shift;
-    my $mime = $self->mime_header;
+    my $mime_header = $self->mime_header;
 
     return [
-        scalar $mime->header_raw("Date"),
-        scalar $mime->header_raw("Subject"),
+        scalar $mime_header->header_raw("Date"),
+        scalar $mime_header->header_raw("Subject"),
 
         $self->address_envelope("From"),
         $self->address_envelope(
-            $mime->header("Sender") ? "Sender" : "From"
+            $mime_header->header("Sender") ? "Sender" : "From"
         ),
         $self->address_envelope(
-            $mime->header("Reply-To") ? "Reply-To" : "From"
+            $mime_header->header("Reply-To") ? "Reply-To" : "From"
         ),
         $self->address_envelope("To"),
         $self->address_envelope("Cc"),
         $self->address_envelope("Bcc"),
 
-        scalar $mime->header_raw("In-Reply-To"),
-        scalar $mime->header_raw("Message-ID"),
+        scalar $mime_header->header_raw("In-Reply-To"),
+        scalar $mime_header->header_raw("Message-ID"),
     ];
 }
 
