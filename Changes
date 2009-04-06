@@ -1,5 +1,10 @@
 Revision history for Net-IMAP-Server
 
+1.14   Mon Apr  6 03:55:17 2009
+        * Bump Email::MIME dep, for ->header_raw method
+        * Fix typo in RFC reference.  Reported by <dan@moore.cx>
+        * Documentation typo fixes
+
 1.13   Fri Mar 20 14:11:17 2009
         * More UNSEEN fixes; the UNSEEN reported by STATUS and the
           UNSEEN reported by SELECT are different beasts, and have

@@ -17,7 +17,7 @@ requires:
   Class::Accessor: 0
   Coro: 0
   Email::Address: 0
-  Email::MIME: 0
+  Email::MIME: 1.862
   Email::MIME::ContentType: 0
   Email::Simple: 1.999
   Encode::IMAPUTF7: 0
@@ -29,4 +29,4 @@ requires:
   UNIVERSAL::require: 0
 resources:
   license: http://dev.perl.org/licenses/
-version: 1.13
+version: 1.14
