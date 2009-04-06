@@ -136,7 +136,7 @@ sub lookup {
 
 =head2 namespaces
 
-Returns the namespaces of this model, per RFC 2343.  Defaults to
+Returns the namespaces of this model, per RFC 2342.  Defaults to
 "INBOX" being the personal namespace, with no "shared" or "other
 users" namespaces.
 
