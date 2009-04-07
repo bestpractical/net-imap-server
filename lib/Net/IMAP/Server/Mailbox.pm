@@ -529,6 +529,37 @@ sub selected {
         and Net::IMAP::Server->connection->selected eq $self;
 }
 
+=for private
+
+This method exists to choose the most apppriate strategy to take the
+intersection of (uids asked for) n (uids we have), by examining the
+cardinality of each set, and iterating over the smaller of the two.
+This is particularly important, as many clients try to fetch UIDs 1:*,
+which will exhaust memory if the naive approach is taken, and there is
+one message with UID 100_000_000.
+
+=cut
+
+sub _uids_in_range {
+    my $self = shift;
+    my ( $low, $high ) = @_;
+    ( $low, $high ) = ( $high, $low ) if $low > $high;
+
+    my $count = scalar @{ $self->messages };
+    if ( $high - $low > $count ) {
+
+        # More UIDs to enumerate than we actually have; check each
+        # existing UID for being in the range
+        return grep {$_ >= $low and $_ <= $high} map $_->uid, @{ $self->messages };
+    } else {
+
+        # More messages than in the UID range; enumerate the range and
+        # check each against UIDs which exist
+        my $uids = $self->uids;
+        return grep {defined $uids->{$_}} $low .. $high;
+    }
+}
+
 =head3 get_uids STR
 
 Parses and returns messages fitting the given UID range.
@@ -540,24 +571,24 @@ sub get_uids {
     my $str  = shift;
 
     # Otherwise $self->messages->[-1] explodes
-    return () unless @{$self->messages};
+    return () unless @{ $self->messages };
 
-    my %ids;
+    my %found;
+    my $last = $self->messages->[-1]->uid;
+    my $uids = $self->uids;
     for ( split ',', $str ) {
         if (/^(\d+):(\d+)$/) {
-            $ids{$_}++ for $2 > $1 ? $1 .. $2 : $2 .. $1;
+            @found{ $self->_uids_in_range( $1, $2 ) } = ();
         } elsif ( /^(\d+):\*$/ or /^\*:(\d+)$/ ) {
-            $ids{$_}++
-                for $self->messages->[-1]->uid,
-                $1 .. $self->messages->[-1]->uid;
+            $found{$last}++;
+            $found{ $self->_uids_in_range( $1, $last ) } = ();
         } elsif (/^(\d+)$/) {
-            $ids{$1}++;
+            $found{$_}++ if defined $uids->{$1};
         } elsif (/^\*$/) {
-            $ids{ $self->messages->[-1]->uid }++;
+            $found{$last}++;
         }
     }
-    return
-        grep {defined} map { $self->uids->{$_} } sort { $a <=> $b } keys %ids;
+    return map { $uids->{$_} } sort { $a <=> $b } keys %found;
 }
 
 =head3 get_messages STR
