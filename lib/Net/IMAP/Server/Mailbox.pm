@@ -581,7 +581,7 @@ sub get_uids {
             @found{ $self->_uids_in_range( $1, $2 ) } = ();
         } elsif ( /^(\d+):\*$/ or /^\*:(\d+)$/ ) {
             $found{$last}++;
-            $found{ $self->_uids_in_range( $1, $last ) } = ();
+            @found{ $self->_uids_in_range( $1, $last ) } = ();
         } elsif (/^(\d+)$/) {
             $found{$_}++ if defined $uids->{$1};
         } elsif (/^\*$/) {
