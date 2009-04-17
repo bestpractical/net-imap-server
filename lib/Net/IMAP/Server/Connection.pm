@@ -12,7 +12,18 @@ use Net::IMAP::Server::Error;
 use Net::IMAP::Server::Command;
 
 __PACKAGE__->mk_accessors(
-    qw(server io_handle _selected selected_read_only model pending temporary_messages temporary_sequence_map previous_exists untagged_expunge untagged_fetch ignore_flags last_poll in_poll commands timer coro _session_flags)
+    qw(server coro io_handle model auth
+       timer commands pending
+       selected_read_only
+       _selected
+
+       temporary_messages temporary_sequence_map
+       ignore_flags
+       _session_flags
+
+       last_poll previous_exists in_poll
+       _unsent_expunge _unsent_fetch
+       )
 );
 
 =head1 NAME
@@ -208,6 +219,10 @@ sub update_timer {
 =head2 timer [EV watcher]
 
 Returns the L<EV> watcher in charge of the inactivity timer.
+
+=head2 commands
+
+Returns the number of client commands the connection has processed.
 
 =head2 handle_command
 
@@ -415,7 +430,10 @@ sub force_poll {
 Gets or sets the last time the selected mailbox was polled, in seconds
 since the epoch.
 
-=cut
+=head2 previous_exists
+
+The high-water mark of how many messages the client has been told are
+in the mailbox.
 
 =head2 send_untagged
 
