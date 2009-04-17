@@ -547,17 +547,6 @@ sub capability {
     return $base;
 }
 
-=head2 session_flags MESSAGE
-
-=cut
-
-sub session_flags {
-    my $self = shift;
-    my ($message) = shift;
-    $self->_session_flags->{$message . ""} ||= {};
-    return $self->_session_flags->{$message . ""};
-}
-
 =head2 log MESSAGE
 
 Logs the message to standard error, using C<warn>.

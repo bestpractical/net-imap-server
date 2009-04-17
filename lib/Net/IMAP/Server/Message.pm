@@ -121,7 +121,8 @@ sub copy {
 
 =head2 session_flags
 
-Returns the list of flags that are stored per-session.
+Returns the names of flags that are stored per-session.  Defaults to
+only the C<\Recent> flag.
 
 =cut
 
@@ -133,7 +134,7 @@ sub _session_flags {
     my $self = shift;
     my $conn = Net::IMAP::Server->connection;
     return {} unless $conn;
-    return $conn->session_flags($self) || {};
+    return $conn->_session_flags->{$self} || {};
 }
 
 =head2 set_flag FLAG [, SILENT]
