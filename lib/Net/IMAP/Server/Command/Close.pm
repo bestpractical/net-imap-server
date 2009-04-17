@@ -21,7 +21,7 @@ sub validate {
 sub run {
     my $self = shift;
 
-    $self->connection->selected->expunge unless $self->connection->selected_read_only;
+    $self->connection->selected->expunge unless $self->connection->selected->read_only;
     $self->connection->selected(undef);
 
     $self->ok_completed();

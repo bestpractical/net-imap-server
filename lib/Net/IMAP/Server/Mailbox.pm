@@ -505,14 +505,17 @@ sub permanentflags {
 
 =head3 read_only
 
-Returns true if this mailbox is read-only.  By default, always returns
-false.
+Returns true if this mailbox is read-only.  By default, the value of
+this depends on if the mailbox was selected using C<EXAMINE> or
+C<SELECT> (see L<Net::IMAP::Server::Command::Select> and
+L<Net::IMAP::Server::Connection/selected_read_only>)
 
 =cut
 
 sub read_only {
     my $self = shift;
-    return 0;
+    return unless Net::IMAP::Server->connection;
+    return Net::IMAP::Server->connection->selected_read_only;
 }
 
 =head3 selected

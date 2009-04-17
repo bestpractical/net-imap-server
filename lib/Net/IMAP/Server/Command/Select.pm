@@ -50,7 +50,7 @@ sub run {
             . join( ' ', $mailbox->permanentflags )
             . ')]' );
 
-    if ( $self->connection->selected_read_only ) {
+    if ( $self->connection->selected->read_only ) {
         $self->ok_command("[READ-ONLY] Completed");
     } else {
         $self->ok_command("[READ-WRITE] Completed");

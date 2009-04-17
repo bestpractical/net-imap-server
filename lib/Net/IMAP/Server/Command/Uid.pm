@@ -60,7 +60,7 @@ sub fetch {
 sub store {
     my $self = shift;
 
-    return $self->bad_command("Mailbox is read-only") if $self->connection->selected_read_only;
+    return $self->bad_command("Mailbox is read-only") if $self->connection->selected->read_only;
 
     return $self->bad_command("Not enough options") if @_ < 3;
     return $self->bad_command("Too many options") if @_ > 3;
@@ -115,7 +115,7 @@ sub expunge {
     return $self->bad_command("Not enough options") if @_ < 1;
     return $self->bad_command("Too many options") if @_ > 2;
 
-    return $self->bad_command("Mailbox is read-only") if $self->connection->selected_read_only;
+    return $self->bad_command("Mailbox is read-only") if $self->connection->selected->read_only;
 
     my ( $messages ) = @_;
     my @messages = $self->connection->selected->get_uids($messages);

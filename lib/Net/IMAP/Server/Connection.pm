@@ -123,6 +123,13 @@ sub selected {
     return $self->_selected(@_);
 }
 
+=head2 selected_read_only
+
+Returns true of the currently selected mailbox has been forced into
+read-only mode.  Note that the mailbox may be read-only for other
+reasons, so checking L<Net::IMAP::Server::Mailbox/read_only> is
+suggested instead.
+
 =head2 greeting
 
 Sends out a one-line untagged greeting to the client.
