@@ -25,6 +25,10 @@ it meant to be overridden by server implementations.  Primarily,
 subclasses are expected to override L</init> to set up their folder
 structure.
 
+Methods in the model can C<die> with messages which start with "NO" or
+"BAD", which will be propagated back to the client immediately.  See
+L<Net::IMAP::Server::Connection/handle_command>.
+
 =head1 METHODS
 
 =head2 new
