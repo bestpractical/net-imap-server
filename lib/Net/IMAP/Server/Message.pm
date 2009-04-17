@@ -163,7 +163,7 @@ sub set_flag {
             )
             )
         {
-            $c->untagged_fetch->{ $c->sequence($self) }{FLAGS}++
+            $c->_unsent_fetch->{ $c->sequence($self) }{FLAGS}++
                 unless $c->ignore_flags;
         }
     }
@@ -197,7 +197,7 @@ sub clear_flag {
             )
             )
         {
-            $c->untagged_fetch->{ $c->sequence($self) }{FLAGS}++
+            $c->_unsent_fetch->{ $c->sequence($self) }{FLAGS}++
                 unless $c->ignore_flags;
         }
     }

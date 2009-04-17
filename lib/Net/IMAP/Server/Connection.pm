@@ -35,13 +35,13 @@ sub new {
     my $class = shift;
     my $self  = $class->SUPER::new(
         {   @_,
-            state            => "unauth",
-            untagged_expunge => [],
-            untagged_fetch   => {},
-            last_poll        => time,
-            commands         => 0,
-            coro             => $Coro::current,
-            _session_flags   => {},
+            state           => "unauth",
+            _unsent_expunge => [],
+            _unsent_fetch   => {},
+            last_poll       => time,
+            commands        => 0,
+            coro            => $Coro::current,
+            _session_flags  => {},
         }
     );
     $self->update_timer;
@@ -440,32 +440,32 @@ sub send_untagged {
         $self->in_poll(0);
     }
 
-    for my $s ( keys %{ $self->untagged_fetch } ) {
+    for my $s ( keys %{ $self->_unsent_fetch } ) {
         my ($m) = $self->get_messages($s);
         $self->untagged_response(
                   $s 
                 . " FETCH "
                 . Net::IMAP::Server::Command->data_out(
-                [ $m->fetch( [ keys %{ $self->untagged_fetch->{$s} } ] ) ]
+                [ $m->fetch( [ keys %{ $self->_unsent_fetch->{$s} } ] ) ]
                 )
         );
     }
-    $self->untagged_fetch( {} );
+    $self->_unsent_fetch( {} );
 
     if ( $args{expunged} ) {
 
 # Make sure that they know of at least the existence of what's being expunged.
         my $max = 0;
-        $max = $max < $_ ? $_ : $max for @{ $self->untagged_expunge };
+        $max = $max < $_ ? $_ : $max for @{ $self->_unsent_expunge };
         $self->untagged_response("$max EXISTS")
             if $max > $self->previous_exists;
 
         # Send the expunges, clear out the temporary message store
         $self->previous_exists(
-            $self->previous_exists - @{ $self->untagged_expunge } );
+            $self->previous_exists - @{ $self->_unsent_expunge } );
         $self->untagged_response( map {"$_ EXPUNGE"}
-                @{ $self->untagged_expunge } );
-        $self->untagged_expunge( [] );
+                @{ $self->_unsent_expunge } );
+        $self->_unsent_expunge( [] );
         $self->temporary_messages(undef);
     }
 
