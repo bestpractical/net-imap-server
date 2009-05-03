@@ -14,34 +14,34 @@ not run its Makefile.PL or Build.PL.
 -----BEGIN PGP SIGNED MESSAGE-----
 Hash: SHA1
 
-SHA1 82bf320fba2845b666739dbacbae897fcbd98fe2 Changes
+SHA1 0054ea38314614fd1e003ee92158b78694b1aa7d Changes
 SHA1 1d36665e7d4a4a7a531de37b45e18fe4b9b4b412 MANIFEST
-SHA1 d95fe772635efb052f35381ee61e82870a98b17a META.yml
+SHA1 fcfdd7db70ce2b47454fb41f460dfddf3bf68556 META.yml
 SHA1 bc012de893bb939fcbd66eeecc445b12f2ad1348 Makefile.PL
 SHA1 f4c6e4793fd7815aec4abfcd69018d8f34d832a8 README
 SHA1 f5333026061a6f347e7f2a3ce8bb6847081c200c certs/server-cert.pem
 SHA1 4b963cd4c2b0a7e073241b4bac727cb6f96276f8 certs/server-key.pem
 SHA1 49d9874a77ffba992404a926f33e77bb1f5b2629 ex/trivial-server.pl
-SHA1 ae018c4565c1277089ca8f1b28f888d95430cb7f inc/Module/Install.pm
-SHA1 4552acdfca8b78f8015d8449e1325616259095f5 inc/Module/Install/Base.pm
-SHA1 7fb663fff161fb45882b52edd62857bf15359658 inc/Module/Install/Can.pm
-SHA1 8b1d3db746faa6faf2d967a48d3812ec1f44b4c6 inc/Module/Install/Fetch.pm
-SHA1 9f6beaa2f4749ceb5dd0c9b0c647d0f3289c7b46 inc/Module/Install/Makefile.pm
-SHA1 7ad1da4fff7a1e7a634c9d734111c8292be08884 inc/Module/Install/Metadata.pm
-SHA1 e9aa83f3e8b16ccfce544a90a57b63b70a497759 inc/Module/Install/Win32.pm
-SHA1 ade2ac0b0246d4d8e28fa46942e53f6925abda46 inc/Module/Install/WriteAll.pm
-SHA1 6c668637be5500a9d5d963562280ce8b91b655be lib/Net/IMAP/Server.pm
+SHA1 18fcb6b27722fad5e465689f9622b03fd6b7d51c inc/Module/Install.pm
+SHA1 65bc57bf8257e3b66ec571850570626283ca659c inc/Module/Install/Base.pm
+SHA1 f76a19dff601776d6245f87936f0d2e9deb3c74d inc/Module/Install/Can.pm
+SHA1 ce92bd504500c543688fa12eb2ef6c832e9455e6 inc/Module/Install/Fetch.pm
+SHA1 c45b2672d8ae49d710343f39f68d00c28cba4b43 inc/Module/Install/Makefile.pm
+SHA1 82e172b951d97f74315af04cb7b909afa546fc07 inc/Module/Install/Metadata.pm
+SHA1 1b1de77b3187dfbbd6de905e539ff1393c1aa6a0 inc/Module/Install/Win32.pm
+SHA1 c1c96fa424457d79caaaf9af61037e6f984e71dc inc/Module/Install/WriteAll.pm
+SHA1 846bfba2df6c75d76fb9d9869914c93ea73bdeb4 lib/Net/IMAP/Server.pm
 SHA1 e0016d978a1d896866cf27494ae9651d8af50311 lib/Net/IMAP/Server/Command.pm
 SHA1 636e390f8f44ee6c51321220a44c20ceba08b44d lib/Net/IMAP/Server/Command/Append.pm
 SHA1 5c203d47099444ceb8ce9e8927353d91ba0545cd lib/Net/IMAP/Server/Command/Authenticate.pm
 SHA1 70f2aeb901dde845183ef6b70f56b4d777641a5d lib/Net/IMAP/Server/Command/Capability.pm
 SHA1 de6607dec53f35b3b3fd41ad12191a83c59ae21b lib/Net/IMAP/Server/Command/Check.pm
-SHA1 589c12fc9d101b39261cd609cf3b3bd0202c62d4 lib/Net/IMAP/Server/Command/Close.pm
+SHA1 514b741e13d400a6c44215ab9bd66b77a16ef18c lib/Net/IMAP/Server/Command/Close.pm
 SHA1 a73779c162243b7c0a0b8af6663f24533b044906 lib/Net/IMAP/Server/Command/Copy.pm
 SHA1 65589737cc3fb5298ff42f10aed5ea9f103931b6 lib/Net/IMAP/Server/Command/Create.pm
 SHA1 a4a9324f35403ed4ff483045fbe51081593ca50a lib/Net/IMAP/Server/Command/Delete.pm
 SHA1 02746080dc893a9673d3ddd3b9d4bbca503b1203 lib/Net/IMAP/Server/Command/Examine.pm
-SHA1 0a8111233fd11a93c7306381dc7ca029a1006881 lib/Net/IMAP/Server/Command/Expunge.pm
+SHA1 e2a53e75f10e35e4935b807c202a10753c34ce4d lib/Net/IMAP/Server/Command/Expunge.pm
 SHA1 6e8ba2d1fdfa02de45c595d9a5f8c2f444f36aaa lib/Net/IMAP/Server/Command/Fetch.pm
 SHA1 fddb82fad844966a68d38270277c1c7acdb4e998 lib/Net/IMAP/Server/Command/Id.pm
 SHA1 4f526e5a0d1b49e3a37632675980e14c687272ef lib/Net/IMAP/Server/Command/List.pm
@@ -52,25 +52,25 @@ SHA1 9184f034fb9e0ba9c504bd0954f3e02283c61b18 lib/Net/IMAP/Server/Command/Namesp
 SHA1 78902aa13c8e79d5abc95fc6de637c1af8783ce2 lib/Net/IMAP/Server/Command/Noop.pm
 SHA1 84adf33de0822b0357bd26f207db9812b655c85f lib/Net/IMAP/Server/Command/Rename.pm
 SHA1 02fa261b0db9803737682e25721d0fe6625f0e29 lib/Net/IMAP/Server/Command/Search.pm
-SHA1 93320b7dd080eeb1d87fa17b2090fe59ed1695e4 lib/Net/IMAP/Server/Command/Select.pm
+SHA1 a6d47a6160d2899b33950a93f3d021666269e4f3 lib/Net/IMAP/Server/Command/Select.pm
 SHA1 3e9a1813eb89b3c311ee61907c5cdc44a177f321 lib/Net/IMAP/Server/Command/Starttls.pm
 SHA1 46d29fc4c67ee0e90ddf0a8d018bb8d1545856ed lib/Net/IMAP/Server/Command/Status.pm
-SHA1 5f525299848e3b91d093d3e301d01414b0fdacd1 lib/Net/IMAP/Server/Command/Store.pm
+SHA1 bd5fe7da9d541a86d5ae0072e85b1392196227f2 lib/Net/IMAP/Server/Command/Store.pm
 SHA1 3fbb8ce46e696eeb62a97264cb564924a7ccfb57 lib/Net/IMAP/Server/Command/Subscribe.pm
-SHA1 c73f4ad4b6177c7efacca44f09b6629a35b63c04 lib/Net/IMAP/Server/Command/Uid.pm
+SHA1 c96f8962609ef8ce930e337a4f1d6dbb1a909a12 lib/Net/IMAP/Server/Command/Uid.pm
 SHA1 4591be8d501ea8877f3b4d4418620cce094256ab lib/Net/IMAP/Server/Command/Unsubscribe.pm
-SHA1 581f96324ef9d5b023465fe84fef67447d57c087 lib/Net/IMAP/Server/Connection.pm
+SHA1 83e8e4e429715fba8a3e75aaf1f50bbbe98ee892 lib/Net/IMAP/Server/Connection.pm
 SHA1 716c1bb33a3b970dfc80b2d19366b719a48caef3 lib/Net/IMAP/Server/DefaultAuth.pm
-SHA1 0f7b172c55ee7a7f378fd63a983b487cc01967f7 lib/Net/IMAP/Server/DefaultModel.pm
-SHA1 be062ebc3775a87c836ec3a2f0db2c69547d55a1 lib/Net/IMAP/Server/Mailbox.pm
+SHA1 9eea45b97044ad2d07db6b8959c6e41d60c550d5 lib/Net/IMAP/Server/DefaultModel.pm
+SHA1 92668acf271c99421140fe8684a91c2415a779b5 lib/Net/IMAP/Server/Mailbox.pm
 SHA1 304b0d74141a70537b8c847acac806e18a966757 lib/Net/IMAP/Server/Message.pm
 SHA1 2e67e318edc490da7367ebcc789d35d0810e00e6 t/00.load.t
 SHA1 ec035a09e3f370620874e9c706d6c8ae4bdfa6a1 t/pod-coverage.t
 SHA1 0190346d7072d458c8a10a45c19f86db641dcc48 t/pod.t
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
+Version: GnuPG v2.0.11 (GNU/Linux)
 
-iEYEARECAAYFAkncHkEACgkQMflWJZZAbqBLDQCbBWeUcq9HlfpJN99JARNmLJpj
-VXEAn0+/wtWn0xZ0Qbs/wo51mQk0DH9X
-=7h7p
+iEYEARECAAYFAkn96QkACgkQMflWJZZAbqDD6ACgkwvudjoz+NaLLzL25mYMW3z9
+8h8An0eSqjgqy3zOR/nVS3NgQK0ZT2kZ
+=9p9H
 -----END PGP SIGNATURE-----
