@@ -1,7 +1,7 @@
 certs/server-cert.pem
 certs/server-key.pem
-ex/trivial-server.pl
 Changes
+ex/trivial-server.pl
 inc/Module/Install.pm
 inc/Module/Install/Base.pm
 inc/Module/Install/Can.pm
@@ -42,6 +42,7 @@ lib/Net/IMAP/Server/Command/Unsubscribe.pm
 lib/Net/IMAP/Server/Connection.pm
 lib/Net/IMAP/Server/DefaultAuth.pm
 lib/Net/IMAP/Server/DefaultModel.pm
+lib/Net/IMAP/Server/Error.pm
 lib/Net/IMAP/Server/Mailbox.pm
 lib/Net/IMAP/Server/Message.pm
 Makefile.PL

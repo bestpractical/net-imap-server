@@ -1,5 +1,9 @@
 Revision history for Net-IMAP-Server
 
+1.18   Wed Jun 17 14:50:16 2009
+        * Handle compile errors in required commands better
+        * Add missing DateTime::Format::Strptime dependency
+
 1.17   Sun May  3 14:54:17 2009
         * Document "NO" and "BAD" die() arguments
         * Fix mailbox read-only attribute
