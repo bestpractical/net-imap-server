@@ -8,6 +8,7 @@ use base 'Class::Accessor';
 use Coro;
 use Scalar::Util qw/weaken/;
 
+use Net::IMAP::Server::Error;
 use Net::IMAP::Server::Command;
 
 __PACKAGE__->mk_accessors(
@@ -275,7 +276,16 @@ sub class_for {
     my $classref = $self->server->command_class;
     my $cmd_class = $classref->{lc $cmd} || $classref->{$cmd} || $classref->{uc $cmd}
          || "Net::IMAP::Server::Command::$cmd";
-    $cmd_class->require() || ($@ =~ /^Can't locate \S+ in \@INC/) || warn $@;
+    my $class_path = $cmd_class;
+    $class_path =~ s{::}{/}g;
+
+    $cmd_class->require();
+    my $err = $@;
+    if ($err and $err !~ /^Can't locate $class_path.pm in \@INC/) {
+        warn $@;
+        $cmd_class = "Net::IMAP::Server::Error";
+    }
+
     return $cmd_class->can('run') ? $cmd_class : "Net::IMAP::Server::Command";
 }
 
