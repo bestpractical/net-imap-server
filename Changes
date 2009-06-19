@@ -1,6 +1,11 @@
 Revision history for Net-IMAP-Server
 
-1.19   Fri Jun 19 15:26:17 2009
+1.20   Fri Jun 19 16:04:17 2009
+        * The logic for STATUS UNSEEN was backwards, counting the
+          number of seen messages.  Reported by Paul Miller
+          <jettero@cpan.org>
+
+1.19   Fri Jun 19 13:26:17 2009
         * Fix POD coverage on Net::IMAP::Server::Error
 
 1.18   Wed Jun 17 14:50:16 2009
