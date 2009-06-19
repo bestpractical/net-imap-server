@@ -326,61 +326,6 @@ sub append {
     return $m;
 }
 
-=head3 status TYPES
-
-Called when the clients requests a status update (via
-L<Net::IMAP::Server::Command::Status>).  C<TYPES> should be the types
-of information requested, chosen from this list:
-
-=over
-
-=item MESSAGES
-
-The number of messages in the mailbox (via L</exists>)
-
-=item RECENT
-
-The number of messages marked as C<\Recent> (via L</recent>)
-
-=item UNSEEN
-
-The number of messages not marked as C<\Seen> (via L</unseen>)
-
-=item UIDVALIDITY
-
-The C</uidvalidity> of the mailbox.
-
-=item UIDNEXT
-
-The C</uidnext> of the mailbox.
-
-=back
-
-=cut
-
-sub status {
-    my $self = shift;
-    my (@keys) = @_;
-    $self->poll;
-    my %items;
-    for my $i ( @keys ) {
-        if ( $i eq "MESSAGES" ) {
-            $items{$i} = $self->exists;
-        } elsif ( $i eq "RECENT" ) {
-            $items{$i} = $self->recent;
-        } elsif ( $i eq "UNSEEN" ) {
-            $items{$i} = $self->unseen;
-        } elsif ( $i eq "UIDVALIDITY" ) {
-            my $uidvalidity = $self->uidvalidity;
-            $items{$i} = $uidvalidity if defined $uidvalidity;
-        } elsif ( $i eq "UIDNEXT" ) {
-            my $uidnext = $self->uidnext;
-            $items{$i} = $uidnext if defined $uidnext;
-        }
-    }
-    return %items;
-}
-
 =head3 close
 
 Called when the client selects a different mailbox, or when the
@@ -529,6 +474,62 @@ defaults to the same set as L</flags> returns.
 sub permanentflags {
     my $self = shift;
     return $self->flags;
+}
+
+
+=head3 status TYPES
+
+Called when the clients requests a status update (via
+L<Net::IMAP::Server::Command::Status>).  C<TYPES> should be the types
+of information requested, chosen from this list:
+
+=over
+
+=item MESSAGES
+
+The number of messages in the mailbox (via L</exists>)
+
+=item RECENT
+
+The number of messages marked as C<\Recent> (via L</recent>)
+
+=item UNSEEN
+
+The number of messages not marked as C<\Seen> (via L</unseen>)
+
+=item UIDVALIDITY
+
+The C</uidvalidity> of the mailbox.
+
+=item UIDNEXT
+
+The C</uidnext> of the mailbox.
+
+=back
+
+=cut
+
+sub status {
+    my $self = shift;
+    my (@keys) = @_;
+    $self->poll;
+    my %items;
+    for my $i ( @keys ) {
+        if ( $i eq "MESSAGES" ) {
+            $items{$i} = $self->exists;
+        } elsif ( $i eq "RECENT" ) {
+            $items{$i} = $self->recent;
+        } elsif ( $i eq "UNSEEN" ) {
+            $items{$i} = $self->unseen;
+        } elsif ( $i eq "UIDVALIDITY" ) {
+            my $uidvalidity = $self->uidvalidity;
+            $items{$i} = $uidvalidity if defined $uidvalidity;
+        } elsif ( $i eq "UIDNEXT" ) {
+            my $uidnext = $self->uidnext;
+            $items{$i} = $uidnext if defined $uidnext;
+        }
+    }
+    return %items;
 }
 
 =head3 read_only
