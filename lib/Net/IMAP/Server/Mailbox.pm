@@ -326,7 +326,35 @@ sub append {
     return $m;
 }
 
-=head3 status
+=head3 status TYPES
+
+Called when the clients requests a status update (via
+L<Net::IMAP::Server::Command::Status>).  C<TYPES> should be the types
+of information requested, chosen from this list:
+
+=over
+
+=item MESSAGES
+
+The number of messages in the mailbox (via L</exists>)
+
+=item RECENT
+
+The number of messages marked as C<\Recent> (via L</recent>)
+
+=item UNSEEN
+
+The number of messages not marked as C<\Seen> (via L</unseen>)
+
+=item UIDVALIDITY
+
+The C</uidvalidity> of the mailbox.
+
+=item UIDNEXT
+
+The C</uidnext> of the mailbox.
+
+=back
 
 =cut
 
