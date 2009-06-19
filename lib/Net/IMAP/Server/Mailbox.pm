@@ -482,13 +482,13 @@ sub first_unseen {
 
 =head3 unseen
 
-Returns the number of messages which have the C<\Seen> flag set.
+Returns the number of messages which do not have the C<\Seen> flag set.
 
 =cut
 
 sub unseen {
     my $self = shift;
-    return scalar grep { $_->has_flag('\Seen') } @{ $self->messages };
+    return scalar grep { not $_->has_flag('\Seen') } @{ $self->messages };
 }
 
 =head3 permanentflags
