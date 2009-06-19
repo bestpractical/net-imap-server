@@ -1,5 +1,8 @@
 Revision history for Net-IMAP-Server
 
+1.19   Fri Jun 19 15:26:17 2009
+        * Fix POD coverage on Net::IMAP::Server::Error
+
 1.18   Wed Jun 17 14:50:16 2009
         * Handle compile errors in required commands better
         * Add missing DateTime::Format::Strptime dependency
