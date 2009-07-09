@@ -1,5 +1,20 @@
 Revision history for Net-IMAP-Server
 
+1.21   Thu Jul  9 14:52:17 2009
+        * Bump copyright, link to mailing list
+        * Remove mostly undocumented an no-servicable-parts
+          session_flags
+        * untagged_* renamed to _unsent_* (and thus private)
+        * A bit more documentation of accessors
+        * Better error message on unknown SEARCH token
+        * Add caching of "start of the day in utc" for searching
+        * Add extraction of "start of the Date: header in utc" for
+          searching
+        * Add BEFORE, ON, SINCE, SENTBEFORE, SENTON, SENTSINC support
+          to SEARCH
+        * Document Net::IMAP::Server::Message->expunged
+
+
 1.20   Fri Jun 19 16:04:17 2009
         * The logic for STATUS UNSEEN was backwards, counting the
           number of seen messages.  Reported by Paul Miller
