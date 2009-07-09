@@ -157,7 +157,8 @@ sub expunge {
 
 =head2 expunged
 
-=cut
+Returns true if the message has been marked as "to be expunged" by
+L</expunge>.
 
 =head2 copy_allowed MAILBOX
 
