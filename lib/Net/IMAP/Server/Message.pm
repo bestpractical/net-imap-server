@@ -10,6 +10,9 @@ use Email::MIME::ContentType;
 use Regexp::Common qw/balanced/;
 use DateTime;
 
+use DateTime::Format::Strptime;
+use constant INTERNALDATE_PARSER => DateTime::Format::Strptime->new(pattern => "%e-%b-%Y %T %z");
+
 # Canonical capitalization
 my %FLAGS;
 $FLAGS{ lc $_ } = $_ for qw(\Answered \Flagged \Deleted \Seen \Draft);
@@ -17,7 +20,7 @@ $FLAGS{ lc $_ } = $_ for qw(\Answered \Flagged \Deleted \Seen \Draft);
 use base 'Class::Accessor';
 
 __PACKAGE__->mk_accessors(
-    qw(sequence mailbox uid _flags mime internaldate expunged));
+    qw(sequence mailbox uid _flags mime expunged));
 
 =head1 NAME
 
@@ -35,7 +38,7 @@ sub new {
     my $class = shift;
     my $self = bless {}, $class;
     $self->mime( Email::MIME->new(@_) ) if @_;
-    $self->internaldate( DateTime->now->strftime("%e-%b-%Y %T %z") );
+    $self->internaldate( DateTime->now( time_zone => 'local' ) );
     $self->_flags( {} );
     return $self;
 }
@@ -60,11 +63,45 @@ L<Net::IMAP::Server::Connection/sequence>.
 Gets or sets the UID of the message.  This, paired with the name and
 UIDVALIDITY of its mailbox, is a unique designator of the message.
 
-=head2 internaldate [STRING]
+=head2 internaldate [STRING or DATETIME]
 
 Gets or sets the string representing when the message was received by
 the server.  According to RFC specification, this must be formatted as
-C<01-Jan-2008 15:42 -0500>.
+C<01-Jan-2008 15:42:00 -0500> if it is a C<STRING>.
+
+=cut
+
+sub internaldate {
+    my $self = shift;
+    return $self->{internaldate} unless @_;
+    my $value = shift;
+
+    if (ref $value) {
+        $self->{internaldate} = $value->strftime("%e-%b-%Y %T %z");
+    } else {
+        $self->{internaldate} = $value;
+        $value = $self->INTERNALDATE_PARSER->parse_datetime($value);
+    }
+    $value->truncate( to => "day" );
+    $value->set_time_zone( "floating" );
+    $value->set_time_zone( "UTC" );
+    $self->{epoch_day_utc} = $value->epoch;
+    return $self->{internaldate};
+}
+
+=head2 epoch_day_utc
+
+Returns the epoch time of the L</internaldate>, ignoring times and
+time zones.  This is almost certainly only useful for C<SEARCH BEFORE>
+and friends.
+
+=cut
+
+sub epoch_day_utc {
+    my $self = shift;
+    return $self->{epoch_day_utc};
+}
+
 
 =head2 expunge
 
