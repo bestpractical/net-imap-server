@@ -149,7 +149,7 @@ sub filter {
             };
             $filters = $intersection;
         } else {
-            return $self->bad_command("Unknown command: $token");
+            return $self->bad_command("Unknown search token: $token");
         }
 
         while (@stack and (@{$filters} == $stack[0][1] or ($stack[0][3] and not @tokens))) {
