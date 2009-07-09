@@ -11,7 +11,9 @@ use Regexp::Common qw/balanced/;
 use DateTime;
 
 use DateTime::Format::Strptime;
+use DateTime::Format::Mail;
 use constant INTERNALDATE_PARSER => DateTime::Format::Strptime->new(pattern => "%e-%b-%Y %T %z");
+use constant HEADERDATE_PARSER => DateTime::Format::Mail->new->loose;
 
 # Canonical capitalization
 my %FLAGS;
@@ -102,6 +104,43 @@ sub epoch_day_utc {
     return $self->{epoch_day_utc};
 }
 
+=head2 date
+
+Returns the Date header of the message, as a L<DateTime> object.
+Returns undef if the date cannot be parsed.
+
+=cut
+
+sub date {
+    my $self = shift;
+    my $date = $self->mime_header->header("Date");
+    return unless $date;
+
+    return eval {
+        $self->HEADERDATE_PARSER->parse_datetime(
+            $date
+        )
+    };
+}
+
+=head2 date_day_utc
+
+Similar to L</epoch_day_utc>, but for the L</date> header.  That is,
+it returns the Date header, having stripped off the timezone and time.
+Returns undef if the Date header cannot be parsed.
+
+=cut
+
+sub date_day_utc {
+    my $self = shift;
+    my $date = $self->date;
+    return unless $date;
+
+    $date->truncate( to => "day" );
+    $date->set_time_zone( "floating" );
+    $date->set_time_zone( "UTC" );
+    return $date;
+}
 
 =head2 expunge
 

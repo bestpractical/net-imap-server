@@ -9,6 +9,7 @@ license('perl');
 requires('Class::Accessor');
 requires('Coro');
 requires('DateTime');
+requires('DateTime::Format::Mail');
 requires('DateTime::Format::Strptime');
 requires('Email::Address');
 requires('Email::MIME' => 1.862);
