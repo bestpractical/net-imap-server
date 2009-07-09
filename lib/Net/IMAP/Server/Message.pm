@@ -471,6 +471,7 @@ sub mime_select {
     }
 
     return $result unless defined $start;
+    return "" if $start > length $result;
     return substr( $result, $start ) unless defined $end;
     return substr( $result, $start, $end );
 }
