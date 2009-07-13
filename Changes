@@ -1,5 +1,10 @@
 Revision history for Net-IMAP-Server
 
+1.22   Mon Jul 13 12:13:17 2009
+        * Warning avoidance for "substr outside of string" warnings
+        * Net::IMAP::Server::Command::UID still contained a reference
+          to untagged_fetch
+
 1.21   Thu Jul  9 14:52:17 2009
         * Bump copyright, link to mailing list
         * Remove mostly undocumented an no-servicable-parts
@@ -13,7 +18,6 @@ Revision history for Net-IMAP-Server
         * Add BEFORE, ON, SINCE, SENTBEFORE, SENTON, SENTSINC support
           to SEARCH
         * Document Net::IMAP::Server::Message->expunged
-
 
 1.20   Fri Jun 19 16:04:17 2009
         * The logic for STATUS UNSEEN was backwards, counting the
