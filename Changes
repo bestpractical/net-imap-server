@@ -1,5 +1,9 @@
 Revision history for Net-IMAP-Server
 
+1.23   Fri Jul 17 17:34:17 2009
+        * Fix RT#47955; session flags were never getting stored,
+          causing no messages to ever be marked \Recent
+
 1.22   Mon Jul 13 12:13:17 2009
         * Warning avoidance for "substr outside of string" warnings
         * Net::IMAP::Server::Command::UID still contained a reference
