@@ -211,7 +211,7 @@ sub _session_flags {
     my $self = shift;
     my $conn = Net::IMAP::Server->connection;
     return {} unless $conn;
-    return $conn->_session_flags->{$self} || {};
+    return $conn->_session_flags->{$self} ||= {};
 }
 
 =head2 set_flag FLAG [, SILENT]
