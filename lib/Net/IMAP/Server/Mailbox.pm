@@ -208,11 +208,11 @@ sub create {
     return $self->add_child(@_);
 }
 
-=head3 reparent MAILBOX
+=head3 reparent MAILBOX [NAME]
 
 Reparents this mailbox to be a child of the given
-L<Net::IMAP::Server::Mailbox> C<MAILBOX>.  Should return 0 if the
-reparenting is denied or fails.
+L<Net::IMAP::Server::Mailbox> C<MAILBOX>, with the given C<NAME>.
+Should return 0 if the reparenting is denied or fails.
 
 =cut
 
@@ -224,6 +224,7 @@ sub reparent {
         [ grep { $_ ne $self } @{ $self->parent->children } ] );
     push @{ $parent->children }, $self;
     $self->parent($parent);
+    $self->name(shift) if @_;
     $self->full_path( purge => 1 );
     return 1;
 }

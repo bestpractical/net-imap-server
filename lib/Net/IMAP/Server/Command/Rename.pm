@@ -44,8 +44,7 @@ sub run {
         $base = $part;
     }
 
-    $mailbox->reparent($base) or return $self->no_command("Permission denied");
-    $mailbox->name($newname);
+    $mailbox->reparent($base, $newname) or return $self->no_command("Permission denied");
 
     $self->ok_completed();
 }
