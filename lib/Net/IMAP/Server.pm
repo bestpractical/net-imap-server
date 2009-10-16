@@ -38,7 +38,9 @@ Note that, following RFC suggestions, login is not allowed except
 under a either SSL or TLS.  Thus, you are required to have a F<certs/>
 directory under the current working directory, containing files
 F<server-cert.pem> and C<server-key.pem>.  Failure to do so will cause
-the server to fail to start.
+the server to fail to start.  Note that if the default paths suit your
+needs, you can specify different ones using the L</server_cert> and
+L</server_key> arguments to L</new>.
 
 =head1 INTERFACE
 
@@ -132,16 +134,22 @@ How long, in seconds, to wait before disconnecting authenticated
 connections.  By RFC specification, this B<must> be longer than 30
 minutes.  The default is an hour; set to zero to disable.
 
+=item server_cert
+
+Path to the SSL certificate that the server should use.  This can be
+either a relative or absolute path.
+
+=item server_key
+
+Path to the SSL certificate key that the server should use.  This can
+be either a relative or absolute path.
+
 =back
 
 =cut
 
 sub new {
     my $class = shift;
-    unless ( -r "certs/server-cert.pem" and -r "certs/server-key.pem" ) {
-        die
-            "Can't read certs (certs/server-cert.pem and certs/server-key.pem)\n";
-    }
 
     my $self = Class::Accessor::new(
         $class,
