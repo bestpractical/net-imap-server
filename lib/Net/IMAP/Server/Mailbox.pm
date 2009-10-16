@@ -343,6 +343,9 @@ sub close { }
 Returns the path separator.  Note that only the path separator of the
 root mailbox matters.  Defaults to a forward slash.
 
+If the function returns is undef, the server supports only flat
+mailboxes (i.e. no child mailboxes are allowed).
+
 =cut
 
 sub separator {
