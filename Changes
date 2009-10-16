@@ -1,5 +1,10 @@
 Revision history for Net-IMAP-Server
 
+1.24   Fri Oct 16 11:01:17 2009
+        * Fix overzealous caching during mailbox renaming
+        * Bump Net::Server::Coro dep, to be able to specify SSL
+          certificate paths
+
 1.23   Fri Jul 17 17:34:17 2009
         * Fix RT#47955; session flags were never getting stored,
           causing no messages to ever be marked \Recent

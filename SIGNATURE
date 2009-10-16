@@ -14,23 +14,23 @@ not run its Makefile.PL or Build.PL.
 -----BEGIN PGP SIGNED MESSAGE-----
 Hash: SHA1
 
-SHA1 febf581c98b798b617270a4f3bfd52232d5b7dfc Changes
+SHA1 aa971f9f152b3cf769a24a5a8ece7159753c829c Changes
 SHA1 422032f0595e2e18fca67c2975c2c5f617d95569 MANIFEST
-SHA1 881c2b5db5d8b95e6917b65a937202b6181dce10 META.yml
-SHA1 05214c27a1814cb2d1c071b528cd953e89037aa4 Makefile.PL
+SHA1 d80bca57a1201513490a425aa2921c65467acd35 META.yml
+SHA1 d2f1e54620e4900958d382d42db33b0a68c847eb Makefile.PL
 SHA1 f4c6e4793fd7815aec4abfcd69018d8f34d832a8 README
 SHA1 f5333026061a6f347e7f2a3ce8bb6847081c200c certs/server-cert.pem
 SHA1 4b963cd4c2b0a7e073241b4bac727cb6f96276f8 certs/server-key.pem
 SHA1 49d9874a77ffba992404a926f33e77bb1f5b2629 ex/trivial-server.pl
-SHA1 18fcb6b27722fad5e465689f9622b03fd6b7d51c inc/Module/Install.pm
-SHA1 65bc57bf8257e3b66ec571850570626283ca659c inc/Module/Install/Base.pm
-SHA1 f76a19dff601776d6245f87936f0d2e9deb3c74d inc/Module/Install/Can.pm
-SHA1 ce92bd504500c543688fa12eb2ef6c832e9455e6 inc/Module/Install/Fetch.pm
-SHA1 c45b2672d8ae49d710343f39f68d00c28cba4b43 inc/Module/Install/Makefile.pm
-SHA1 82e172b951d97f74315af04cb7b909afa546fc07 inc/Module/Install/Metadata.pm
-SHA1 1b1de77b3187dfbbd6de905e539ff1393c1aa6a0 inc/Module/Install/Win32.pm
-SHA1 c1c96fa424457d79caaaf9af61037e6f984e71dc inc/Module/Install/WriteAll.pm
-SHA1 ebba35f7f93573d55cd8a17b28312fe1ba50179f lib/Net/IMAP/Server.pm
+SHA1 fd5f3c4f0418efee3b9b16cf8c3902e8374909df inc/Module/Install.pm
+SHA1 7cd7c349afdf3f012e475507b1017bdfa796bfbd inc/Module/Install/Base.pm
+SHA1 ba186541bbf6439111f01fc70769cf24d22869bf inc/Module/Install/Can.pm
+SHA1 aaa50eca0d7751db7a4d953fac9bc72c6294e238 inc/Module/Install/Fetch.pm
+SHA1 3e83972921d54198d1246f7278f08664006cd65d inc/Module/Install/Makefile.pm
+SHA1 12bf1867955480d47d5171a9e9c6a96fabe0b58f inc/Module/Install/Metadata.pm
+SHA1 f7ee667e878bd2faf22ee9358a7b5a2cc8e91ba4 inc/Module/Install/Win32.pm
+SHA1 8ed29d6cf217e0977469575d788599cbfb53a5ca inc/Module/Install/WriteAll.pm
+SHA1 b63716db365391882fbe34f3e3a74e0595cfff72 lib/Net/IMAP/Server.pm
 SHA1 e0016d978a1d896866cf27494ae9651d8af50311 lib/Net/IMAP/Server/Command.pm
 SHA1 14fe0f304abc29508e7871571bd0d3ac739479e6 lib/Net/IMAP/Server/Command/Append.pm
 SHA1 5c203d47099444ceb8ce9e8927353d91ba0545cd lib/Net/IMAP/Server/Command/Authenticate.pm
@@ -50,10 +50,10 @@ SHA1 30579885dfc9b80c2c7873bb283e4105d3c74f2a lib/Net/IMAP/Server/Command/Logout
 SHA1 757faacdf957afddd0b0ff659258b8b0e09a0e4b lib/Net/IMAP/Server/Command/Lsub.pm
 SHA1 9184f034fb9e0ba9c504bd0954f3e02283c61b18 lib/Net/IMAP/Server/Command/Namespace.pm
 SHA1 78902aa13c8e79d5abc95fc6de637c1af8783ce2 lib/Net/IMAP/Server/Command/Noop.pm
-SHA1 84adf33de0822b0357bd26f207db9812b655c85f lib/Net/IMAP/Server/Command/Rename.pm
+SHA1 98545b9ae8eb2420f45c5f08276982d92faadb99 lib/Net/IMAP/Server/Command/Rename.pm
 SHA1 683821b21fc5b4a6c701b7769451516bb9ed205f lib/Net/IMAP/Server/Command/Search.pm
 SHA1 a6d47a6160d2899b33950a93f3d021666269e4f3 lib/Net/IMAP/Server/Command/Select.pm
-SHA1 3e9a1813eb89b3c311ee61907c5cdc44a177f321 lib/Net/IMAP/Server/Command/Starttls.pm
+SHA1 ffe0dddf90fa8ff02815431e1e2a72ed3f85daf4 lib/Net/IMAP/Server/Command/Starttls.pm
 SHA1 46d29fc4c67ee0e90ddf0a8d018bb8d1545856ed lib/Net/IMAP/Server/Command/Status.pm
 SHA1 bd5fe7da9d541a86d5ae0072e85b1392196227f2 lib/Net/IMAP/Server/Command/Store.pm
 SHA1 3fbb8ce46e696eeb62a97264cb564924a7ccfb57 lib/Net/IMAP/Server/Command/Subscribe.pm
@@ -63,7 +63,7 @@ SHA1 9d8dd9d79ce307cc93495d9074c1a2ae5f37774e lib/Net/IMAP/Server/Connection.pm
 SHA1 716c1bb33a3b970dfc80b2d19366b719a48caef3 lib/Net/IMAP/Server/DefaultAuth.pm
 SHA1 9eea45b97044ad2d07db6b8959c6e41d60c550d5 lib/Net/IMAP/Server/DefaultModel.pm
 SHA1 688651b7e624fe1d4bf29e320b05d0872fb54dd0 lib/Net/IMAP/Server/Error.pm
-SHA1 757093db69c2d7828926cc301a20caf3ff587c63 lib/Net/IMAP/Server/Mailbox.pm
+SHA1 b941a63cdee1518d48a41a6541e21c312e2806b8 lib/Net/IMAP/Server/Mailbox.pm
 SHA1 3d7d3d5693b352dfebb5c151c404f627bf52ebb5 lib/Net/IMAP/Server/Message.pm
 SHA1 2e67e318edc490da7367ebcc789d35d0810e00e6 t/00.load.t
 SHA1 ec035a09e3f370620874e9c706d6c8ae4bdfa6a1 t/pod-coverage.t
@@ -71,7 +71,7 @@ SHA1 0190346d7072d458c8a10a45c19f86db641dcc48 t/pod.t
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.11 (GNU/Linux)
 
-iEYEARECAAYFAkpg7sIACgkQMflWJZZAbqD11wCfQJZkjY8SOwZx+3IPTZmYG/2K
-AwcAn0AEJ6s3Us+dstmDGli1Qm2EPOrk
-=GMid
+iEYEARECAAYFAkrYircACgkQMflWJZZAbqCC0wCeP/RNjUDm8qnCyHXplOGAupag
+vJ0An3kW/BGgHc6JtFHYnI3UW+Y4oC5d
+=9o0h
 -----END PGP SIGNATURE-----

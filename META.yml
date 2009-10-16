@@ -7,7 +7,7 @@ build_requires:
 configure_requires:
   ExtUtils::MakeMaker: 6.42
 distribution_type: module
-generated_by: 'Module::Install version 0.85'
+generated_by: 'Module::Install version 0.91'
 license: perl
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
@@ -30,10 +30,10 @@ requires:
   Encode::IMAPUTF7: 0
   MIME::Base64: 0
   Net::SSLeay: 0
-  Net::Server::Coro: 0.3
+  Net::Server::Coro: 0.6
   Regexp::Common: 0
   Test::More: 0
   UNIVERSAL::require: 0
 resources:
   license: http://dev.perl.org/licenses/
-version: 1.23
+version: 1.24
