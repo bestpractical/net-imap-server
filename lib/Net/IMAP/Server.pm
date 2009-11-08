@@ -228,6 +228,8 @@ that this was called on; thus, all IMAP objects have a way of
 referring to the server -- and though L</connection>, whatever parts
 of the IMAP internals they need.
 
+Any arguments are passed through to L<Net::Server/run>.
+
 =cut
 
 sub run {
@@ -240,6 +242,7 @@ sub run {
     }
     local $Net::IMAP::Server::Server = $self;
     $self->SUPER::run(
+        @_,
         proto => \@proto,
         port  => \@port,
     );
