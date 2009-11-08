@@ -358,13 +358,22 @@ sub add_command {
     my $self = shift;
     my ($name, $package) = @_;
     if (not $package->require) {
-        warn $@;
+        $self->log( 1, $@ );
     } elsif (not $package->isa('Net::IMAP::Server::Command')) {
-        warn "$package is not a Net::IMAP::Server::Command!";
+        $self->log( 1, "$package is not a Net::IMAP::Server::Command!" );
     } else {
         $self->command_class->{uc $name} = $package;
     }
 }
+
+=head2 log SEVERITY, MESSAGE
+
+By default, defers to L<Net::Server/log>, which outputs to syslog, a
+logfile, or STDERR, depending how it was configured.  L<Net::Server>'s
+default is to print to STDERR.  If you have custom logging needs,
+override this method, or L<Net::Server/write_to_log_hook>.
+
+=cut
 
 1;    # Magic true value required at end of module
 __END__

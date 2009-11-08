@@ -92,7 +92,7 @@ sub auth {
     my $self = shift;
     if (@_) {
         $self->{auth} = shift;
-        $self->server->model_class->require || warn $@;
+        $self->server->model_class->require || $self->log(1, $@);
         $self->update_timer;
         $self->model(
             $self->server->model_class->new( { auth => $self->{auth} } ) );
@@ -182,12 +182,12 @@ sub handle_lines {
             cede;
         }
 
-        $self->log(
+        $self->log( 4,
             "-(@{[$self]},@{[$self->auth ? $self->auth->user : '???']},@{[$self->is_selected ? $self->selected->full_path : 'unselected']}): Connection closed by remote host"
         );
     };
     my $err = $@;
-    warn $err
+    $self->log(1, $err)
         if $err and not( $err eq "Error printing\n" or $err eq "Timeout\n" );
     eval { $self->out("* BYE Idle timeout; I fell asleep.") if $err eq "Timeout\n"; };
     $self->close;
@@ -241,8 +241,10 @@ sub handle_command {
     my $self    = shift;
     my $content = shift;
 
-    $self->log(
-        "C(@{[$self]},@{[$self->auth ? $self->auth->user : '???']},@{[$self->is_selected ? $self->selected->full_path : 'unselected']}): $content"
+    my $output = $content;
+    $output =~ s/[\r\n]+$//;
+    $self->log( 4,
+        "C(@{[$self]},@{[$self->auth ? $self->auth->user : '???']},@{[$self->is_selected ? $self->selected->full_path : 'unselected']}): $output"
     );
 
     if ( $self->pending ) {
@@ -273,7 +275,7 @@ sub handle_command {
             $handler->bad_command($1);
         } else {
             $handler->no_command("Server error");
-            $self->log($error);
+            $self->log(1, $error);
         }
     }
 }
@@ -297,7 +299,7 @@ sub class_for {
     $cmd_class->require();
     my $err = $@;
     if ($err and $err !~ /^Can't locate $class_path.pm in \@INC/) {
-        warn $@;
+        $self->log(1, $@);
         $cmd_class = "Net::IMAP::Server::Error";
     }
 
@@ -565,17 +567,15 @@ sub capability {
     return $base;
 }
 
-=head2 log MESSAGE
+=head2 log SEVERITY, MESSAGE
 
-Logs the message to standard error, using C<warn>.
+Defers to L<Net::IMAP::Server/log>.
 
 =cut
 
 sub log {
     my $self = shift;
-    my $msg  = shift;
-    chomp($msg);
-    warn $msg . "\n";
+    $self->server->log(@_);
 }
 
 =head2 untagged_response STRING
@@ -603,7 +603,7 @@ sub out {
     my $msg  = shift;
     if ( $self->io_handle and $self->io_handle->peerport ) {
         if ( $self->io_handle->print( $msg . "\r\n" ) ) {
-            $self->log(
+            $self->log( 4,
                 "S(@{[$self]},@{[$self->auth ? $self->auth->user : '???']},@{[$self->is_selected ? $self->selected->full_path : 'unselected']}): $msg"
             );
         } else {
