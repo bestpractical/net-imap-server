@@ -1,5 +1,14 @@
 Revision history for Net-IMAP-Server
 
+1.25   Sat Nov  7 23:58:17 2009
+        * BACKWARDS-INCOMPATIBLE CHANGE: Net::IMAP::Server::Command's
+          ->log method takes a loglevel argument by default, and simply
+          defers to Net::Server's logging infratructure.
+        * Handle more of Net::Server's arguments to ->new, including logging
+        * Pass through arguments to Net::Server any arguments to ->run
+        * Support mailboxes with flat hierarchies (undef hierarchy separator)
+        * Fix a bug where UID COPY set two OK responses
+
 1.24   Fri Oct 16 11:01:17 2009
         * Fix overzealous caching during mailbox renaming
         * Bump Net::Server::Coro dep, to be able to specify SSL
