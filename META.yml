@@ -36,4 +36,5 @@ requires:
   UNIVERSAL::require: 0
 resources:
   license: http://dev.perl.org/licenses/
+  repository: http://github.com/bestpractical/net-imap-server/
 version: 1.24

@@ -4,6 +4,7 @@ name ('Net-IMAP-Server');
 author ('Alex Vandiver <alexmv@mit.edu>');
 version_from ('lib/Net/IMAP/Server.pm');
 abstract_from('lib/Net/IMAP/Server.pm');
+repository("http://github.com/bestpractical/net-imap-server/");
 license('perl');
 
 requires('Class::Accessor');
