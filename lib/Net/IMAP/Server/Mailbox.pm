@@ -548,7 +548,8 @@ L<Net::IMAP::Server::Connection/selected_read_only>)
 sub read_only {
     my $self = shift;
     return unless Net::IMAP::Server->connection;
-    return Net::IMAP::Server->connection->selected_read_only;
+    return $self->selected
+        and Net::IMAP::Server->connection->selected_read_only;
 }
 
 =head3 select
