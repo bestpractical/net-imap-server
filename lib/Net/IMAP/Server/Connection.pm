@@ -116,23 +116,36 @@ sub client_id {
     return $self->{client} || {};
 }
 
-=head2 selected [MAILBOX]
+=head2 selected [MAILBOX], [READ_ONLY]
 
-Gets or sets the currently selected mailbox for this connection.  This
-may trigger the sending of untagged notifications to the client.
+Gets or sets the currently selected mailbox for this connection.
+Changing mailboxes triggers the sending of untagged notifications to
+the client, as well as calling L<Net::IMAP::Server::Mailbox/close> and
+L<Net::IMAP::Server::Mailbox/select>.
 
 =cut
 
 sub selected {
     my $self = shift;
-    if ( @_ and $self->selected ) {
-        unless ( $_[0] and $self->selected eq $_[0] ) {
-            $self->send_untagged;
-            $self->selected->close;
-        }
-        $self->selected_read_only(0);
+    my ($mailbox, $read_only) = @_;
+
+    # This is just being called as a getter
+    return $self->_selected unless @_;
+
+    # This is a setter, but isn't actually changing the mailbox.
+    return $self->_selected if $mailbox and $mailbox eq $self->_selected;
+
+    # Otherwise, flush any untagged messages, close the old, and open
+    # the new.
+    $self->send_untagged;
+    $self->_selected->close if $self->_selected;
+    $self->_selected( $mailbox );
+    if ($self->_selected) {
+        $self->selected_read_only( $read_only );
+        $self->_selected->select;
     }
-    return $self->_selected(@_);
+
+    return $self->_selected;
 }
 
 =head2 selected_read_only

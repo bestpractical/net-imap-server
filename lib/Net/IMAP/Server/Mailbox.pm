@@ -551,6 +551,15 @@ sub read_only {
     return Net::IMAP::Server->connection->selected_read_only;
 }
 
+=head3 select
+
+Called when the mailbox is selected; by default does nothing.  Note
+that this could be called a a result of either a SELECT or an EXAMINE.
+
+=cut
+
+sub select {}
+
 =head3 selected
 
 Returns true if this mailbox is the mailbox selected by the current
