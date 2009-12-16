@@ -1,5 +1,13 @@
 Revision history for Net-IMAP-Server
 
+1.26   Tue Dev 15 22:31:17 2009
+        * Fix ->read_only to only care about ->selected_read_only if
+          the mailbox is currently selected.
+        * Add a ->select callback (defautls to doing nothing) on
+          mailboxes which is called when it becomes selected.
+        * The content returned by FETCH BODY[1] should be the raw
+          content, without decoding transport encoding.
+
 1.25   Sat Nov  7 23:58:17 2009
         * BACKWARDS-INCOMPATIBLE CHANGE: Net::IMAP::Server::Command's
           ->log method takes a loglevel argument by default, and simply
