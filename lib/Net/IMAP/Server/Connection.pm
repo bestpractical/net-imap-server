@@ -248,6 +248,9 @@ Any errors generated while running commands will cause a C<NO Server
 error> to be sent to the client -- unless the error message starts
 with C<NO> or c<BAD>, in which case it will be relayed to the client.
 
+Returns the L<Net::IMAP::Server::Command> instance that was run, or
+C<undef> if it was a continuation line or pending interactive command.
+
 =cut
 
 sub handle_command {
@@ -291,6 +294,7 @@ sub handle_command {
             $self->log(1, $error);
         }
     }
+    return $handler;
 }
 
 =head2 class_for COMMAND
