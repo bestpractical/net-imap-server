@@ -1,6 +1,10 @@
 Revision history for Net-IMAP-Server
 
-1.26   Tue Dev 15 22:31:17 2009
+1.27   Mon May  3 21:27:17 2010
+        * Make ->handle_command return the instance of the ::Command
+          subclass that ran, for more useful subclassing
+
+1.26   Tue Dec 15 22:31:17 2009
         * Fix ->read_only to only care about ->selected_read_only if
           the mailbox is currently selected.
         * Add a ->select callback (defautls to doing nothing) on
