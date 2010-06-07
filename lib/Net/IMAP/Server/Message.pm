@@ -79,7 +79,7 @@ sub internaldate {
     my $value = shift;
 
     if (ref $value) {
-        $self->{internaldate} = $value->strftime("%e-%b-%Y %T %z");
+        $self->{internaldate} = $value->strftime("%n%e-%b-%Y %T %z");
     } else {
         $self->{internaldate} = $value;
         $value = $self->INTERNALDATE_PARSER->parse_datetime($value);
