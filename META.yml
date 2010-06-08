@@ -37,4 +37,4 @@ requires:
 resources:
   license: http://dev.perl.org/licenses/
   repository: http://github.com/bestpractical/net-imap-server/
-version: 1.27
+version: 1.28
