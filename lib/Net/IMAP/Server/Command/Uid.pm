@@ -31,8 +31,8 @@ sub run {
     } else {
         $self->log(
             $subcommand . " wasn't understood by the 'UID' command" );
-        $self->no_failed(
-            alert => q{Your client sent a UID command we didn't understand} );
+        $self->bad_command(
+            q{Unrecognized UID command $subcommand} );
     }
 
 }
