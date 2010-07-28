@@ -377,8 +377,9 @@ sub fetch {
     # Look if this will change the \Seen flag
     if ( grep { $_ =~ /^BODY\[/i } @parts and not $self->has_flag('\Seen') ) {
 
-        # If so, update, and possibly also inform the user.
-        $self->set_flag('\Seen');
+        # If so, update, and possibly also inform the user; do it
+        # "silently" because we'll report the FLAGS change ourselves
+        $self->set_flag('\Seen', 1);
         push @parts, "FLAGS" if not grep { uc $_ eq "FLAGS" } @parts;
     }
 
