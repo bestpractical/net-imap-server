@@ -36,10 +36,8 @@ sub run {
         }
         if (@options and grep {not ref $_} @options) {
             my ($time) = grep {not ref $_} @options;
-            my $parser = $msg->INTERNALDATE_PARSER;
-            my $dt = $parser->parse_datetime($time);
-            return $self->bad_command("Invalid date") unless $dt;
-            $msg->internaldate( $dt );
+            $msg->internaldate( $time )
+                or return $self->bad_command("Invalid date");
         }
 
         $self->connection->previous_exists( $self->connection->previous_exists + 1 )

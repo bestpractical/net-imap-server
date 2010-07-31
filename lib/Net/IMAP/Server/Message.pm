@@ -78,16 +78,14 @@ sub internaldate {
     return $self->{internaldate} unless @_;
     my $value = shift;
 
-    if (ref $value) {
-        $self->{internaldate} = $value->strftime("%e-%b-%Y %T %z");
-    } else {
-        $self->{internaldate} = $value;
-        $value = $self->INTERNALDATE_PARSER->parse_datetime($value);
-    }
-    $value->truncate( to => "day" );
-    $value->set_time_zone( "floating" );
-    $value->set_time_zone( "UTC" );
-    $self->{epoch_day_utc} = $value->epoch;
+    my $dt = ref $value ? $value : $self->INTERNALDATE_PARSER->parse_datetime($value);
+    return undef unless $dt;
+
+    $self->{internaldate} = $dt->strftime("%e-%b-%Y %T %z");
+    $dt->truncate( to => "day" );
+    $dt->set_time_zone( "floating" );
+    $dt->set_time_zone( "UTC" );
+    $self->{epoch_day_utc} = $dt->epoch;
     return $self->{internaldate};
 }
 
