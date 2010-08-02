@@ -1,5 +1,13 @@
 Revision history for Net-IMAP-Server
 
+1.29   Mon Aug  2 10:42:17 2010
+        * Fix "UID SEARCH 1,2"
+        * Allow "UID SEARCH *"
+        * A better fix for [rt.cpan.org #58160], which is caused by a
+          bug in DateTime::Format::Strptime ([rt.cpan.org #58459])
+        * Fix a minor bug in UID wherein unknown subcommands would
+          attempt to call a nonexistant method
+
 1.28   Tue Jun  8 14:14:17 2010
         * Prevent warnings when CLOSE is called
         * strftime("%e") can generate leading space, which
