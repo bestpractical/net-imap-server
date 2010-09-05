@@ -45,7 +45,7 @@ sub fetch {
 
     my ( $messages, $spec ) = @_;
     $spec = [$spec] unless ref $spec;
-    push @{$spec}, "UID" unless grep {uc $_ eq "UID"} @{$spec};
+    unshift @{$spec}, "UID" unless grep {uc $_ eq "UID"} @{$spec};
     my @messages = $self->connection->selected->get_uids($messages);
     for my $m (@messages) {
         $self->untagged_response( $self->connection->sequence($m)

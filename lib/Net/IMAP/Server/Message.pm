@@ -384,7 +384,7 @@ sub fetch {
         # If so, update, and possibly also inform the user; do it
         # "silently" because we'll report the FLAGS change ourselves
         $self->set_flag('\Seen', 1);
-        push @parts, "FLAGS" if not grep { uc $_ eq "FLAGS" } @parts;
+        unshift @parts, "FLAGS" if not grep { uc $_ eq "FLAGS" } @parts;
     }
 
     my @out;
