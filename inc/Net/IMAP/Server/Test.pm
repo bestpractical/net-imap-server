@@ -21,6 +21,7 @@ sub start_server {
     unless ( $pid = fork ) {
         require Net::IMAP::Server::Test::Server;
         Net::IMAP::Server::Test::Server->new(
+            auth_class => "Net::IMAP::Server::Test::Auth",
             port       => "localhost:".PORT,
             ssl_port   => "localhost:".SSL_PORT,
             group      => $(,
