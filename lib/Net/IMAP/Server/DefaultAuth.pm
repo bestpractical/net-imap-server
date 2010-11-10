@@ -87,6 +87,7 @@ sub sasl_plain {
         return \"" unless $line;
 
         my ( $authz, $user, $pass ) = split /\x{0}/, $line, 3;
+        return 0 unless defined $authz and defined $user and defined $pass;
         return $self->auth_plain( $user, $pass );
     };
 }
