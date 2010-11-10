@@ -66,7 +66,7 @@ sub continue {
         $self->ok_completed();
     } else {
         $self->connection->pending(undef);
-        $self->bad_command("Invalid login");
+        $self->no_command("Invalid login");
     }
 }
 

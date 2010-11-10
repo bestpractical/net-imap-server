@@ -32,7 +32,7 @@ sub run {
         $self->connection->auth($auth);
         $self->ok_completed();
     } else {
-        $self->bad_command("Invalid login");
+        $self->no_command("Invalid login");
     }
 }
 

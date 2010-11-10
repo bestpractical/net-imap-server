@@ -32,7 +32,7 @@ $t->cmd_like("AUTHENTICATE PLAIN $base64", "tag BAD");
 
 # Wrong password
 $base64 = encode_base64("authz\0username\0wrong"); chomp $base64;
-$t->cmd_like("AUTHENTICATE PLAIN $base64", "tag BAD");
+$t->cmd_like("AUTHENTICATE PLAIN $base64", "tag NO");
 
 # Correct login
 $base64 = encode_base64("authz\0username\0password"); chomp $base64;
