@@ -26,9 +26,9 @@ sub run {
 
     $self->server->auth_class->require || $self->log( 1, $@ );
     my $auth = $self->server->auth_class->new;
-    if (    $auth->provides_plain
-        and $auth->auth_plain( $self->parsed_options ) )
-    {
+    if (not $auth->provides_plain) {
+        $self->bad_command("Protocol failure");
+    } elsif ( $auth->auth_plain( $self->parsed_options ) ) {
         $self->connection->auth($auth);
         $self->ok_completed();
     } else {

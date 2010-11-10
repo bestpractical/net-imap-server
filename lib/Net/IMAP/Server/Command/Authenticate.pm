@@ -64,11 +64,13 @@ sub continue {
     if ( ref $response ) {
         $self->connection->pending(sub{$self->continue(@_)});
         $self->out( "+ " . encode_base64($$response) );
-    } elsif ($response) {
+    } elsif (not $response) {
+        $self->no_command("Invalid login");
+    } elsif ($response < 0) {
+        $self->bad_command("Protocol failure");
+    } else {
         $self->connection->auth( $self->pending_auth );
         $self->ok_completed();
-    } else {
-        $self->no_command("Invalid login");
     }
 }
 
