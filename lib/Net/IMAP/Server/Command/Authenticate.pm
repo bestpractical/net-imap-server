@@ -18,7 +18,7 @@ sub validate {
     return $self->bad_command("Not enough options") if @options < 1;
     return $self->bad_command("Too many options") if @options > 2;
 
-    return $self->no_command("Login is disabled")
+    return $self->no_command("Authentication type not supported")
       unless $self->connection->capability =~ /\bAUTH=$options[0]\b/i;
 
     return 1;
@@ -38,7 +38,7 @@ sub run {
         $self->connection->pending(sub {$self->continue(@_)});
         $self->continue( $arg || "");
     } else {
-        $self->bad_command("Invalid login");
+        $self->no_command("Authentication type not supported");
     }
 }
 
