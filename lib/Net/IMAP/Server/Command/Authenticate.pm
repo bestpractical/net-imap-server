@@ -52,7 +52,10 @@ sub continue {
         return;
     }
 
-    $line = decode_base64($line);
+    {
+        local $^W; # Avoid "Premature end of base64 data", etc..
+        $line = decode_base64($line);
+    }
 
     my $response = $self->sasl->($line);
     if ( ref $response ) {
