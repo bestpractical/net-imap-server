@@ -46,11 +46,10 @@ sub continue {
     my $self = shift;
     my $line = shift;
 
-    if ( not defined $line or $line =~ /^\*[\r\n]+$/ ) {
-        $self->connection->pending(undef);
-        $self->bad_command("Login cancelled");
-        return;
-    }
+    $self->connection->pending(undef);
+
+    return $self->bad_command("Login cancelled")
+        if not defined $line or $line =~ /^\*[\r\n]+$/;
 
     {
         local $^W; # Avoid "Premature end of base64 data", etc..
@@ -59,13 +58,12 @@ sub continue {
 
     my $response = $self->sasl->($line);
     if ( ref $response ) {
+        $self->connection->pending(sub{$self->continue(@_)});
         $self->out( "+ " . encode_base64($$response) );
     } elsif ($response) {
-        $self->connection->pending(undef);
         $self->connection->auth( $self->pending_auth );
         $self->ok_completed();
     } else {
-        $self->connection->pending(undef);
         $self->no_command("Invalid login");
     }
 }
