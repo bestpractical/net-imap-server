@@ -15,6 +15,9 @@ sub validate {
     return $self->bad_command("Not enough options") if @options < 2;
     return $self->bad_command("Too many options") if @options > 2;
 
+    $self->untagged_response("BAD [ALERT] Plaintext authentication not over SSL is insecure -- your password was just exposed.")
+        unless $self->connection->is_encrypted;
+
     return $self->no_command("Login is disabled")
       if $self->connection->capability =~ /\bLOGINDISABLED\b/;
 

@@ -53,6 +53,13 @@ $t->cmd_ok("LOGOUT");
 $t->connect_ok;
 $t->cmd_like("AUTHENTICATE PLAIN", "+");
 $t->line_like("*", "tag BAD Login cancelled");
+$t->cmd_ok("LOGOUT");
 
+# AUTHENTICATE PLAIN is disabled over non-SSL
+$t->connect_ok( "Non-SSL connection OK",
+    Class => "IO::Socket::INET",
+    PeerPort => $t->PORT,
+);
+$t->cmd_like("AUTHENTICATE PLAIN $base64", "* BAD [ALERT]", "tag NO");
 
 done_testing;
