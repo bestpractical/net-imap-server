@@ -18,6 +18,9 @@ sub validate {
     return $self->bad_command("Not enough options") if @options < 2;
     return $self->bad_command("Too many options") if @options > 2;
 
+    return $self->bad_command("Invalid message set")
+        unless $options[0] =~ $self->connection->SEQUENCE_STRING;
+
     return 1;
 }
 

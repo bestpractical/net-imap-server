@@ -523,6 +523,8 @@ connection-dependent sequence numbers.
 
 =cut
 
+use constant SEQUENCE_TOKEN => qr/(?:\d+:\d+|\d+:\*|\*:\d+|\d+|\*)/;
+use constant SEQUENCE_STRING => qr/^@{[SEQUENCE_TOKEN]}(,@{[SEQUENCE_TOKEN]})*$/;
 sub get_messages {
     my $self = shift;
     my $str  = shift;
