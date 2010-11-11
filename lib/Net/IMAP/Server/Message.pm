@@ -78,13 +78,7 @@ sub internaldate {
     return $self->{internaldate} unless @_;
     my $value = shift;
 
-    my $dt;
-    if (ref $value) {
-        $dt = $value;
-    } else {
-        $value =~ s/^\s+//;
-        $dt = $self->INTERNALDATE_PARSER->parse_datetime($value);
-    }
+    my $dt = ref $value ? $value : $self->INTERNALDATE_PARSER->parse_datetime($value);
     return undef unless $dt;
 
     $self->{internaldate} = $dt->strftime("%e-%b-%Y %T %z");
