@@ -43,11 +43,13 @@ sub load_data {
     $self->add_message($msg);
 }
 
+my %ports = ( port => 143, ssl_port => 993 );
+$ports{$_} *= 10 for grep {$> > 0} keys %ports;
+
 Net::IMAP::Server->new(
     auth_class  => "Demo::IMAP::Auth",
     model_class => "Demo::IMAP::Model",
     user        => 'nobody',
-    port        => 143,
-    ssl_port    => 993
+    %ports,
 )->run();
 
