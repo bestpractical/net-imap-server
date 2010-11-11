@@ -55,12 +55,9 @@ $t->cmd_ok("LOGIN username password", "Logged in");
     "* CAPABILITY",
     "tag OK",
 );
-{
-    local $TODO = "Is this correct?";
-    like($cap, qr/\bIMAP4rev1\b/, "Advertises IMAP4rev1");
-    like($cap, qr/\bAUTH=PLAIN\b/, "Advertises AUTH=PLAIN over TLS");
-    unlike($cap, qr/\bSTARTTLS\b/, "TLS is not advertized over TLS");
-    unlike($cap, qr/\bLOGINDISABLED\b/, "Login is not DISABLED over TLS");
-}
+like($cap, qr/\bIMAP4rev1\b/, "Advertises IMAP4rev1");
+unlike($cap, qr/\bAUTH=PLAIN\b/, "No longer advertises AUTH after login");
+unlike($cap, qr/\bSTARTTLS\b/, "TLS is not advertized over TLS");
+unlike($cap, qr/\bLOGINDISABLED\b/, "Login is not DISABLED over TLS");
 
 done_testing;

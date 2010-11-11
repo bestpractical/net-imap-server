@@ -576,16 +576,25 @@ sub capability {
     my $self = shift;
 
     my $base = $self->server->capability;
-    if ( $self->is_encrypted ) {
+    my @words = split " ", $base;
+
+    # Skip STARTTLS if we're encrpyted
+    @words = grep {$_ ne "STARTTLS"} @words
+        if $self->is_encrypted;
+
+    # If we're auth'd, no need to list any AUTH or LOGINDISABLED
+    unless ($self->auth) {
         my $auth = $self->auth || $self->server->auth_class->new;
-        $base = join( " ",
-            grep { $_ ne "STARTTLS" } split( ' ', $base ),
-            map {"AUTH=$_"} $auth->sasl_provides );
-    } else {
-        $base = "$base LOGINDISABLED";
+        my @auth = $auth->sasl_provides;
+        unless ($self->is_encrypted) {
+            # Lack of encrpytion makes us turn off all plaintext auth
+            push @words, "LOGINDISABLED";
+            @auth = grep {$_ ne "PLAIN"} @auth;
+        }
+        push @words, map {"AUTH=$_"} @auth;
     }
 
-    return $base;
+    return join(" ", @words);
 }
 
 =head2 log SEVERITY, MESSAGE
