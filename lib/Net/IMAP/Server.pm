@@ -276,7 +276,7 @@ listening sockets.
 DESTROY {
     my $self = shift;
     $_->close for grep { defined $_ } @{ $self->connections };
-    $self->socket->close if $self->socket;
+    $self->server_close;
 }
 
 =head2 connections
