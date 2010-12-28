@@ -6,8 +6,9 @@ use warnings;
 
 use IO::Socket::SSL;
 
-use constant PORT => 7000;
-use constant SSL_PORT => 7001;
+my $PPID = $$;
+sub PORT()     { 2000 + $PPID*2 }
+sub SSL_PORT() { 2001 + $PPID*2 }
 
 sub import_extra {
     my $class = shift;
