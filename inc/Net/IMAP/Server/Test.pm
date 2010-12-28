@@ -183,6 +183,7 @@ sub stop_server {
     1 while wait > 0;
 }
 
+$SIG{$_} = sub {exit} for qw/TERM INT QUIT/;
 END { stop_server() }
 
 1;
