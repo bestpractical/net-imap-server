@@ -52,11 +52,9 @@ sub list_out {
     my $node = shift;
     my @props = @_;
 
-    my $sep = (defined $self->connection->model->root->separator)
-        ? q{"}.$self->connection->model->root->separator.q{"} : "NIL";
-    my $name = q{"}.Encode::encode('IMAP-UTF-7',$node->full_path).q{"};
-
-    my $str = $self->data_out([map {\$_} @props]) . " $sep $name";
+    my $str = $self->data_out([map {\$_} @props]) . " "
+        . $self->data_out($self->connection->model->root->separator) . " "
+        . $self->data_out(Encode::encode('IMAP-UTF-7',$node->full_path));
     $self->tagged_response($str);
 }
 
