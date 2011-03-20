@@ -14,17 +14,21 @@ sub validate {
     return $self->bad_command("Not enough options") if @options < 1;
     return $self->bad_command("Too many options") if @options > 1;
 
-    my $mailbox = $self->connection->model->lookup( @options );
-    return $self->no_command("Mailbox does not exist") unless $mailbox;
-    return $self->no_command("Mailbox is not selectable") unless $mailbox->is_selectable;
-
     return 1;
 }
 
 sub run {
     my $self = shift;
 
+    $self->connection->selected->expunge
+        if $self->connection->selected
+            and not $self->connection->selected->read_only;
+    $self->connection->selected(undef);
+
     my $mailbox = $self->connection->model->lookup( $self->parsed_options );
+    return $self->no_command("Mailbox does not exist") unless $mailbox;
+    return $self->no_command("Mailbox is not selectable") unless $mailbox->is_selectable;
+
     $mailbox->poll;
     $self->connection->last_poll(time);
     $self->connection->selected($mailbox, $self->command eq "Examine");
