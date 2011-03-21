@@ -16,6 +16,7 @@ sub validate {
 
     my $mailbox = $self->connection->model->lookup( @options );
     return $self->no_command("Mailbox doesn't exist") unless $mailbox;
+    return $self->no_command("INBOX cannot be deleted") if $mailbox->is_inbox;
     return $self->no_command("Mailbox has children") if @{$mailbox->children};
 
     return 1;
