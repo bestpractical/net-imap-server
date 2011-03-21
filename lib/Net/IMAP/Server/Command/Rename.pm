@@ -20,7 +20,8 @@ sub validate {
     my $newbox = $self->connection->model->lookup($new);
     return $self->no_command("Mailbox already exists") if $newbox;
 
-    return 1;
+    # Test that the new name is valid
+    return $self->valid_mailbox($new);
 }
 
 sub run {
