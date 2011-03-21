@@ -13,6 +13,7 @@ sub SSL_PORT() { 2001 + $PPID*2 }
 sub import_extra {
     my $class = shift;
     Test::More->export_to_level(2);
+    binmode $class->builder->output, ":utf8";
 }
 
 my $pid;
