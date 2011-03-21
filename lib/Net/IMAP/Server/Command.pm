@@ -374,6 +374,35 @@ sub bad_command {
     return 0;
 }
 
+=head2 valid_mailbox NAME
+
+Returns false and calls L</bad_command> if the given C<NAME> is a valid
+name for a mailbox.  This only checks that is passes UTF-7 encoding
+checks, and that it contains no 8-bit characters.  If the name is valid,
+simply returns 1.
+
+=cut
+
+sub valid_mailbox {
+    my $self = shift;
+    my ($name) = @_;
+
+    # Check for high-bit characters
+    return $self->bad_command("Mailbox name contains 8-bit data")
+        if $name =~ /[\x80-\xFF]/;
+
+    # This both ensures that the mailbox path is valid UTF-7, and that
+    # there aren't bogusly encoded characters (like '/' -> '&AC8-')
+    my $roundtrip = eval {
+        Encode::encode( 'IMAP-UTF-7',
+            Encode::decode( 'IMAP-UTF-7', $name ) );
+    };
+    return $self->bad_command("Invalid UTF-7 encoding")
+        unless defined $roundtrip and $roundtrip eq $name;
+
+    return 1;
+}
+
 =head2 log SEVERITY, MESSAGE
 
 Defers to L<Net::IMAP::Server::Connection/log>.
