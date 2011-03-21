@@ -5,6 +5,7 @@ use strict;
 use warnings;
 
 use IO::Socket::SSL;
+use Time::HiRes qw();
 
 my $PPID = $$;
 sub PORT()     { 2000 + $PPID*2 }
@@ -65,10 +66,11 @@ sub connect {
         @_
     );
     my $socketclass = delete $args{Class};
-    for (1..10) {
+    my $start = Time::HiRes::time();
+    while (Time::HiRes::time() - $start < 10) {
         my $socket = $socketclass->new( %args );
         return $class->builder->{$class->socket_key} = $socket if $socket;
-        sleep 1;
+        Time::HiRes::sleep(0.1);
     }
     return;
 }
