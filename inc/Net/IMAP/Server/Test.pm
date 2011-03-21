@@ -176,6 +176,18 @@ sub _send_like {
     return wantarray ? @got : $response;
 }
 
+sub mailbox_list {
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
+    my $class = shift;
+    my ($base, $pattern) = @_;
+    $base ||= "";
+    $pattern ||= "*";
+    my $ret = $class->send_cmd(qq{LIST "$base" "$pattern"});
+    my %mailboxes;
+    $mailboxes{$2} = $1 while $ret =~ m{^\* LIST \((\\\S+(?:\s+\\\S+)*)\) "/" "(.*?)"}mg;
+    return %mailboxes;
+}
+
 sub stop_server {
     return unless $pid;
     local $?;
