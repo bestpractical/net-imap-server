@@ -17,6 +17,10 @@ sub validate {
     my $mailbox = $self->connection->model->lookup( @options );
     return $self->no_command("Mailbox already exists") if $mailbox;
 
+    # Check for high-bit characters
+    return $self->bad_command("Mailbox name contains 8-bit data")
+        if $name =~ /[\x80-\xFF]/;
+
     # This both ensures that the mailbox path is valid UTF-7, and that
     # there aren't bogusly encoded characters (like '/' -> '&AC8-')
     my $roundtrip = eval {
