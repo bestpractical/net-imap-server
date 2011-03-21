@@ -123,7 +123,8 @@ sub split {
 =head2 lookup PATH
 
 Given a C<PATH>, returns the L<Net::IMAP::Server::Mailbox> for that
-path, or undef if none matches.
+path, or undef if none matches.  May die if the path contains unvalid
+IMAP-UTF-7 (see L</split>).
 
 =cut
 
