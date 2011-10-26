@@ -1,5 +1,22 @@
 Revision history for Net-IMAP-Server
 
+1.30   Tue Oct 25 11:30:17 2011
+        * Beginnings of a testsuite based on the RFC spec
+        * Prepend, rather then append, un-asked-for message attributes,
+          for picky clients
+        * Properly escape mailbox names with quotes in LIST/LSUB
+        * Trap and report base64 errors during AUTH
+        * Returning -1 from a SASL auth now returns BAD, while returning
+          false returns NO
+        * Send an [ALERT] if the password was sent unprotected in
+          plaintext
+        * Remove an incorrect call to ->socket which caused errors
+          during DESTROY
+        * Selecting a bogus mailbox now leaves the state unselected
+        * Return BAD on CREATE or RENAME with 8-bit mailbox names or
+          invalid UTF-7 encoding
+        * Forbid removal of INBOX
+
 1.29   Mon Aug  2 10:42:17 2010
         * Fix "UID SEARCH 1,2"
         * Allow "UID SEARCH *"
