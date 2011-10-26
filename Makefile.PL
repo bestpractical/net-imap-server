@@ -24,4 +24,6 @@ requires('Regexp::Common');
 requires('Test::More');
 requires('UNIVERSAL::require');
 
-&WriteAll;
+sign;
+
+WriteAll;
