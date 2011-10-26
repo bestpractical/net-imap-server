@@ -1,0 +1,15 @@
+^Makefile(?:.old)?$
+^blib/
+^pm_to_blib$
+.swp$
+~$
+.tmp$
+.bak$
+^.git/
+^.gitignore$
+^inc/.author$
+^MANIFEST.SKIP$
+^cover_db/
+^Net-IMAP-Server-*
+^rfc3501.html$
+^.prove$
