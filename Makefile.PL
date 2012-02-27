@@ -24,6 +24,8 @@ requires('Regexp::Common');
 requires('Test::More');
 requires('UNIVERSAL::require');
 
+test_requires('IO::Socket::SSL');
+
 sign;
 
 WriteAll;
