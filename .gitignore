@@ -3,6 +3,8 @@
 /blib/
 /pm_to_blib
 /inc/
-META.yml
-MANIFEST.bak
-Net-IMAP-Server-*
+/META.yml
+/MANIFEST.bak
+/Net-IMAP-Server-*
+/MYMETA.yml
+/MYMETA.json

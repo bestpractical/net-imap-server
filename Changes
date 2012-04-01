@@ -1,5 +1,9 @@
 Revision history for Net-IMAP-Server
 
+1.31   Sun Apr 01 01:18:17 2012
+        * Add test dependency on IO::Socket::SSL
+        * Minor ASCII art updates
+
 1.30   Tue Oct 25 11:30:17 2011
         * Beginnings of a testsuite based on the RFC spec
         * Prepend, rather then append, un-asked-for message attributes,
