@@ -66,7 +66,7 @@ sub continue {
     my $response = $self->sasl->($line);
     if ( ref $response ) {
         $self->connection->pending(sub{$self->continue(@_)});
-        $self->out( "+ " . encode_base64($$response) );
+        $self->out( "+ " . encode_base64($$response, "") );
     } elsif (not $response) {
         $self->no_command("Invalid login");
     } elsif ($response < 0) {
