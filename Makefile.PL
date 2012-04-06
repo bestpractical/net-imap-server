@@ -1,11 +1,13 @@
 use inc::Module::Install;
 
-name ('Net-IMAP-Server');
-author ('Alex Vandiver <alexmv@mit.edu>');
-version_from ('lib/Net/IMAP/Server.pm');
+name('Net-IMAP-Server');
+author('Alex Vandiver <alexmv@bestpractical.com>');
+version_from('lib/Net/IMAP/Server.pm');
 abstract_from('lib/Net/IMAP/Server.pm');
-repository("http://github.com/bestpractical/net-imap-server/");
+repository('http://github.com/bestpractical/net-imap-server/');
 license('perl');
+readme_from('lib/Net/IMAP/Server.pm');
+sign;
 
 requires('Class::Accessor');
 requires('Coro');
@@ -25,7 +27,5 @@ requires('Test::More');
 requires('UNIVERSAL::require');
 
 test_requires('IO::Socket::SSL');
-
-sign;
 
 WriteAll;
