@@ -1,5 +1,13 @@
 Revision history for Net-IMAP-Server
 
+1.32   Fri Apr 06 00:45:17 2012
+        * Trim newlines passed to all commands, including continuation
+          lines
+        * Remove erroneous extra \n on server SASL responses
+        * Bump MIME::Base64 dependency, and adjust bad mime encoding
+          techniques to compensate
+        * Better mapping of SASL mechanism names to method names
+
 1.31   Sun Apr 01 01:18:17 2012
         * Add test dependency on IO::Socket::SSL
         * Minor ASCII art updates
