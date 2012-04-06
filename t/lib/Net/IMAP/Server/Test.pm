@@ -4,6 +4,7 @@ use base qw/Test::More/;
 use strict;
 use warnings;
 
+use Socket;
 use IO::Socket::SSL;
 use Time::HiRes qw();
 
@@ -73,6 +74,24 @@ sub connect {
         Time::HiRes::sleep(0.1);
     }
     return;
+}
+
+sub connected {
+    my $class = shift;
+    my $socket = $class->get_socket;
+    return 0 unless $socket->connected;
+
+    my $buf;
+    # We intentionally use the non-OO recv function here,
+    # IO::Socket::SSL doesn't define a recv, and we want the low-level,
+    # not under a layer version, anyways.
+    my $waiting = recv($socket, $buf, 1, MSG_PEEK | MSG_DONTWAIT);
+
+    # Undef if there's nothing currently waiting
+    return 1 if not defined $waiting;
+
+    # True if there is, false if the connection is closed
+    return $waiting;
 }
 
 sub get_socket {
