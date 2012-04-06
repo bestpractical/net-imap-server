@@ -52,7 +52,7 @@ sub continue {
     $self->connection->pending(undef);
 
     return $self->bad_command("Login cancelled")
-        if not defined $line or $line =~ /^\*[\r\n]+$/;
+        if not defined $line or $line =~ /^\*$/;
 
     my $fail = 0;
     {
