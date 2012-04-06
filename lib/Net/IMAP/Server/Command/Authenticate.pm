@@ -54,16 +54,11 @@ sub continue {
     return $self->bad_command("Login cancelled")
         if not defined $line or $line =~ /^\*$/;
 
-    my $fail = 0;
-    {
-        # Trap and fail on "Premature end of base64 data", etc..
-        local $^W = 1;
-        local $SIG{__WARN__} = sub {$_[0] =~ /base64/i and $fail++};
-        $line = decode_base64($line);
-    }
-    return $self->bad_command("Invalid base64") if $fail;
+    my $decoded = decode_base64($line);
+    return $self->bad_command("Invalid base64")
+        if encode_base64($decoded, "") ne $line;
 
-    my $response = $self->sasl->($line);
+    my $response = $self->sasl->($decoded);
     if ( ref $response ) {
         $self->connection->pending(sub{$self->continue(@_)});
         $self->out( "+ " . encode_base64($$response, "") );

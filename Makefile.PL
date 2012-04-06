@@ -19,7 +19,7 @@ requires('Email::MIME' => 1.862);
 requires('Email::MIME::ContentType');
 requires('Email::Simple' => 1.999);
 requires('Encode::IMAPUTF7');
-requires('MIME::Base64');
+requires('MIME::Base64' => 3.11);
 requires('Net::SSLeay');
 requires('Net::Server::Coro' => 0.6);
 requires('Regexp::Common');
