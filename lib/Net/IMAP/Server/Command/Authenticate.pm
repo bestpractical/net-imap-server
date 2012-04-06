@@ -35,6 +35,7 @@ sub run {
     my $auth = $self->server->auth_class->new;
     if ( grep {uc $type eq uc $_} $auth->sasl_provides ) {
         $type = lc $type;
+        $type =~ s/\W/_/g;
         my $function = "sasl_$type";
         $self->sasl( $auth->$function() );
         $self->pending_auth($auth);
