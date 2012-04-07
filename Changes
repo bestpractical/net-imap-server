@@ -1,5 +1,9 @@
 Revision history for Net-IMAP-Server
 
+1.33   Sat Apr 07 19:37:17 2012
+        * Test fixes; use recv() with MSG_PEEK | MSG_DONTWAIT to
+          determine if a TCP connection is in state CLOSE_WAIT
+
 1.32   Fri Apr 06 00:45:17 2012
         * Trim newlines passed to all commands, including continuation
           lines
