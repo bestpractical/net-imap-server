@@ -129,7 +129,7 @@ sub search {
     return unless $filter;
 
     my @results = map {$_->uid} grep {$filter->($_)} $self->connection->get_messages('1:*');
-    $self->untagged_response("SEARCH @results");
+    $self->untagged_response(join(" ", SEARCH => @results));
 
     $self->ok_completed;
 }
