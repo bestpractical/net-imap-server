@@ -2,6 +2,7 @@ use inc::Module::Install;
 
 name('Net-IMAP-Server');
 author('Alex Vandiver <alexmv@bestpractical.com>');
+perl_version_from('lib/Net/IMAP/Server.pm');
 version_from('lib/Net/IMAP/Server.pm');
 abstract_from('lib/Net/IMAP/Server.pm');
 repository('http://github.com/bestpractical/net-imap-server/');

@@ -7,6 +7,7 @@ use base qw/Net::Server::Coro Class::Accessor/;
 
 use UNIVERSAL::require;
 use Coro;
+use 5.008_008;
 
 our $VERSION = '1.33';
 
