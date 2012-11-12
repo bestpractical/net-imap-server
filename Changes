@@ -1,5 +1,8 @@
 Revision history for Net-IMAP-Server
 
+1.35   Mon Nov 12 03:22:17 2012
+        * Switch to AnyEvent, from EV
+
 1.34   Sat Jul 28 15:49:17 2012
         * Don't rely on $" being set to the default " " during UID
           SEARCH

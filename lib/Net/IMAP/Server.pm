@@ -9,7 +9,7 @@ use UNIVERSAL::require;
 use Coro;
 use 5.008_008;
 
-our $VERSION = '1.34';
+our $VERSION = '1.35';
 
 =head1 NAME
 
