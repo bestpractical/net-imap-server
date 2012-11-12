@@ -346,7 +346,7 @@ sub close {
     $self->timer( undef )  if $self->timer;
     $self->selected->close if $self->selected;
     $self->model->close    if $self->model;
-    $self->server->connection(undef);
+    $self->server->connection(undef) if $self->server;
     $self->coro(undef);
 }
 
