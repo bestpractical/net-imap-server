@@ -6,6 +6,7 @@ use strict;
 use base 'Class::Accessor';
 
 use Coro;
+use AnyEvent;
 use Scalar::Util qw/weaken/;
 
 use Net::IMAP::Server::Error;
@@ -216,7 +217,6 @@ Updates the inactivity timer.
 
 sub update_timer {
     my $self = shift;
-    $self->timer->stop if $self->timer;
     $self->timer(undef);
     my $weakself = $self;
     weaken($weakself);
@@ -225,15 +225,15 @@ sub update_timer {
         $weakself->coro->ready;
     };
     if ( $self->is_unauth and $self->server->unauth_idle ) {
-        $self->timer( EV::timer $self->server->unauth_idle, 0, $timeout );
+        $self->timer( AnyEvent->timer( after => $self->server->unauth_idle, cb => $timeout ) );
     } elsif ( $self->server->auth_idle ) {
-        $self->timer( EV::timer $self->server->auth_idle, 0, $timeout );
+        $self->timer( AnyEvent->timer( after => $self->server->auth_idle, cb => $timeout ) );
     }
 }
 
-=head2 timer [EV watcher]
+=head2 timer [AnyEvent watcher]
 
-Returns the L<EV> watcher in charge of the inactivity timer.
+Returns the L<AnyEvent> watcher in charge of the inactivity timer.
 
 =head2 commands
 
@@ -343,7 +343,7 @@ sub close {
         $self->io_handle->close;
         $self->io_handle(undef);
     }
-    $self->timer->stop     if $self->timer;
+    $self->timer( undef )  if $self->timer;
     $self->selected->close if $self->selected;
     $self->model->close    if $self->model;
     $self->server->connection(undef);

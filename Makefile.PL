@@ -10,6 +10,7 @@ license('perl');
 readme_from('lib/Net/IMAP/Server.pm');
 sign;
 
+requires('AnyEvent');
 requires('Class::Accessor');
 requires('Coro');
 requires('DateTime');

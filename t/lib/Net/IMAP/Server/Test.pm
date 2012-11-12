@@ -5,6 +5,8 @@ use strict;
 use warnings;
 
 use Socket;
+use AnyEvent;
+AnyEvent::detect();
 use IO::Socket::SSL;
 use Time::HiRes qw();
 
