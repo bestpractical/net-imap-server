@@ -259,9 +259,10 @@ sub handle_command {
     my $self    = shift;
     my $content = shift;
 
-    $content =~ s/[\r\n]+$//;
+    my $output = $content;
+    $output =~ s/[\r\n]+$//;
     $self->log( 4,
-        "C(@{[$self]},@{[$self->auth ? $self->auth->user : '???']},@{[$self->is_selected ? $self->selected->full_path : 'unselected']}): $content"
+        "C(@{[$self]},@{[$self->auth ? $self->auth->user : '???']},@{[$self->is_selected ? $self->selected->full_path : 'unselected']}): $output"
     );
 
     if ( $self->pending ) {
@@ -360,6 +361,7 @@ undef if parsing fails for some reason.
 sub parse_command {
     my $self = shift;
     my $line = shift;
+    $line =~ s/[\r\n]+$//;
     my $TAG = qr/([^\(\)\{ \*\%"\\\+}]+)/;
     unless ( $line =~ /^$TAG\s+(\w+)(?:\s+(.+?))?$/ ) {
         if ( $line !~ /^$TAG\s+/ ) {
