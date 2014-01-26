@@ -137,14 +137,16 @@ sub parse_options {
     return $self->_parsed_options
         if not defined $str and not defined $self->options_str;
 
+    my $to_parse = defined $str ? $str : $self->options_str;
+
+    my $token = qr/^($RE{delimited}{-delim=>'"'}{-esc=>'\\'}
+                    |$RE{balanced}{-parens=>'()'}
+                    |\S+$RE{balanced}{-parens=>'()[]<>'}
+                    |\S+)\s*/x;
+
     my @parsed;
-    for my $term (
-        grep {/\S/}
-        split
-        /($RE{delimited}{-delim=>'"'}{-esc=>'\\'}|$RE{balanced}{-parens=>'()'}|\S+$RE{balanced}{-parens=>'()[]<>'}|\S+)/,
-        defined $str ? $str : $self->options_str
-        )
-    {
+    while ($to_parse =~ s/$token//) {
+        my $term = $1;
         if ( $term =~ /^$RE{delimited}{-delim=>'"'}{-esc=>'\\'}{-keep}$/ ) {
             my $value = $3;
             $value =~ s/\\([\\"])/$1/g;
