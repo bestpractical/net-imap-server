@@ -65,6 +65,7 @@ t/rfc-6.2.1-starttls.t
 t/rfc-6.2.2-authenticate.t
 t/rfc-6.2.3-login.t
 t/rfc-6.3.1-select.t
+t/rfc-6.3.10-status.t
 t/rfc-6.3.3-create.t
 t/rfc-6.3.4-delete.t
 t/rfc-6.3.5-rename.t
