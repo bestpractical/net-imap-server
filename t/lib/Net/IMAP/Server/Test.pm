@@ -66,6 +66,7 @@ sub connect {
         PeerAddr        => 'localhost',
         PeerPort        => SSL_PORT,
         Class           => "IO::Socket::SSL",
+        SSL_ca_file     => "certs/server-cert.pem",
         @_
     );
     my $socketclass = delete $args{Class};
@@ -118,7 +119,10 @@ sub connect_ok {
 
 sub start_tls {
     my $class = shift;
-    IO::Socket::SSL->start_SSL($class->get_socket);
+    IO::Socket::SSL->start_SSL(
+        $class->get_socket,
+        SSL_ca_file => "certs/server-cert.pem",
+    );
 }
 
 sub start_tls_ok {
