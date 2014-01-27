@@ -1,6 +1,10 @@
 Revision history for Net-IMAP-Server
 
-1.37   Sun Jan 26 19:14:17 2013
+1.38   Sun Jan 26 20:16:17 2014
+        * Pass tests with IO::Socket::SSL 1.950 and above, which verify
+          server SSL certificates by default.
+
+1.37   Sun Jan 26 19:14:17 2014
         * Fix parsing par parenthesized expressions with recent
           Regexp::Common
 
