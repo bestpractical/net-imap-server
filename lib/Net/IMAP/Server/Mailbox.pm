@@ -570,9 +570,10 @@ L<Net::IMAP::Server::Connection>.
 
 sub selected {
     my $self = shift;
-    return Net::IMAP::Server->connection
+    return 1 if Net::IMAP::Server->connection
       and Net::IMAP::Server->connection->selected
         and Net::IMAP::Server->connection->selected eq $self;
+    return;
 }
 
 =for private
