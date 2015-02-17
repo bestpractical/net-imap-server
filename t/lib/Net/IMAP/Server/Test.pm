@@ -28,8 +28,8 @@ sub start_server {
         require Net::IMAP::Server::Test::Server;
         Net::IMAP::Server::Test::Server->new(
             auth_class => "Net::IMAP::Server::Test::Auth",
-            port       => "localhost:".PORT,
-            ssl_port   => "localhost:".SSL_PORT,
+            port       => "127.0.0.1:".PORT,
+            ssl_port   => "127.0.0.1:".SSL_PORT,
             group      => $(,
             user       => $<,
             @_
@@ -63,7 +63,7 @@ sub socket_key { "SOCKET" };
 sub connect {
     my $class = shift;
     my %args = (
-        PeerAddr        => 'localhost',
+        PeerAddr        => '127.0.0.1',
         PeerPort        => SSL_PORT,
         Class           => "IO::Socket::SSL",
         SSL_ca_file     => "certs/server-cert.pem",
