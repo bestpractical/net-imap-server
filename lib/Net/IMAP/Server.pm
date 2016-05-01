@@ -36,7 +36,7 @@ separation of the mailbox and message store from the client
 interaction loop.
 
 Note that, following RFC suggestions, login is not allowed except
-under a either SSL or TLS.  Thus, you are required to have a F<certs/>
+under either SSL or TLS.  Thus, you are required to have a F<certs/>
 directory under the current working directory, containing files
 F<server-cert.pem> and C<server-key.pem>.  Failure to do so will cause
 the server to fail to start.  Note that if the default paths suit your
