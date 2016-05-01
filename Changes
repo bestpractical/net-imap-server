@@ -1,5 +1,10 @@
 Revision history for Net-IMAP-Server
 
+1.39 2016-05-01T00:42:17Z
+ - Use 127.0.0.1 instead of localhost in tests
+ - Fix precedence error with "return" in
+   Net::IMAP::Server::Mailbox->selected
+
 1.38 2014-01-26T20:16:17Z
  - Pass tests with IO::Socket::SSL 1.950 and above, which verify server SSL
    certificates by default.

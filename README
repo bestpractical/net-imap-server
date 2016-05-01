@@ -20,7 +20,7 @@ DESCRIPTION
     loop.
 
     Note that, following RFC suggestions, login is not allowed except under
-    a either SSL or TLS. Thus, you are required to have a certs/ directory
+    either SSL or TLS. Thus, you are required to have a certs/ directory
     under the current working directory, containing files server-cert.pem
     and "server-key.pem". Failure to do so will cause the server to fail to
     start. Note that if the default paths suit your needs, you can specify
